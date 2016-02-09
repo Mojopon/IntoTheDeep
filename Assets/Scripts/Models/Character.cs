@@ -26,11 +26,12 @@ public class Character
         .AddTo(disposables);
     }
 
-    public void Move(Direction direction, Func<int, int, bool> canMove)
+    public bool Move(Direction direction, Func<int, int, bool> canMove)
     {
         var destination = Location.Value + direction.ToCoord();
-        if (!canMove(destination.x, destination.y)) return;
+        if (!canMove(destination.x, destination.y)) return false;
 
         Location.Value += direction.ToCoord();
+        return true;
     }
 }

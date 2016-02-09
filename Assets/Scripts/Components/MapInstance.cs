@@ -6,15 +6,22 @@ public class MapInstance : MonoBehaviour
 {
     public Transform tilePrefab;
     public float tileSize = 1.0f;
-    public int mapWidth = 5;
-    public int mapDepth = 5;
     public Vector2 center = Vector2.zero;
+
+    public Map[] maps;
 
     public Func<int, int, bool> MoveChecker { get; private set; }
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; private set; }
 
-    void Start()
+    private Map map;
+
+    public void Generate() { Generate(0); }
+
+    public void Generate(int id)
     {
+        map = maps[id];
+
+        DecorateMap();
         InstantiateMap();
         MoveChecker = new Func<int, int, bool>((x, y) => CanMove(x, y));
         CoordToWorldPositionConverter = new Func<int, int, Vector2>((x, y) => CoordToWorldPosition(x, y));
@@ -26,29 +33,35 @@ public class MapInstance : MonoBehaviour
         user.CoordToWorldPositionConverter = CoordToWorldPositionConverter;
     }
 
+    void DecorateMap()
+    {
+        var goal = map.GetCell(map.Width - 1, map.Depth - 1);
+    }
+
     void InstantiateMap()
     {
-        for(int y = 0; y < mapDepth; y++)
+        for(int y = 0; y < map.Depth; y++)
         {
-            for(int x = 0; x < mapWidth; x++)
+            for(int x = 0; x < map.Width; x++)
             {
                 var newTile = Instantiate(tilePrefab, 
                                          (Vector3)CoordToWorldPosition(x, y) + new Vector3(0, 0, 5),
                                           tilePrefab.rotation) as Transform;
                 newTile.localScale = newTile.localScale * tileSize;
+                newTile.SetParent(transform);
             }
         }
     }
 
     Vector2 CoordToWorldPosition(int x, int y)
     {
-        return new Vector2((-mapWidth * tileSize) /2f + (tileSize / 2) + (x * tileSize),
-                           (-mapDepth * tileSize) / 2f + (tileSize / 2) + (y * tileSize));
+        return new Vector2((-map.Width * tileSize) /2f + (tileSize / 2) + (x * tileSize),
+                           (-map.Depth * tileSize) / 2f + (tileSize / 2) + (y * tileSize));
     }
 
     bool CanMove(int x, int y)
     {
-        if (x < 0 || y < 0 || x >= mapWidth || y >= mapDepth) return false;
+        if (x < 0 || y < 0 || x >= map.Width || y >= map.Depth) return false;
 
         return true;
     }

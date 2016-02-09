@@ -5,16 +5,16 @@ using System;
 
 public class GameManager : MonoBehaviour
 {
-    public MapInstance map;
+    public MapInstance mapPrefab;
     public CharacterManager characterManagerPrefab;
 
     private ReactiveProperty<PlayerCommand> InputCommand = new ReactiveProperty<PlayerCommand>();
     private IDisposable InputSubscription;
 
-    private CharacterManager characterManager;
+    private MapInstance map;
+    private CharacterManager currentCharacter;
 
-    private bool receivingInput;
-
+    private GameObject gameObjectHolder;
     void Start()
     {
         StartCoroutine(SequenceSetupGame());
@@ -22,7 +22,16 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceSetupGame()
     {
-        // wait for one frame for other scripts to finish start method
+        if(gameObjectHolder != null)
+        {
+            Destroy(gameObjectHolder);
+            yield return null;
+        }
+        gameObjectHolder = new GameObject("GameObjectHolder");
+
+        map = Instantiate(mapPrefab, Vector3.zero, Quaternion.identity) as MapInstance;
+        map.Generate();
+        map.transform.SetParent(gameObjectHolder.transform);
         yield return null;
 
         // create characters
@@ -34,18 +43,11 @@ public class GameManager : MonoBehaviour
         inputManager.AddComponent<InputManager>().gameManager = this;
         SubscribeInputCommand();
 
-        receivingInput = true;
     }
 
     IEnumerator SequenceCharacterAction(PlayerCommand command)
     {
-        receivingInput = false;
-
-        characterManager.Input(command.ToDirection());
-
-        yield return new WaitForSeconds(0.5f);
-
-        receivingInput = true;
+        yield return StartCoroutine(currentCharacter.SequenceInput(command));
     }
 
     void SubscribeInputCommand()
@@ -55,8 +57,7 @@ public class GameManager : MonoBehaviour
             InputSubscription.Dispose();
         }
 
-        InputSubscription = InputCommand.Skip(1)
-                                        .Where(x => receivingInput && x != PlayerCommand.None)
+        InputSubscription = InputCommand.Where(x => x != PlayerCommand.None)
                                         .Subscribe(x => StartCoroutine(SequenceCharacterAction(x)));
     }
 
@@ -67,8 +68,8 @@ public class GameManager : MonoBehaviour
 
     void SpawnCharacterToWorld(Character character)
     {
-        characterManager = Instantiate(characterManagerPrefab, Vector3.zero, Quaternion.identity) as CharacterManager;
-        map.RegisterUtilityUser(characterManager);
-        characterManager.Spawn(character);
+        currentCharacter = Instantiate(characterManagerPrefab, Vector3.zero, Quaternion.identity) as CharacterManager;
+        currentCharacter.Spawn(character, map);
+        currentCharacter.transform.SetParent(gameObjectHolder.transform);
     }
 }
