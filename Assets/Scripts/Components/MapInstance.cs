@@ -32,7 +32,9 @@ public class MapInstance : MonoBehaviour
         {
             for(int x = 0; x < mapWidth; x++)
             {
-                var newTile = Instantiate(tilePrefab, CoordToWorldPosition(x, y), tilePrefab.rotation) as Transform;
+                var newTile = Instantiate(tilePrefab, 
+                                         (Vector3)CoordToWorldPosition(x, y) + new Vector3(0, 0, 5),
+                                          tilePrefab.rotation) as Transform;
                 newTile.localScale = newTile.localScale * tileSize;
             }
         }

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UniRx;
+using System;
 
 public class Character
 {
@@ -25,8 +26,11 @@ public class Character
         .AddTo(disposables);
     }
 
-    public void Move(Direction direction)
+    public void Move(Direction direction, Func<int, int, bool> canMove)
     {
+        var destination = Location.Value + direction.ToCoord();
+        if (!canMove(destination.x, destination.y)) return;
+
         Location.Value += direction.ToCoord();
     }
 }

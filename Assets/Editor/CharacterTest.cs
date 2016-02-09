@@ -2,6 +2,7 @@
 using System.Collections;
 using NUnit.Framework;
 using UniRx;
+using System;
 
 [TestFixture]
 public class CharacterTest
@@ -22,16 +23,17 @@ public class CharacterTest
         Coord coordAfterMove = Coord.zero;
         Assert.AreEqual(0, coordAfterMove.x);
         Assert.AreEqual(0, coordAfterMove.y);
+        var moveChecker = new Func<int, int, bool>((x, y) => true);
 
         character.Location
                  .Subscribe(x => coordAfterMove = x)
                  .AddTo(disposables);
 
-        character.Move(Direction.Right);
+        character.Move(Direction.Right, moveChecker);
         Assert.AreEqual(1, coordAfterMove.x);
         Assert.AreEqual(0, coordAfterMove.y);
 
-        character.Move(Direction.Up);
+        character.Move(Direction.Up, moveChecker);
         Assert.AreEqual(1, coordAfterMove.x);
         Assert.AreEqual(1, coordAfterMove.y);
     }
