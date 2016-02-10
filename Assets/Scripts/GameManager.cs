@@ -26,6 +26,12 @@ public class GameManager : MonoBehaviour
         StartCoroutine(SequenceSetupGame());
     }
 
+
+    void Update()
+    {
+
+    }
+
     IEnumerator SequenceSetupGame()
     {
         if(gameObjectHolder != null)
@@ -51,6 +57,8 @@ public class GameManager : MonoBehaviour
         yield return null;
 
         bool inCombat = true;
+
+        // loop when in combat
         while (inCombat)
         {
             var nextCharacter = worldCharacters.GetNextCharacterToAction();
@@ -63,6 +71,7 @@ public class GameManager : MonoBehaviour
                 currentPhase.Value = CombatPhase.EnemyMove;
             }
             var characterManager = characters[nextCharacter];
+
             yield return StartCoroutine(SequenceCharacterMove(characterManager));
         }
 
@@ -91,11 +100,11 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMove(CharacterManager moveCharacter)
     {
+        //wait one frame for input command to be reset or it would input same command submitted to previous character
         yield return null;
+
         var subscription = SubscribeInputCommand(moveCharacter);
-
-        yield return StartCoroutine(moveCharacter.SequenceMoveInput());
-
+        yield return StartCoroutine(moveCharacter.SequenceMove());
         subscription.Dispose();
     }
 

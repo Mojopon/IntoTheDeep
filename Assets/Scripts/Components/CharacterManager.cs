@@ -33,8 +33,8 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         character.Location
                  .Subscribe(coord => 
                  {
-                     StopAllCoroutines();
-                     StartCoroutine(SequenceMove(character.X, character.Y));
+                     StopCoroutine("SequenceMoveTransform");
+                     StartCoroutine("SequenceMoveTransform", coord);
                  });
 
         this.character = character;
@@ -47,40 +47,85 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
 
     private int movePerTurns = 3;
     private int moved;
-    public IEnumerator SequenceMoveInput()
+    // Process Move Phase For the Character
+    public IEnumerator SequenceMove()
     {
-        moved = 3;
 
-        var subscription = InputCommand.Subscribe(x =>
-                                       {
-                                           switch (x)
-                                           {
-                                               case PlayerCommand.Left:
-                                               case PlayerCommand.Right:
-                                               case PlayerCommand.Up:
-                                               case PlayerCommand.Down:
-                                                   {
-                                                       if(character.Move(x.ToDirection(), MoveChecker))
-                                                       {
-                                                           moved--;
-                                                       }
-                                                   }
-                                                   break;
-                                           }
-                                       });
-
-        while(moved > 0)
+        if (!character.IsPlayer)
         {
-            yield return null;
+            yield return StartCoroutine(SequenceCPUMove());
+            yield break;
         }
+        else {
 
-        subscription.Dispose();
+            moved = 3;
+
+            var subscription = InputCommand.Subscribe(x =>
+                                           {
+                                               switch (x)
+                                               {
+                                                   case PlayerCommand.Left:
+                                                   case PlayerCommand.Right:
+                                                   case PlayerCommand.Up:
+                                                   case PlayerCommand.Down:
+                                                       {
+                                                           if (character.Move(x.ToDirection(), MoveChecker))
+                                                           {
+                                                               moved--;
+                                                           }
+                                                       }
+                                                       break;
+                                               }
+                                           });
+
+            while (moved > 0)
+            {
+                // wait until player inputs movement
+                Debug.Log("Waiting for player input");
+                yield return null;
+            }
+
+            subscription.Dispose();
+        }
     }
 
-    private float timeToFinishMove = 0.5f;
-    IEnumerator SequenceMove(int x, int y)
+    private IEnumerator SequenceCPUMove()
     {
-        var destination = CoordToWorldPositionConverter(x, y);
+        for(int i = 0; i < movePerTurns; i++)
+        {
+            var rand = UnityEngine.Random.Range(0, 5);
+            var direction = Direction.None;
+            switch(rand)
+            {
+                case 0:
+                    direction = Direction.None;
+                    break;
+                case 1:
+                    direction = Direction.Up;
+                    break;
+                case 2:
+                    direction = Direction.Right;
+                    break;
+                case 3:
+                    direction = Direction.Down;
+                    break;
+                case 4:
+                    direction = Direction.Left;
+                    break;
+            }
+
+            character.Move(direction, MoveChecker);
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        yield break;
+    }
+
+    private float timeToFinishMove = 0.1f;
+    // Process Move Object in the Game Scene
+    IEnumerator SequenceMoveTransform(Coord coord)
+    {
+        var destination = CoordToWorldPositionConverter(coord.x, coord.y);
 
         float speed = 1 / timeToFinishMove;
 
