@@ -4,6 +4,13 @@ using UniRx;
 
 public interface ICharacter
 {
-    ReactiveProperty<Vector2> Location { get; }
+    int X { get; }
+    int Y { get; }
+    bool IsDead { get; }
+    bool IsPlayer { get; }
+    Alliance Alliance { get; }
+
+    ReactiveProperty<Coord> Location { get; }
     ReactiveProperty<int> Health { get; }
+    ReactiveProperty<bool> Dead { get; }
 }

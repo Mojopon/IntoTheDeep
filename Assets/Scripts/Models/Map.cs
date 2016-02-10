@@ -10,18 +10,24 @@ public class Map
 
     private Cell[,] cells;
 
-    public Map(int mapWidth, int mapDepth)
-    {
-        this.Width = mapWidth;
-        this.Depth = mapDepth;
+    public Map() { }
 
-        cells = new Cell[mapWidth, mapDepth];
+    public void Initialize()
+    {
+        cells = new Cell[Width, Depth];
+        for (int y = 0; y < Depth; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                cells[x, y] = new Cell();
+            }
+        }
     }
 
     public Cell GetCell(int x, int y)
     {
-        if (!IsOutOfRange(x, y)) return cells[x, y];
-        else return null;
+        if (IsOutOfRange(x, y)) return null;
+        return cells[x, y];
     }
 
     public void SetCell(int x, int y, Cell cell)
@@ -35,9 +41,9 @@ public class Map
     {
         if(x < 0 || y < 0 || x >= Width || y >= Depth)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 }

@@ -26,8 +26,12 @@ public class CharacterTest
         var moveChecker = new Func<int, int, bool>((x, y) => true);
 
         character.Location
-                 .Subscribe(x => coordAfterMove = x)
-                 .AddTo(disposables);
+                 .Subscribe(x =>
+                 {
+                     coordAfterMove = x;
+                     Debug.Log(x);
+                 }).AddTo(disposables);
+                 
 
         character.Move(Direction.Right, moveChecker);
         Assert.AreEqual(1, coordAfterMove.x);
@@ -38,9 +42,27 @@ public class CharacterTest
         Assert.AreEqual(1, coordAfterMove.y);
     }
 
+    [Test]
+    public void DiesAtLessThanZeroHealth()
+    {
+        var isDead = false;
+        Assert.IsFalse(character.IsDead);
+
+        character.Dead
+                 .Subscribe(x => isDead = x)
+                 .AddTo(disposables);
+        Assert.IsFalse(isDead);
+
+        character.ApplyHealthChange(-50);
+        Assert.IsTrue(isDead);
+        Assert.IsTrue(character.IsDead);
+
+    }
+
     [TearDown]
     public void Cleanup()
     {
         disposables.Dispose();
+        disposables = new CompositeDisposable();
     }
 }

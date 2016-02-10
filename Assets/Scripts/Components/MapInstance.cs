@@ -20,6 +20,7 @@ public class MapInstance : MonoBehaviour
     public void Generate(int id)
     {
         map = maps[id];
+        map.Initialize();
 
         DecorateMap();
         InstantiateMap();
@@ -35,7 +36,7 @@ public class MapInstance : MonoBehaviour
 
     void DecorateMap()
     {
-        var goal = map.GetCell(map.Width - 1, map.Depth - 1);
+        map.GetCell(4, 4).canWalk = false;
     }
 
     void InstantiateMap()
@@ -49,6 +50,7 @@ public class MapInstance : MonoBehaviour
                                           tilePrefab.rotation) as Transform;
                 newTile.localScale = newTile.localScale * tileSize;
                 newTile.SetParent(transform);
+                if (!map.GetCell(x, y).canWalk) newTile.localScale = newTile.localScale / 2;
             }
         }
     }
@@ -62,6 +64,7 @@ public class MapInstance : MonoBehaviour
     bool CanMove(int x, int y)
     {
         if (x < 0 || y < 0 || x >= map.Width || y >= map.Depth) return false;
+        if (!map.GetCell(x, y).canWalk) return false;
 
         return true;
     }

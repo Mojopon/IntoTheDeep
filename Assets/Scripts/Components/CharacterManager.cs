@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using UniRx;
 
-public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser
+public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInputtable
 {
     public Transform characterPrefab;
 
@@ -12,6 +12,14 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser
 
     private Transform characterObj;
     private Character character;
+
+    private ReactiveProperty<PlayerCommand> InputCommand;
+
+    void Awake()
+    {
+        InputCommand = new ReactiveProperty<PlayerCommand>();
+    }
+
 
     public void Spawn(Character character, MapInstance mapToSpawn)
     {
@@ -32,23 +40,41 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser
         this.character = character;
     }
 
-    public IEnumerator SequenceInput(PlayerCommand command)
+    public void Input(PlayerCommand command)
     {
-        switch (command)
-        {
-            case PlayerCommand.Left:
-            case PlayerCommand.Right:
-            case PlayerCommand.Up:
-            case PlayerCommand.Down:
-                {
-                    character.Move(command.ToDirection(), MoveChecker);
-                }
-                break;
+        InputCommand.Value = command;
+    }
 
-            default:
-                yield break;
+    private int movePerTurns = 3;
+    private int moved;
+    public IEnumerator SequenceMoveInput()
+    {
+        moved = 3;
+
+        var subscription = InputCommand.Subscribe(x =>
+                                       {
+                                           switch (x)
+                                           {
+                                               case PlayerCommand.Left:
+                                               case PlayerCommand.Right:
+                                               case PlayerCommand.Up:
+                                               case PlayerCommand.Down:
+                                                   {
+                                                       if(character.Move(x.ToDirection(), MoveChecker))
+                                                       {
+                                                           moved--;
+                                                       }
+                                                   }
+                                                   break;
+                                           }
+                                       });
+
+        while(moved > 0)
+        {
+            yield return null;
         }
 
+        subscription.Dispose();
     }
 
     private float timeToFinishMove = 0.5f;
