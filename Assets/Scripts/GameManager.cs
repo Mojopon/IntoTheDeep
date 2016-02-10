@@ -2,6 +2,7 @@
 using System.Collections;
 using UniRx;
 using System;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,11 +16,11 @@ public class GameManager : MonoBehaviour
 
     private MapInstance map;
 
-    // Manage Enemies
-    private Enemies enemies;
-
+    // Manage Characters In The World(Map)
+    private WorldCharacters worldCharacters;
     private GameObject gameObjectHolder;
-    private CharacterManager currentCharacter;
+
+    private Dictionary<Character, CharacterManager> characters = new Dictionary<Character, CharacterManager>();
     void Start()
     {
         StartCoroutine(SequenceSetupGame());
@@ -39,6 +40,8 @@ public class GameManager : MonoBehaviour
         map.transform.SetParent(gameObjectHolder.transform);
         yield return null;
 
+        // Create World Characters Class To Manage All of Characters
+        worldCharacters = new WorldCharacters();
         StartCoroutine(SequenceSetupPlayers());
         StartCoroutine(SequenceSetupEnemies());
 
@@ -47,8 +50,21 @@ public class GameManager : MonoBehaviour
         inputManager.AddComponent<InputManager>().gameManager = this;
         yield return null;
 
-        yield return StartCoroutine(SequenceCharacterMove(currentCharacter));
-        currentPhase.Value = CombatPhase.EnemyMove;
+        bool inCombat = true;
+        while (inCombat)
+        {
+            var nextCharacter = worldCharacters.GetNextCharacterToAction();
+            if(nextCharacter.IsPlayer)
+            {
+                currentPhase.Value = CombatPhase.PlayerMove;
+            }
+            else
+            {
+                currentPhase.Value = CombatPhase.EnemyMove;
+            }
+            var characterManager = characters[nextCharacter];
+            yield return StartCoroutine(SequenceCharacterMove(characterManager));
+        }
 
     }
 
@@ -56,17 +72,17 @@ public class GameManager : MonoBehaviour
     {
         // create characters
         var character = new Character();
-        currentCharacter = SpawnCharacterToWorld(character);
+        worldCharacters.AddCharacter(character);
+        SpawnCharacterToWorld(character);
 
         yield break;
     }
 
     IEnumerator SequenceSetupEnemies()
     {
-        enemies = new Enemies();
 
         var character = new Character();
-        enemies.AddCharacterAsEnemy(character);
+        worldCharacters.AddCharacterAsEnemy(character);
         SpawnCharacterToWorld(character);
         character.Location.Value = new Coord(3, 3);
 
@@ -75,7 +91,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMove(CharacterManager moveCharacter)
     {
-        currentPhase.Value = CombatPhase.PlayerMove;
+        yield return null;
         var subscription = SubscribeInputCommand(moveCharacter);
 
         yield return StartCoroutine(moveCharacter.SequenceMoveInput());
@@ -93,12 +109,12 @@ public class GameManager : MonoBehaviour
         InputCommand.Value = command;
     }
 
-    CharacterManager SpawnCharacterToWorld(Character character)
+    void SpawnCharacterToWorld(Character character)
     {
         var newCharacter = Instantiate(characterManagerPrefab, Vector3.zero, Quaternion.identity) as CharacterManager;
         newCharacter.Spawn(character, map);
         newCharacter.transform.SetParent(gameObjectHolder.transform);
 
-        return newCharacter;
+        characters.Add(character, newCharacter);
     }
 }
