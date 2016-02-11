@@ -2,6 +2,7 @@
 using System.Collections;
 using UniRx;
 using System;
+using System.Collections.Generic;
 
 public class Character : DisposableCharacter, ICharacter
 {
@@ -12,14 +13,16 @@ public class Character : DisposableCharacter, ICharacter
     public Alliance Alliance { get; private set; }
 
     public ReactiveProperty<Coord> Location { get; private set; }
-    public ReactiveProperty<int> Health { get; private set; }
+    public ReactiveProperty<int> CurrentHealth { get; private set; }
     public ReactiveProperty<bool> Dead { get; private set; }
+
+    private List<Skill> skills = new List<Skill>();
 
 
     public Character()
     {
         this.Location = new ReactiveProperty<Coord>();
-        this.Health = new ReactiveProperty<int>(1);
+        this.CurrentHealth = new ReactiveProperty<int>(1);
         this.Dead = new ReactiveProperty<bool>(false);
 
         // create as a player on default
@@ -28,7 +31,7 @@ public class Character : DisposableCharacter, ICharacter
         // create in player side on default
         this.Alliance = Alliance.Player;
 
-        this.Health.Subscribe(x =>
+        this.CurrentHealth.Subscribe(x =>
             {
                 if (x <= 0) Dead.Value = true;
                 else Dead.Value = false;
@@ -44,6 +47,16 @@ public class Character : DisposableCharacter, ICharacter
 
         this.Dead.Subscribe(x => IsDead = x)
                  .AddTo(Disposables);
+
+        skills.Add(new Skill
+        {
+            name = "パンチ",
+        });
+
+        skills.Add(new Skill
+        {
+            name = "キック",
+        });
     }
 
     public bool Move(Direction direction, Func<int, int, bool> canMove)
@@ -57,7 +70,7 @@ public class Character : DisposableCharacter, ICharacter
 
     public void ApplyHealthChange(int amount)
     {
-        this.Health.Value += amount;
+        this.CurrentHealth.Value += amount;
     }
 
     public void SetIsPlayer(bool flag)
@@ -68,5 +81,10 @@ public class Character : DisposableCharacter, ICharacter
     public void SetAlliance(Alliance alliance)
     {
         this.Alliance = alliance;
+    }
+
+    public Skill[] GetSkills()
+    {
+        return skills.ToArray();
     }
 }

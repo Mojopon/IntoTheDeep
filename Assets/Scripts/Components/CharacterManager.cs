@@ -90,6 +90,22 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         }
     }
 
+    public IEnumerator SequenceSelectNextCombatAction()
+    {
+        if(!character.IsPlayer)
+        {
+            yield break;
+        }
+        else
+        {
+            while (true)
+            {
+                SkillMenu.Current.DisplaySkills(character.GetSkills());
+                yield return null;
+            }
+        }
+    }
+
     private IEnumerator SequenceCPUMove()
     {
         for(int i = 0; i < movePerTurns; i++)

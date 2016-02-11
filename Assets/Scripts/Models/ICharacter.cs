@@ -11,6 +11,6 @@ public interface ICharacter
     Alliance Alliance { get; }
 
     ReactiveProperty<Coord> Location { get; }
-    ReactiveProperty<int> Health { get; }
+    ReactiveProperty<int> CurrentHealth { get; }
     ReactiveProperty<bool> Dead { get; }
 }

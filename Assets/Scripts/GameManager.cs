@@ -112,6 +112,16 @@ public class GameManager : MonoBehaviour
             var characterManager = characters[nextCharacter];
 
             yield return StartCoroutine(SequenceCharacterMove(characterManager));
+
+            if (nextCharacter.IsPlayer)
+            {
+                CurrentPhase.Value = CombatPhase.PlayerAction;
+            }
+            else
+            {
+                CurrentPhase.Value = CombatPhase.EnemyAction;
+            }
+            yield return StartCoroutine(SequenceCharacterAction(characterManager));
         }
 
     }
@@ -144,6 +154,16 @@ public class GameManager : MonoBehaviour
 
         var subscription = SubscribeInputForTheTarget(moveCharacter);
         yield return StartCoroutine(moveCharacter.SequenceMove());
+        subscription.Dispose();
+    }
+
+    IEnumerator SequenceCharacterAction(CharacterManager actCharacter)
+    {
+        //wait one frame for input command to be reset or it would input same command submitted to previous character
+        yield return null;
+
+        var subscription = SubscribeInputForTheTarget(actCharacter);
+        yield return StartCoroutine(actCharacter.SequenceSelectNextCombatAction());
         subscription.Dispose();
     }
 
