@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     public MapInstance mapPrefab;
     public CharacterManager characterManagerPrefab;
     public GameObject menuObjects;
@@ -13,7 +15,8 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public ReactiveProperty<CombatPhase> CurrentPhase = new ReactiveProperty<CombatPhase>();
 
-    private ReactiveProperty<PlayerCommand> InputCommand = new ReactiveProperty<PlayerCommand>();
+    private IInputtable currentInputTarget;
+    private ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
 
     private MapInstance map;
 
@@ -26,12 +29,20 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
         StartCoroutine(SequenceSetupGame());
     }
 
     public void Input(PlayerCommand command)
     {
-        InputCommand.Value = command;
+        PlayerInput.Value = command;
     }
 
     //Input to This instead of subscribed input target when the Menu is opened
@@ -46,9 +57,9 @@ public class GameManager : MonoBehaviour
 
         // we add skip operator otherwise it will submit menu command to the menu
         // by the frame we openned menu as well
-        menuInputSubscription = InputCommand.Skip(1)
-                                            .Subscribe(x => { menuManager.Input(x); })
-                                            .AddTo(gameObject);
+        menuInputSubscription = PlayerInput.Skip(1)
+                                           .Subscribe(x => { menuManager.Input(x); })
+                                           .AddTo(gameObject);
     }
 
     public void CloseMenu()
@@ -86,14 +97,20 @@ public class GameManager : MonoBehaviour
         yield return null;
 
         // subscribe input to open menu
-        InputCommand.Where(x => x == PlayerCommand.Menu)
-                    .Subscribe(x =>
-                    {
-                        if(openedMenu == null)
-                        {
-                            OpenMenu();
-                        }
-                    });
+        PlayerInput.Where(x => x == PlayerCommand.Menu)
+                   .Subscribe(x =>
+                   {
+                       if(openedMenu == null)
+                       {
+                           OpenMenu();
+                       }
+                   });
+
+        PlayerInput.Where(x => openedMenu == null)
+                   .Subscribe(x =>
+                   {
+                       if (currentInputTarget != null) currentInputTarget.Input(x);
+                   });
 
         bool inCombat = true;
 
@@ -126,6 +143,23 @@ public class GameManager : MonoBehaviour
 
     }
 
+    void CharacterMove()
+    {
+        var nextCharacter = worldCharacters.GetNextCharacterToAction();
+        var characterManager = characters[nextCharacter];
+
+        if (nextCharacter.IsPlayer)
+        {
+            CurrentPhase.Value = CombatPhase.PlayerMove;
+        }
+        else
+        {
+            CurrentPhase.Value = CombatPhase.EnemyMove;
+        }
+
+
+    }
+
     IEnumerator SequenceSetupPlayers()
     {
         // create characters
@@ -149,32 +183,25 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMove(CharacterManager moveCharacter)
     {
-        //wait one frame for input command to be reset or it would input same command submitted to previous character
-        yield return null;
-
-        var subscription = SubscribeInputForTheTarget(moveCharacter);
+        currentInputTarget = moveCharacter;
         yield return StartCoroutine(moveCharacter.SequenceMove());
-        subscription.Dispose();
     }
 
     IEnumerator SequenceCharacterAction(CharacterManager actCharacter)
     {
-        //wait one frame for input command to be reset or it would input same command submitted to previous character
-        yield return null;
-
-        var subscription = SubscribeInputForTheTarget(actCharacter);
+        currentInputTarget = actCharacter;
         yield return StartCoroutine(actCharacter.SequenceSelectNextCombatAction());
-        subscription.Dispose();
     }
 
     IDisposable SubscribeInputForTheTarget(IInputtable target)
     {
-        // subscribe to input command to the target.
+        // subscribe input to command the target.
         // this will be ignored when a menu is opened
-        return InputCommand.Where(x => openedMenu == null)
-                           .Subscribe(x => {
-                                               target.Input(x);
-                                           });
+        return PlayerInput.Where(x => openedMenu == null)
+                           .Subscribe(x => 
+                           {
+                               target.Input(x);
+                           });
     }
 
     void SpawnCharacterToWorld(Character character)

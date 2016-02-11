@@ -13,13 +13,12 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
     private Transform characterObj;
     private Character character;
 
-    private ReactiveProperty<PlayerCommand> InputCommand;
+    private ReactiveProperty<PlayerCommand> PlayerInput;
 
     void Awake()
     {
-        InputCommand = new ReactiveProperty<PlayerCommand>();
+        PlayerInput = new ReactiveProperty<PlayerCommand>();
     }
-
 
     public void Spawn(Character character, MapInstance mapToSpawn)
     {
@@ -42,7 +41,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
 
     public void Input(PlayerCommand command)
     {
-        InputCommand.Value = command;
+        PlayerInput.Value = command;
     }
 
     private int movePerTurns = 3;
@@ -60,7 +59,8 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
 
             moved = 3;
 
-            var subscription = InputCommand.Subscribe(x =>
+            PlayerInput.Value = PlayerCommand.None;
+            var subscription = PlayerInput.Subscribe(x =>
                                            {
                                                switch (x)
                                                {
@@ -72,8 +72,6 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
                                                            if (character.Move(x.ToDirection(), MoveChecker))
                                                            {
                                                                moved--;
-                                                               // reset input command not to be submit for twice
-                                                               InputCommand.Value = PlayerCommand.None;
                                                            }
                                                        }
                                                        break;
@@ -90,6 +88,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         }
     }
 
+    private bool actioned = false;
     public IEnumerator SequenceSelectNextCombatAction()
     {
         if(!character.IsPlayer)
@@ -98,7 +97,10 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         }
         else
         {
-            while (true)
+            actioned = false;
+            SkillMenu.Current.DisplaySkills(character.GetSkills());
+
+            while (!actioned)
             {
                 yield return null;
             }
