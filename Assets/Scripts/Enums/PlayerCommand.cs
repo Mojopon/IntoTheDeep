@@ -8,4 +8,5 @@ public enum PlayerCommand
     Right,
     Up,
     Down,
+    Menu,
 }

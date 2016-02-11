@@ -16,6 +16,11 @@ public class InputManager : MonoBehaviour
 
     PlayerCommand InputToCommand()
     {
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            return PlayerCommand.Menu;
+        }
+
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             return PlayerCommand.Right;

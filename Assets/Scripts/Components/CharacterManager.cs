@@ -72,6 +72,8 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
                                                            if (character.Move(x.ToDirection(), MoveChecker))
                                                            {
                                                                moved--;
+                                                               // reset input command not to be submit for twice
+                                                               InputCommand.Value = PlayerCommand.None;
                                                            }
                                                        }
                                                        break;
@@ -80,8 +82,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
 
             while (moved > 0)
             {
-                // wait until player inputs movement
-                Debug.Log("Waiting for player input");
+                // wait for player input to finish character move
                 yield return null;
             }
 

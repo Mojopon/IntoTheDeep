@@ -10,7 +10,7 @@ public class DisplayPhase : MonoBehaviour
     void Start()
     {
         var gameManager = GameObject.FindGameObjectWithTag("GameManager");
-        gameManager.GetComponent<GameManager>().currentPhase
+        gameManager.GetComponent<GameManager>().CurrentPhase
                                                .Subscribe(x =>
                                                {
                                                    text.text = x.ToString();
