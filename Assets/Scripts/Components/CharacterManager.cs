@@ -88,7 +88,6 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         }
     }
 
-    private bool actioned = false;
     public IEnumerator SequenceSelectNextCombatAction()
     {
         if(!character.IsPlayer)
@@ -97,13 +96,29 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         }
         else
         {
-            actioned = false;
+            Skill selectedSkill = null;
             SkillMenu.Current.DisplaySkills(character.GetSkills());
 
-            while (!actioned)
+            CompositeDisposable combatActionSubscriptions = new CompositeDisposable();
+
+            PlayerInput.Skip(1)
+                       .Subscribe(x =>
+                       {
+                           SkillMenu.Current.Input(x);
+                       })
+            .AddTo(combatActionSubscriptions);
+
+            var cancel = SkillMenu.Current.SelectedSkill()
+                                          .Subscribe(x => selectedSkill = x);
+
+            while (selectedSkill == null)
             {
                 yield return null;
             }
+
+            Debug.Log("Used " + selectedSkill.name);
+
+            combatActionSubscriptions.Dispose();
         }
     }
 
