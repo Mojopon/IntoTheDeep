@@ -100,7 +100,6 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         {
             while (true)
             {
-                SkillMenu.Current.DisplaySkills(character.GetSkills());
                 yield return null;
             }
         }

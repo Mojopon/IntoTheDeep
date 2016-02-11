@@ -25,6 +25,11 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         HideSkills();
 	}
 
+    public IEnumerator SequenceSelecting()
+    {
+        yield return new WaitForSeconds(3);
+    }
+
     public void DisplaySkills(Skill[] skills)
     {
         skillsToDisplay = skills;
