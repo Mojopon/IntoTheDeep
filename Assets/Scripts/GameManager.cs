@@ -20,10 +20,10 @@ public class GameManager : MonoBehaviour
     private IInputtable currentInputTarget;
     public ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
 
-    private MapInstance map;
+    private MapInstance mapInstance;
 
     // Manage Characters In The World(Map)
-    private WorldCharacters worldCharacters;
+    private World worldCharacters;
     // Add Character to this Container When its Spawned to Find Character Manager for The Character
     private Dictionary<Character, CharacterManager> characters = new Dictionary<Character, CharacterManager>();
 
@@ -85,13 +85,14 @@ public class GameManager : MonoBehaviour
         }
         gameObjectHolder = new GameObject("GameObjectHolder");
 
-        map = Instantiate(mapPrefab, Vector3.zero, Quaternion.identity) as MapInstance;
-        map.Generate();
-        map.transform.SetParent(gameObjectHolder.transform);
+        mapInstance = Instantiate(mapPrefab, Vector3.zero, Quaternion.identity) as MapInstance;
+        mapInstance.Generate();
+        mapInstance.transform.SetParent(gameObjectHolder.transform);
         yield return null;
 
         // Create World Characters Class To Manage All of Characters
-        worldCharacters = new WorldCharacters();
+        var currentMap = mapInstance.GetCurrentMap();
+        worldCharacters = new World(currentMap);
         StartCoroutine(SequenceSetupPlayers());
         StartCoroutine(SequenceSetupEnemies());
 
@@ -171,7 +172,7 @@ public class GameManager : MonoBehaviour
     IEnumerator SequenceCharacterMove(Character moveCharacter)
     {
         var pathDisplay = Instantiate(pathDisplayUIPrefab) as MovePathSelector;
-        pathDisplay.Initialize(this, map, moveCharacter, worldCharacters);
+        pathDisplay.Initialize(this, mapInstance, moveCharacter, worldCharacters);
         yield return StartCoroutine(pathDisplay.SequenceRouting());
     }
 
@@ -203,7 +204,7 @@ public class GameManager : MonoBehaviour
     void SpawnCharacterToWorld(Character character)
     {
         var newCharacter = Instantiate(characterManagerPrefab, Vector3.zero, Quaternion.identity) as CharacterManager;
-        newCharacter.Spawn(character, map, worldCharacters);
+        newCharacter.Spawn(character, mapInstance, worldCharacters);
         newCharacter.transform.SetParent(gameObjectHolder.transform);
 
         characters.Add(character, newCharacter);

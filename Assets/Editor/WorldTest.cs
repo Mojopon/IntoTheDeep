@@ -3,13 +3,18 @@ using System.Collections;
 using NUnit.Framework;
 
 [TestFixture]
-public class WorldCharactersTest
+public class WorldTest
 {
-    WorldCharacters worldCharacters;
+    Map map;
+    World world;
     [SetUp]
     public void Initialize()
     {
-        worldCharacters = new WorldCharacters();
+        map = new Map();
+        map.Width = 10;
+        map.Depth = 10;
+        map.Initialize();
+        world = new World(map);
     }
 
     [Test]
@@ -17,44 +22,44 @@ public class WorldCharactersTest
     {
         var enemyOne = new Character();
         var enemyTwo = new Character();
-        Assert.IsTrue(worldCharacters.EnemyIsAnnihilated);
+        Assert.IsTrue(world.EnemyIsAnnihilated);
 
-        worldCharacters.AddCharacterAsEnemy(enemyOne);
-        worldCharacters.AddCharacterAsEnemy(enemyTwo);
+        world.AddCharacterAsEnemy(enemyOne);
+        world.AddCharacterAsEnemy(enemyTwo);
 
-        Assert.IsFalse(worldCharacters.EnemyIsAnnihilated);
+        Assert.IsFalse(world.EnemyIsAnnihilated);
         enemyOne.ApplyHealthChange(-10);
         enemyTwo.ApplyHealthChange(-10);
 
-        Assert.IsTrue(worldCharacters.EnemyIsAnnihilated);
+        Assert.IsTrue(world.EnemyIsAnnihilated);
     }
 
     [Test]
     public void ShouldReturnNextCharacterAndSetItToBeMovePhase()
     {
         // returns null when no characters in the world
-        Assert.IsNull(worldCharacters.GetNextCharacterToAction());
+        Assert.IsNull(world.GetNextCharacterToAction());
 
         var character = new Character();
         var characterTwo = new Character();
 
-        worldCharacters.AddCharacter(character);
-        worldCharacters.AddCharacter(characterTwo);
+        world.AddCharacter(character);
+        world.AddCharacter(characterTwo);
 
         Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
 
-        Assert.AreEqual(character, worldCharacters.GetNextCharacterToAction());
+        Assert.AreEqual(character, world.GetNextCharacterToAction());
         Assert.AreEqual(Character.Phase.Move, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
         character.SetPhase(Character.Phase.Idle);
 
-        Assert.AreEqual(characterTwo, worldCharacters.GetNextCharacterToAction());
+        Assert.AreEqual(characterTwo, world.GetNextCharacterToAction());
         Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Move, characterTwo.CurrentPhase.Value);
         characterTwo.SetPhase(Character.Phase.Idle);
 
-        Assert.AreEqual(character, worldCharacters.GetNextCharacterToAction());
+        Assert.AreEqual(character, world.GetNextCharacterToAction());
         Assert.AreEqual(Character.Phase.Move, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
     }
@@ -63,7 +68,7 @@ public class WorldCharactersTest
     public void ApplyMovementToTheCharacter()
     {
         var character = new Character();
-        worldCharacters.AddCharacter(character);
+        world.AddCharacter(character);
 
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
@@ -75,7 +80,7 @@ public class WorldCharactersTest
         var enemy = new Character();
         //should be created as player on default
         Assert.AreEqual(Alliance.Player, enemy.Alliance);
-        worldCharacters.AddCharacterAsEnemy(enemy);
+        world.AddCharacterAsEnemy(enemy);
         Assert.AreEqual(Alliance.Enemy, enemy.Alliance);
     }
 
@@ -88,33 +93,33 @@ public class WorldCharactersTest
         var enemy = new Character();
         var enemyTwo = new Character();
 
-        worldCharacters.AddCharacter(character);
-        worldCharacters.AddCharacter(characterTwo);
+        world.AddCharacter(character);
+        world.AddCharacter(characterTwo);
 
-        worldCharacters.AddCharacterAsEnemy(enemy);
-        worldCharacters.AddCharacterAsEnemy(enemyTwo);
+        world.AddCharacterAsEnemy(enemy);
+        world.AddCharacterAsEnemy(enemyTwo);
 
-        var playersHostiles = worldCharacters.GetAllHostiles(character);
-
-        Assert.IsTrue(playersHostiles.Contains(enemy));
-        Assert.IsTrue(playersHostiles.Contains(enemyTwo));
-        Assert.IsFalse(playersHostiles.Contains(character));
-        Assert.IsFalse(playersHostiles.Contains(characterTwo));
-
-        playersHostiles = worldCharacters.GetAllHostiles(characterTwo);
+        var playersHostiles = world.GetAllHostiles(character);
 
         Assert.IsTrue(playersHostiles.Contains(enemy));
         Assert.IsTrue(playersHostiles.Contains(enemyTwo));
         Assert.IsFalse(playersHostiles.Contains(character));
         Assert.IsFalse(playersHostiles.Contains(characterTwo));
 
-        var enemysHostiles = worldCharacters.GetAllHostiles(enemy);
+        playersHostiles = world.GetAllHostiles(characterTwo);
+
+        Assert.IsTrue(playersHostiles.Contains(enemy));
+        Assert.IsTrue(playersHostiles.Contains(enemyTwo));
+        Assert.IsFalse(playersHostiles.Contains(character));
+        Assert.IsFalse(playersHostiles.Contains(characterTwo));
+
+        var enemysHostiles = world.GetAllHostiles(enemy);
         Assert.IsFalse(enemysHostiles.Contains(enemy));
         Assert.IsFalse(enemysHostiles.Contains(enemyTwo));
         Assert.IsTrue(enemysHostiles.Contains(character));
         Assert.IsTrue(enemysHostiles.Contains(characterTwo));
 
-        enemysHostiles = worldCharacters.GetAllHostiles(enemyTwo);
+        enemysHostiles = world.GetAllHostiles(enemyTwo);
         Assert.IsFalse(enemysHostiles.Contains(enemy));
         Assert.IsFalse(enemysHostiles.Contains(enemyTwo));
         Assert.IsTrue(enemysHostiles.Contains(character));
@@ -136,26 +141,26 @@ public class WorldCharactersTest
         enemy.Location.Value = new Coord(4, 4);
         enemyTwo.Location.Value = new Coord(3, 3);
 
-        worldCharacters.AddCharacter(character);
-        worldCharacters.AddCharacter(characterTwo);
+        world.AddCharacter(character);
+        world.AddCharacter(characterTwo);
 
         //should return null when theres no hostiles
-        Assert.IsNull(worldCharacters.GetClosestHostile(character));
-        Assert.IsNull(worldCharacters.GetClosestHostile(characterTwo));
+        Assert.IsNull(world.GetClosestHostile(character));
+        Assert.IsNull(world.GetClosestHostile(characterTwo));
 
-        worldCharacters.AddCharacterAsEnemy(enemy);
-        worldCharacters.AddCharacterAsEnemy(enemyTwo);
+        world.AddCharacterAsEnemy(enemy);
+        world.AddCharacterAsEnemy(enemyTwo);
 
-        var closestHostile = worldCharacters.GetClosestHostile(character);
+        var closestHostile = world.GetClosestHostile(character);
         Assert.AreEqual(enemyTwo, closestHostile);
 
-        closestHostile = worldCharacters.GetClosestHostile(characterTwo);
+        closestHostile = world.GetClosestHostile(characterTwo);
         Assert.AreEqual(enemy, closestHostile);
 
-        closestHostile = worldCharacters.GetClosestHostile(enemy);
+        closestHostile = world.GetClosestHostile(enemy);
         Assert.AreEqual(characterTwo, closestHostile);
 
-        closestHostile = worldCharacters.GetClosestHostile(enemyTwo);
+        closestHostile = world.GetClosestHostile(enemyTwo);
         Assert.AreEqual(character, closestHostile);
     }
 }

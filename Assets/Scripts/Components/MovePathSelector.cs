@@ -4,23 +4,25 @@ using System;
 using UniRx;
 using System.Collections.Generic;
 
-public class MovePathSelector : MonoBehaviour, IMapInstanceUtilitiesUser
+public class MovePathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
     public Transform marker;
 
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
-    public Func<int, int, bool> MoveChecker { get; set; }
+    public Func<Character, Coord, bool> MoveChecker { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
     private GameManager gameManager;
     private Character character;
-    private WorldCharacters worldCharacters;
-    public void Initialize(GameManager gameManager, MapInstance map, Character character, WorldCharacters worldCharacters)
+    private World world;
+    public void Initialize(GameManager gameManager, MapInstance mapInstance, Character character, World world)
     {
-        map.RegisterUtilityUser(this);
         this.character = character;
         this.gameManager = gameManager;
-        this.worldCharacters = worldCharacters;
+        this.world = world;
+        world.ProvideWorldUtilities(this);
+
+        mapInstance.ProvideMapInstanceUtilities(this);
     }
 
     private ReactiveProperty<bool> moveDone = new ReactiveProperty<bool>();
@@ -77,7 +79,7 @@ public class MovePathSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 
     void NPCRouting()
     {
-        var closestHostile = worldCharacters.GetClosestHostile(character);
+        var closestHostile = world.GetClosestHostile(character);
 
         var routes = Pathfinding(character.Location.Value, closestHostile.Location.Value);
 
@@ -118,7 +120,7 @@ public class MovePathSelector : MonoBehaviour, IMapInstanceUtilitiesUser
     void MoveMarker(Direction direction)
     {
         var destination = markerLocation.Value + direction.ToCoord();
-        if (!MoveChecker(destination.x, destination.y)) return;
+        if (!MoveChecker(character, destination)) return;
 
         markerLocation.Value += direction.ToCoord();
         movedTime++;
@@ -147,7 +149,7 @@ public class MovePathSelector : MonoBehaviour, IMapInstanceUtilitiesUser
     {
         foreach (var direction in movedDirections)
         {
-            worldCharacters.ApplyMove(character, direction);
+            world.ApplyMove(character, direction);
             yield return new WaitForSeconds(0.1f);
         }
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-public class MapInstance : MonoBehaviour
+public class MapInstance : MonoBehaviour, IMapInstanceUtilitiesProvider
 {
     public Transform tilePrefab;
     public float tileSize = 1.0f;
@@ -11,64 +11,69 @@ public class MapInstance : MonoBehaviour
 
     public Map[] maps;
 
-    public Func<int, int, bool> MoveChecker { get; private set; }
+    public Func<Character, Coord, bool> MoveChecker { get; private set; }
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; private set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; private set; }
 
-    private Map map;
+    private Map currentMap;
 
     public void Generate() { Generate(0); }
 
     public void Generate(int id)
     {
-        map = maps[id];
-        map.Initialize();
+        currentMap = maps[id];
+        currentMap.Initialize();
 
         DecorateMap();
         InstantiateMap();
-        MoveChecker = new Func<int, int, bool>((x, y) => CanMove(x, y));
+        MoveChecker = new Func<Character, Coord, bool>((character, destination) => CanMove(character, destination));
         CoordToWorldPositionConverter = new Func<int, int, Vector2>((x, y) => CoordToWorldPosition(x, y));
         Pathfinding = new Func<Coord, Coord, Direction[]>((source, target) => GeneratePath(source, target));
     }
 
-    public void RegisterUtilityUser(IMapInstanceUtilitiesUser user)
+    public void ProvideMapInstanceUtilities(IMapInstanceUtilitiesUser user)
     {
-        user.MoveChecker = MoveChecker;
-        user.CoordToWorldPositionConverter = CoordToWorldPositionConverter;
-        user.Pathfinding = Pathfinding;
+        user.CoordToWorldPositionConverter = new Func<int, int, Vector2>((x, y) => CoordToWorldPosition(x, y));
+    }
+
+    public Map GetCurrentMap()
+    {
+        return currentMap;
     }
 
     void DecorateMap()
     {
-        map.GetCell(4, 4).canWalk = false;
+        currentMap.GetCell(4, 4).canWalk = false;
     }
 
     void InstantiateMap()
     {
-        for (int y = 0; y < map.Depth; y++)
+        for (int y = 0; y < currentMap.Depth; y++)
         {
-            for (int x = 0; x < map.Width; x++)
+            for (int x = 0; x < currentMap.Width; x++)
             {
                 var newTile = Instantiate(tilePrefab,
                                          (Vector3)CoordToWorldPosition(x, y) + new Vector3(0, 0, 5),
                                           tilePrefab.rotation) as Transform;
                 newTile.localScale = newTile.localScale * tileSize;
                 newTile.SetParent(transform);
-                if (!map.GetCell(x, y).canWalk) newTile.localScale = newTile.localScale / 2;
+                if (!currentMap.GetCell(x, y).canWalk) newTile.localScale = newTile.localScale / 2;
             }
         }
     }
 
     Vector2 CoordToWorldPosition(int x, int y)
     {
-        return new Vector2((-map.Width * tileSize) / 2f + (tileSize / 2) + (x * tileSize),
-                           (-map.Depth * tileSize) / 2f + (tileSize / 2) + (y * tileSize));
+        return new Vector2((-currentMap.Width * tileSize) / 2f + (tileSize / 2) + (x * tileSize),
+                           (-currentMap.Depth * tileSize) / 2f + (tileSize / 2) + (y * tileSize));
     }
 
-    bool CanMove(int x, int y)
+    bool CanMove(Character character, Coord coord)
     {
-        if (x < 0 || y < 0 || x >= map.Width || y >= map.Depth) return false;
-        if (!map.GetCell(x, y).canWalk) return false;
+        int x = coord.x;
+        int y = coord.y;
+        if (x < 0 || y < 0 || x >= currentMap.Width || y >= currentMap.Depth) return false;
+        if (!currentMap.GetCell(x, y).canWalk) return false;
 
         return true;
     }
@@ -76,6 +81,7 @@ public class MapInstance : MonoBehaviour
     Direction[] GeneratePath(Coord source, Coord target)
     {
         List<Direction> directions = new List<Direction>();
+        var currentPosition = source;
         for (int i = 0; i < 10; i++)
         {
             var rand = UnityEngine.Random.Range(0, 5);
@@ -99,9 +105,10 @@ public class MapInstance : MonoBehaviour
                     break;
             }
 
-            var destination = source + direction.ToCoord();
-            if(CanMove(destination.x, destination.y))
+            var destination = currentPosition + direction.ToCoord();
+            if(CanMove(null, destination))
             {
+                currentPosition += direction.ToCoord();
                 directions.Add(direction);
             }
         }

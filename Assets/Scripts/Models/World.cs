@@ -3,14 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UniRx;
 using System.Linq;
+using System;
 
-public class WorldCharacters
+public class World : IWorldUtilitiesProvider
 {
+    private Map map;
+
     private List<Character> allCharacters = new List<Character>();
     private int currentActingCharacter = 0;
 
     private List<Character> enemies = new List<Character>();
     private int deadEnemies = 0;
+
+    public World(Map map)
+    {
+        this.map = map;
+    }
 
     public Character GetNextCharacterToAction()
     {
@@ -22,8 +30,6 @@ public class WorldCharacters
         character.SetPhase(Character.Phase.Move);
         return character;
     }
-
-    public WorldCharacters() { }
 
     public void AddCharacter(Character character)
     {
@@ -70,4 +76,58 @@ public class WorldCharacters
     }
 
     public bool EnemyIsAnnihilated { get { return enemies.Count - deadEnemies == 0; } }
+
+    bool CanMove(Character character, Coord coord)
+    {
+        int x = coord.x;
+        int y = coord.y;
+        if (x < 0 || y < 0 || x >= map.Width || y >= map.Depth) return false;
+        if (!map.GetCell(x, y).canWalk) return false;
+
+        return true;
+    }
+
+    Direction[] GeneratePath(Coord source, Coord target)
+    {
+        List<Direction> directions = new List<Direction>();
+        var currentPosition = source;
+        for (int i = 0; i < 10; i++)
+        {
+            var rand = UnityEngine.Random.Range(0, 5);
+            var direction = Direction.None;
+            switch (rand)
+            {
+                case 0:
+                    direction = Direction.None;
+                    break;
+                case 1:
+                    direction = Direction.Up;
+                    break;
+                case 2:
+                    direction = Direction.Right;
+                    break;
+                case 3:
+                    direction = Direction.Down;
+                    break;
+                case 4:
+                    direction = Direction.Left;
+                    break;
+            }
+
+            var destination = currentPosition + direction.ToCoord();
+            if (CanMove(null, destination))
+            {
+                currentPosition += direction.ToCoord();
+                directions.Add(direction);
+            }
+        }
+
+        return directions.ToArray();
+    }
+
+    public void ProvideWorldUtilities(IWorldUtilitiesUser user)
+    {
+        user.MoveChecker = new Func<Character, Coord, bool>((character, coord) => CanMove(character, coord));
+        user.Pathfinding = new Func<Coord, Coord, Direction[]>((source, target) => GeneratePath(source, target));
+    }
 }
