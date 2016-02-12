@@ -4,12 +4,13 @@ using System;
 using UniRx;
 using System.Collections.Generic;
 
-public class DisplayPath : MonoBehaviour, IMapInstanceUtilitiesUser
+public class MovePathSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 {
     public Transform marker;
 
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
     public Func<int, int, bool> MoveChecker { get; set; }
+    public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
     private GameManager gameManager;
     private Character character;
@@ -43,6 +44,19 @@ public class DisplayPath : MonoBehaviour, IMapInstanceUtilitiesUser
     public void StartRouting(int canMoveTime)
     {
         this.canMoveTime = canMoveTime;
+
+        if(character.IsPlayer)
+        {
+            PlayerRouting();
+        }
+        else if(!character.IsPlayer)
+        {
+            NPCRouting();
+        }
+    }
+
+    void PlayerRouting()
+    {
         var markerObject = Instantiate(marker, Vector3.zero, Quaternion.identity) as Transform;
         markerLocation.Value = new Coord(character.X, character.Y);
 
@@ -59,6 +73,20 @@ public class DisplayPath : MonoBehaviour, IMapInstanceUtilitiesUser
                    .Where(x => !gameManager.MenuIsOpened && x != PlayerCommand.None)
                    .Subscribe(x => OnInput(x))
                    .AddTo(markerObject.gameObject);
+    }
+
+    void NPCRouting()
+    {
+        var closestHostile = worldCharacters.GetClosestHostile(character);
+
+        var routes = Pathfinding(character.Location.Value, closestHostile.Location.Value);
+
+        foreach(var direction in routes)
+        {
+            movedDirections.Add(direction);
+        }
+
+        ApplyMove();
     }
 
     void OnInput(PlayerCommand command)

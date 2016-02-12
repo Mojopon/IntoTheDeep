@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UniRx;
+using System.Linq;
 
 public class WorldCharacters
 {
@@ -35,6 +36,7 @@ public class WorldCharacters
 
         enemies.Add(character);
         character.SetIsPlayer(false);
+        character.SetAlliance(Alliance.Enemy);
         deadEnemies++;
 
         character.Dead
@@ -47,6 +49,19 @@ public class WorldCharacters
                      else deadEnemies--;
                  })
                  .AddTo(character.Disposables);
+    }
+
+    public List<Character> GetAllHostiles(Character character)
+    {
+        return allCharacters.Where(x => x.Alliance != character.Alliance).ToList();
+    }
+
+    public Character GetClosestHostile(Character character)
+    {
+        var hostiles = GetAllHostiles(character);
+        return hostiles.OrderBy(x => Coord.Distance(x.Location.Value, character.Location.Value))
+                       .DefaultIfEmpty(null)
+                       .First();
     }
 
     public void ApplyMove(Character character, Direction direction)

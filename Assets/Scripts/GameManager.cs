@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     public CharacterManager characterManagerPrefab;
     public GameObject menuObjects;
 
-    public DisplayPath pathDisplayUIPrefab;
+    public MovePathSelector pathDisplayUIPrefab;
 
     [HideInInspector]
     public ReactiveProperty<CombatPhase> CurrentPhase = new ReactiveProperty<CombatPhase>();
@@ -170,7 +170,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMove(Character moveCharacter)
     {
-        var pathDisplay = Instantiate(pathDisplayUIPrefab) as DisplayPath;
+        var pathDisplay = Instantiate(pathDisplayUIPrefab) as MovePathSelector;
         pathDisplay.Initialize(this, map, moveCharacter, worldCharacters);
         yield return StartCoroutine(pathDisplay.SequenceRouting());
     }

@@ -9,6 +9,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
 
     public Func<int, int, bool> MoveChecker { get; set; }
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
+    public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
     private Transform characterObj;
     private Character character;

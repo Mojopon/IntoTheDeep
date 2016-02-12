@@ -68,4 +68,94 @@ public class WorldCharactersTest
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
     }
+
+    [Test]
+    public void ShouldSetToBeEnemyAllianceWhenAddedAsEnemy()
+    {
+        var enemy = new Character();
+        //should be created as player on default
+        Assert.AreEqual(Alliance.Player, enemy.Alliance);
+        worldCharacters.AddCharacterAsEnemy(enemy);
+        Assert.AreEqual(Alliance.Enemy, enemy.Alliance);
+    }
+
+    [Test]
+    public void ShouldReturnHostiles()
+    {
+        var character = new Character();
+        var characterTwo = new Character();
+
+        var enemy = new Character();
+        var enemyTwo = new Character();
+
+        worldCharacters.AddCharacter(character);
+        worldCharacters.AddCharacter(characterTwo);
+
+        worldCharacters.AddCharacterAsEnemy(enemy);
+        worldCharacters.AddCharacterAsEnemy(enemyTwo);
+
+        var playersHostiles = worldCharacters.GetAllHostiles(character);
+
+        Assert.IsTrue(playersHostiles.Contains(enemy));
+        Assert.IsTrue(playersHostiles.Contains(enemyTwo));
+        Assert.IsFalse(playersHostiles.Contains(character));
+        Assert.IsFalse(playersHostiles.Contains(characterTwo));
+
+        playersHostiles = worldCharacters.GetAllHostiles(characterTwo);
+
+        Assert.IsTrue(playersHostiles.Contains(enemy));
+        Assert.IsTrue(playersHostiles.Contains(enemyTwo));
+        Assert.IsFalse(playersHostiles.Contains(character));
+        Assert.IsFalse(playersHostiles.Contains(characterTwo));
+
+        var enemysHostiles = worldCharacters.GetAllHostiles(enemy);
+        Assert.IsFalse(enemysHostiles.Contains(enemy));
+        Assert.IsFalse(enemysHostiles.Contains(enemyTwo));
+        Assert.IsTrue(enemysHostiles.Contains(character));
+        Assert.IsTrue(enemysHostiles.Contains(characterTwo));
+
+        enemysHostiles = worldCharacters.GetAllHostiles(enemyTwo);
+        Assert.IsFalse(enemysHostiles.Contains(enemy));
+        Assert.IsFalse(enemysHostiles.Contains(enemyTwo));
+        Assert.IsTrue(enemysHostiles.Contains(character));
+        Assert.IsTrue(enemysHostiles.Contains(characterTwo));
+    }
+
+    [Test]
+    public void ShouldReturnClosestHostile()
+    {
+        var character = new Character();
+        var characterTwo = new Character();
+
+        var enemy = new Character();
+        var enemyTwo = new Character();
+
+        character.Location.Value = new Coord(1, 1);
+        characterTwo.Location.Value = new Coord(5, 5);
+
+        enemy.Location.Value = new Coord(4, 4);
+        enemyTwo.Location.Value = new Coord(3, 3);
+
+        worldCharacters.AddCharacter(character);
+        worldCharacters.AddCharacter(characterTwo);
+
+        //should return null when theres no hostiles
+        Assert.IsNull(worldCharacters.GetClosestHostile(character));
+        Assert.IsNull(worldCharacters.GetClosestHostile(characterTwo));
+
+        worldCharacters.AddCharacterAsEnemy(enemy);
+        worldCharacters.AddCharacterAsEnemy(enemyTwo);
+
+        var closestHostile = worldCharacters.GetClosestHostile(character);
+        Assert.AreEqual(enemyTwo, closestHostile);
+
+        closestHostile = worldCharacters.GetClosestHostile(characterTwo);
+        Assert.AreEqual(enemy, closestHostile);
+
+        closestHostile = worldCharacters.GetClosestHostile(enemy);
+        Assert.AreEqual(characterTwo, closestHostile);
+
+        closestHostile = worldCharacters.GetClosestHostile(enemyTwo);
+        Assert.AreEqual(character, closestHostile);
+    }
 }
