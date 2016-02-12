@@ -12,6 +12,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
 
     private Transform characterObj;
     private Character character;
+    private WorldCharacters worldCharacters;
 
     private ReactiveProperty<PlayerCommand> PlayerInput;
 
@@ -20,7 +21,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
         PlayerInput = new ReactiveProperty<PlayerCommand>();
     }
 
-    public void Spawn(Character character, MapInstance mapToSpawn)
+    public void Spawn(Character character, MapInstance mapToSpawn, WorldCharacters worldCharacters)
     {
         mapToSpawn.RegisterUtilityUser(this);
 
@@ -37,6 +38,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
                  });
 
         this.character = character;
+        this.worldCharacters = worldCharacters;
     }
 
     public void Input(PlayerCommand command)
@@ -69,7 +71,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
                                                    case PlayerCommand.Up:
                                                    case PlayerCommand.Down:
                                                        {
-                                                           if (character.Move(x.ToDirection(), MoveChecker))
+                                                           if (character.CanMove(x.ToDirection(), MoveChecker))
                                                            {
                                                                moved--;
                                                            }
@@ -147,7 +149,7 @@ public class CharacterManager : MonoBehaviour, IMapInstanceUtilitiesUser, IInput
                     break;
             }
 
-            character.Move(direction, MoveChecker);
+            character.Move(direction);
             yield return new WaitForSeconds(0.1f);
         }
 

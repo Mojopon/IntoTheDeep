@@ -4,13 +4,27 @@ using UniRx;
 using System;
 using System.Collections.Generic;
 
+public class CharacterMoveResult
+{
+    public Character target;
+    public List<Direction> moveDirections;
+    public CharacterMoveResult(Character target, List<Direction> moveDirections)
+    {
+        this.target = target;
+        this.moveDirections = moveDirections;
+    }
+}
+
 public class Character : DisposableCharacter, ICharacter
 {
+    public static int canMoveTimePerTurns = 4;
+
     public int X { get; private set; }
     public int Y { get; private set; }
     public bool IsDead { get; private set; }
     public bool IsPlayer { get; private set; }
     public Alliance Alliance { get; private set; }
+    public int MaxMove { get; private set; }
 
     public ReactiveProperty<Coord> Location { get; private set; }
     public ReactiveProperty<int> CurrentHealth { get; private set; }
@@ -25,6 +39,7 @@ public class Character : DisposableCharacter, ICharacter
         this.CurrentHealth = new ReactiveProperty<int>(1);
         this.Dead = new ReactiveProperty<bool>(false);
 
+        this.MaxMove = canMoveTimePerTurns;
         // create as a player on default
         this.IsPlayer = true;
 
@@ -59,13 +74,50 @@ public class Character : DisposableCharacter, ICharacter
         });
     }
 
-    public bool Move(Direction direction, Func<int, int, bool> canMove)
+    public enum Phase
+    {
+        Idle,
+        Move,
+        CombatAction,
+    }
+
+    public ReactiveProperty<Phase> CurrentPhase = new ReactiveProperty<Phase>();
+    private int canMoveTime;
+    private bool actionFinished = true;
+    public void SetPhase(Phase phase)
+    {
+        CurrentPhase.Value = phase;
+
+        switch(CurrentPhase.Value)
+        {
+            case Phase.Move:
+                canMoveTime = MaxMove;
+                break;
+            case Phase.CombatAction:
+                actionFinished = false;
+                break;
+        }
+    }
+
+    public bool CanMove(Direction direction, Func<int, int, bool> canMove)
     {
         var destination = Location.Value + direction.ToCoord();
         if (!canMove(destination.x, destination.y)) return false;
 
-        this.Location.Value += direction.ToCoord();
         return true;
+    }
+
+    public void Move(Direction direction)
+    {
+        if (canMoveTime <= 0) return;
+
+        this.Location.Value += direction.ToCoord();
+        canMoveTime--;
+
+        if(canMoveTime == 0)
+        {
+            CurrentPhase.Value = Phase.CombatAction;
+        }
     }
 
     public void ApplyHealthChange(int amount)

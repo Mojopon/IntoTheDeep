@@ -30,7 +30,7 @@ public class WorldCharactersTest
     }
 
     [Test]
-    public void ShouldReturnNextCharacterToMoveAndAction()
+    public void ShouldReturnNextCharacterAndSetItToBeMovePhase()
     {
         // returns null when no characters in the world
         Assert.IsNull(worldCharacters.GetNextCharacterToAction());
@@ -41,8 +41,31 @@ public class WorldCharactersTest
         worldCharacters.AddCharacter(character);
         worldCharacters.AddCharacter(characterTwo);
 
+        Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
+        Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
+
         Assert.AreEqual(character, worldCharacters.GetNextCharacterToAction());
+        Assert.AreEqual(Character.Phase.Move, character.CurrentPhase.Value);
+        Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
+        character.SetPhase(Character.Phase.Idle);
+
         Assert.AreEqual(characterTwo, worldCharacters.GetNextCharacterToAction());
+        Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
+        Assert.AreEqual(Character.Phase.Move, characterTwo.CurrentPhase.Value);
+        characterTwo.SetPhase(Character.Phase.Idle);
+
         Assert.AreEqual(character, worldCharacters.GetNextCharacterToAction());
+        Assert.AreEqual(Character.Phase.Move, character.CurrentPhase.Value);
+        Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
+    }
+
+    [Test]
+    public void ApplyMovementToTheCharacter()
+    {
+        var character = new Character();
+        worldCharacters.AddCharacter(character);
+
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
     }
 }

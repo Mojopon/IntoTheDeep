@@ -23,23 +23,50 @@ public class CharacterTest
         Coord coordAfterMove = Coord.zero;
         Assert.AreEqual(0, coordAfterMove.x);
         Assert.AreEqual(0, coordAfterMove.y);
-        var moveChecker = new Func<int, int, bool>((x, y) => true);
 
         character.Location
                  .Subscribe(x =>
                  {
                      coordAfterMove = x;
-                     Debug.Log(x);
                  }).AddTo(disposables);
-                 
 
-        character.Move(Direction.Right, moveChecker);
+        var changedToCombatActionPhase = false;
+        character.CurrentPhase.Where(x => x == Character.Phase.CombatAction).Subscribe(x => changedToCombatActionPhase = true);
+        // cant move until it goes move phase
+        character.Move(Direction.Right);
+        Assert.AreEqual(0, coordAfterMove.x);
+        Assert.AreEqual(0, coordAfterMove.y);
+        Assert.IsFalse(changedToCombatActionPhase);
+   
+        // need to set it to be move phase otherwise move method will be ignored
+        character.SetPhase(Character.Phase.Move);
+
+        character.Move(Direction.Right);
         Assert.AreEqual(1, coordAfterMove.x);
         Assert.AreEqual(0, coordAfterMove.y);
+        Assert.IsFalse(changedToCombatActionPhase);
 
-        character.Move(Direction.Up, moveChecker);
+        character.Move(Direction.Up);
         Assert.AreEqual(1, coordAfterMove.x);
         Assert.AreEqual(1, coordAfterMove.y);
+        Assert.IsFalse(changedToCombatActionPhase);
+
+        character.Move(Direction.Up);
+        Assert.AreEqual(1, coordAfterMove.x);
+        Assert.AreEqual(2, coordAfterMove.y);
+        Assert.IsFalse(changedToCombatActionPhase);
+
+        // cant move more than 4 times per turns
+        character.Move(Direction.Up);
+        Assert.AreEqual(1, coordAfterMove.x);
+        Assert.AreEqual(3, coordAfterMove.y);
+        // should change current phase to CombatAction after moving for 4 times
+        Assert.IsTrue(changedToCombatActionPhase);
+
+        // cant move more than 4 times per turns
+        character.Move(Direction.Up);
+        Assert.AreEqual(1, coordAfterMove.x);
+        Assert.AreEqual(3, coordAfterMove.y);
     }
 
     [Test]

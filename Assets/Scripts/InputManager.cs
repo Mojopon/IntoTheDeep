@@ -20,6 +20,14 @@ public class InputManager : MonoBehaviour
         {
             return PlayerCommand.Menu;
         }
+        else if (Input.GetKeyDown(KeyCode.Z))
+        {
+            return PlayerCommand.Enter;
+        }
+        else if (Input.GetKeyDown(KeyCode.X))
+        {
+            return PlayerCommand.Cancel;
+        }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {

@@ -12,11 +12,13 @@ public class GameManager : MonoBehaviour
     public CharacterManager characterManagerPrefab;
     public GameObject menuObjects;
 
+    public DisplayPath pathDisplayUIPrefab;
+
     [HideInInspector]
     public ReactiveProperty<CombatPhase> CurrentPhase = new ReactiveProperty<CombatPhase>();
 
     private IInputtable currentInputTarget;
-    private ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
+    public ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
 
     private MapInstance map;
 
@@ -47,10 +49,11 @@ public class GameManager : MonoBehaviour
 
     //Input to This instead of subscribed input target when the Menu is opened
     private MenuManager openedMenu;
-    private ReactiveProperty<bool> MenuIsOpened = new ReactiveProperty<bool>(false);
+    public bool MenuIsOpened = false;
     private IDisposable menuInputSubscription;
     public void OpenMenu()
     {
+        MenuIsOpened = true;
         menuObjects.SetActive(true);
         var menuManager = menuObjects.GetComponentInChildren<MenuManager>();
         openedMenu = menuManager;
@@ -70,6 +73,7 @@ public class GameManager : MonoBehaviour
         menuInputSubscription = null;
 
         menuObjects.SetActive(false);
+        MenuIsOpened = false;
     }
 
     IEnumerator SequenceSetupGame()
@@ -128,7 +132,7 @@ public class GameManager : MonoBehaviour
             }
             var characterManager = characters[nextCharacter];
 
-            yield return StartCoroutine(SequenceCharacterMove(characterManager));
+            yield return StartCoroutine(SequenceCharacterMove(nextCharacter));
 
             if (nextCharacter.IsPlayer)
             {
@@ -140,23 +144,6 @@ public class GameManager : MonoBehaviour
             }
             yield return StartCoroutine(SequenceCharacterAction(characterManager));
         }
-
-    }
-
-    void CharacterMove()
-    {
-        var nextCharacter = worldCharacters.GetNextCharacterToAction();
-        var characterManager = characters[nextCharacter];
-
-        if (nextCharacter.IsPlayer)
-        {
-            CurrentPhase.Value = CombatPhase.PlayerMove;
-        }
-        else
-        {
-            CurrentPhase.Value = CombatPhase.EnemyMove;
-        }
-
 
     }
 
@@ -181,11 +168,20 @@ public class GameManager : MonoBehaviour
         yield break;
     }
 
+    IEnumerator SequenceCharacterMove(Character moveCharacter)
+    {
+        var pathDisplay = Instantiate(pathDisplayUIPrefab) as DisplayPath;
+        pathDisplay.Initialize(this, map, moveCharacter, worldCharacters);
+        yield return StartCoroutine(pathDisplay.SequenceRouting());
+    }
+
+    /*
     IEnumerator SequenceCharacterMove(CharacterManager moveCharacter)
     {
         currentInputTarget = moveCharacter;
         yield return StartCoroutine(moveCharacter.SequenceMove());
     }
+    */
 
     IEnumerator SequenceCharacterAction(CharacterManager actCharacter)
     {
@@ -207,7 +203,7 @@ public class GameManager : MonoBehaviour
     void SpawnCharacterToWorld(Character character)
     {
         var newCharacter = Instantiate(characterManagerPrefab, Vector3.zero, Quaternion.identity) as CharacterManager;
-        newCharacter.Spawn(character, map);
+        newCharacter.Spawn(character, map, worldCharacters);
         newCharacter.transform.SetParent(gameObjectHolder.transform);
 
         characters.Add(character, newCharacter);

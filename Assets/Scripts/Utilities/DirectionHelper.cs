@@ -38,4 +38,22 @@ public static class DirectionHelper
                 return Coord.left;
         }
     }
+
+    public static Direction GetOpposide(this Direction dir)
+    {
+        switch (dir)
+        {
+            case Direction.None:
+            default:
+                return Direction.None;
+            case Direction.Up:
+                return Direction.Down;
+            case Direction.Right:
+                return Direction.Left;
+            case Direction.Down:
+                return Direction.Up;
+            case Direction.Left:
+                return Direction.Right;
+        }
+    }
 }

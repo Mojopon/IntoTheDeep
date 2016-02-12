@@ -18,6 +18,7 @@ public class WorldCharacters
         var character = allCharacters[currentActingCharacter];
         currentActingCharacter++;
         if (currentActingCharacter >= allCharacters.Count) currentActingCharacter = 0;
+        character.SetPhase(Character.Phase.Move);
         return character;
     }
 
@@ -46,6 +47,11 @@ public class WorldCharacters
                      else deadEnemies--;
                  })
                  .AddTo(character.Disposables);
+    }
+
+    public void ApplyMove(Character character, Direction direction)
+    {
+        character.Move(direction);
     }
 
     public bool EnemyIsAnnihilated { get { return enemies.Count - deadEnemies == 0; } }

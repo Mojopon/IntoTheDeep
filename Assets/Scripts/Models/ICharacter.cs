@@ -9,6 +9,7 @@ public interface ICharacter
     bool IsDead { get; }
     bool IsPlayer { get; }
     Alliance Alliance { get; }
+    int MaxMove { get; }
 
     ReactiveProperty<Coord> Location { get; }
     ReactiveProperty<int> CurrentHealth { get; }

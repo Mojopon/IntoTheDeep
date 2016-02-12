@@ -9,4 +9,6 @@ public enum PlayerCommand
     Up,
     Down,
     Menu,
+    Enter,
+    Cancel,
 }
