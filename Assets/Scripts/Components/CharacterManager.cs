@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using UniRx;
 
-public class CharacterManager : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser, IInputtable
+public class CharacterManager : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
     public Transform characterPrefab;
 
@@ -14,13 +14,6 @@ public class CharacterManager : MonoBehaviour, IWorldUtilitiesUser, IMapInstance
     private Transform characterObj;
     private Character character;
     private World world;
-
-    private ReactiveProperty<PlayerCommand> PlayerInput;
-
-    void Awake()
-    {
-        PlayerInput = new ReactiveProperty<PlayerCommand>();
-    }
 
     public void Spawn(Character character, MapInstance mapToSpawn, World world)
     {
@@ -42,45 +35,6 @@ public class CharacterManager : MonoBehaviour, IWorldUtilitiesUser, IMapInstance
                  });
 
         this.character = character;
-    }
-
-    public void Input(PlayerCommand command)
-    {
-        PlayerInput.Value = command;
-    }
-
-    public IEnumerator SequenceSelectNextCombatAction()
-    {
-        if(!character.IsPlayer)
-        {
-            yield break;
-        }
-        else
-        {
-            Skill selectedSkill = null;
-            SkillMenu.Current.DisplaySkills(character.GetSkills());
-
-            CompositeDisposable combatActionSubscriptions = new CompositeDisposable();
-
-            PlayerInput.Skip(1)
-                       .Subscribe(x =>
-                       {
-                           SkillMenu.Current.Input(x);
-                       })
-            .AddTo(combatActionSubscriptions);
-
-            var cancel = SkillMenu.Current.SelectedSkill()
-                                          .Subscribe(x => selectedSkill = x);
-
-            while (selectedSkill == null)
-            {
-                yield return null;
-            }
-
-            Debug.Log("Used " + selectedSkill.name);
-
-            combatActionSubscriptions.Dispose();
-        }
     }
 
     private float timeToFinishMove = 0.1f;

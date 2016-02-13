@@ -13,12 +13,12 @@ public class GameManager : MonoBehaviour
     public GameObject menuObjects;
 
     public MovePathSelector pathDisplayUIPrefab;
+    public SkillSelector skillSelectorPrefab;
 
-    [HideInInspector]
+
     public ReactiveProperty<CombatPhase> CurrentPhase = new ReactiveProperty<CombatPhase>();
-
-    private IInputtable currentInputTarget;
     public ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
+    public ReactiveProperty<Character> CurrentActor = new ReactiveProperty<Character>();
 
     private MapInstance mapInstance;
 
@@ -111,12 +111,6 @@ public class GameManager : MonoBehaviour
                        }
                    });
 
-        PlayerInput.Where(x => openedMenu == null)
-                   .Subscribe(x =>
-                   {
-                       if (currentInputTarget != null) currentInputTarget.Input(x);
-                   });
-
         bool inCombat = true;
 
         // loop when in combat
@@ -143,7 +137,7 @@ public class GameManager : MonoBehaviour
             {
                 CurrentPhase.Value = CombatPhase.EnemyAction;
             }
-            yield return StartCoroutine(SequenceCharacterAction(characterManager));
+            yield return StartCoroutine(SequenceCharacterAction(nextCharacter));
         }
 
     }
@@ -176,18 +170,11 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(pathDisplay.SequenceRouting());
     }
 
-    /*
-    IEnumerator SequenceCharacterMove(CharacterManager moveCharacter)
+    IEnumerator SequenceCharacterAction(Character actCharacter)
     {
-        currentInputTarget = moveCharacter;
-        yield return StartCoroutine(moveCharacter.SequenceMove());
-    }
-    */
-
-    IEnumerator SequenceCharacterAction(CharacterManager actCharacter)
-    {
-        currentInputTarget = actCharacter;
-        yield return StartCoroutine(actCharacter.SequenceSelectNextCombatAction());
+        var skillSelector = Instantiate(skillSelectorPrefab) as SkillSelector;
+        skillSelector.Initialize(this, mapInstance, actCharacter, worldCharacters);
+        yield return StartCoroutine(skillSelector.SequenceSelectSkill());
     }
 
     IDisposable SubscribeInputForTheTarget(IInputtable target)
