@@ -4,7 +4,7 @@ using System;
 using UniRx;
 using System.Collections.Generic;
 
-public class MovePathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
+public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
     public Transform marker;
 

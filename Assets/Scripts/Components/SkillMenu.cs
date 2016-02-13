@@ -5,10 +5,23 @@ using System.Collections.Generic;
 using UniRx;
 using System.Linq;
 
+public class SkillInfo
+{
+    public Character user;
+    public Skill skill;
+    public SkillInfo(Character user, Skill skill)
+    {
+        this.user = user;
+        this.skill = skill;
+    }
+}
+
 public class SkillMenu : MonoBehaviour, IInputtable {
 
     public static SkillMenu Current;
 
+    public Character SkillUser;
+    public ReactiveProperty<SkillInfo> SelectedSkill = new ReactiveProperty<SkillInfo>();
     public Text[] skillNameDisplays;
     private int selectedSkillNumber;
 
@@ -24,29 +37,32 @@ public class SkillMenu : MonoBehaviour, IInputtable {
 
         Current = this;
 
-        HideSkills();
+        CloseSkillMenu();
 	}
 
-    private Skill selectedSkill;
-    public IObservable<Skill> SelectedSkill()
+    private Skill skillToSubmit;
+    public IObservable<Skill> SubmittedSkill()
     {
         return Observable.FromCoroutine<Skill>(observer => SequenceSelectSkill(observer));
     }
 
     IEnumerator SequenceSelectSkill(IObserver<Skill> observer)
     {
-        while(selectedSkill == null)
+        while(skillToSubmit == null)
         {
             yield return null;
         }
 
-        observer.OnNext(selectedSkill);
-        selectedSkill = null;
+        observer.OnNext(skillToSubmit);
+        skillToSubmit = null;
         observer.OnCompleted();
     }
 
-    public void DisplaySkills(Skill[] skills)
+    public void DisplaySkills(Character user)
     {
+        this.SkillUser = user;
+
+        var skills = user.GetSkills();
         this.skills = skills.Take(skillNameDisplays.Length).ToArray();
 
         for(int i = 0; i < skillNameDisplays.Length; i++)
@@ -57,7 +73,7 @@ public class SkillMenu : MonoBehaviour, IInputtable {
             skillNameDisplays[i].text = skills[i].name;
         }
 
-        skillNameDisplays[selectedSkillNumber].color = Color.red;
+        OnSelect();
     }
 
     void MoveDown()
@@ -67,7 +83,7 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         selectedSkillNumber++;
         if (selectedSkillNumber >= skills.Length) selectedSkillNumber = skills.Length - 1;
 
-        skillNameDisplays[selectedSkillNumber].color = Color.red;
+        OnSelect();
     }
 
     void MoveUp()
@@ -77,13 +93,19 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         selectedSkillNumber--;
         if (selectedSkillNumber < 0) selectedSkillNumber = 0;
 
-        skillNameDisplays[selectedSkillNumber].color = Color.red;
+        OnSelect();
     }
 
-    void SelectSkill()
+    void OnSelect()
     {
-        selectedSkill = skills[selectedSkillNumber];
-        HideSkills();
+        skillNameDisplays[selectedSkillNumber].color = Color.red;
+        SelectedSkill.Value = new SkillInfo(SkillUser, skills[selectedSkillNumber]);
+    }
+
+    void Submit()
+    {
+        skillToSubmit = skills[selectedSkillNumber];
+        CloseSkillMenu();
     }
 
     public void Input(PlayerCommand command)
@@ -98,17 +120,19 @@ public class SkillMenu : MonoBehaviour, IInputtable {
                 break;
             case PlayerCommand.Left:
             case PlayerCommand.Right:
-                SelectSkill();
+                Submit();
                 break;
         }
     }
 
-    void HideSkills()
+    void CloseSkillMenu()
     {
         foreach (var skillNameDisplay in skillNameDisplays)
         {
             skillNameDisplay.text = "";
             skillNameDisplay.gameObject.SetActive(false);
+            SkillUser = null;
+            SelectedSkill.Value = null;
         }
     }
 }

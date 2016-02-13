@@ -83,7 +83,18 @@ public class CharacterTest
         character.ApplyHealthChange(-50);
         Assert.IsTrue(isDead);
         Assert.IsTrue(character.IsDead);
+    }
 
+    [Test]
+    public void ShouldBeIdlePhaseAfterSkillUsed()
+    {
+        character.SetPhase(Character.Phase.CombatAction);
+
+        var skill = character.GetSkills()[0];
+
+        character.OnSkillUsed(skill);
+
+        Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
     }
 
     [TearDown]

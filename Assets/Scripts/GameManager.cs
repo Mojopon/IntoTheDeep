@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     public CharacterManager characterManagerPrefab;
     public GameObject menuObjects;
 
-    public MovePathSelector pathDisplayUIPrefab;
+    public PathSelector pathDisplayUIPrefab;
     public SkillSelector skillSelectorPrefab;
 
 
@@ -113,33 +113,40 @@ public class GameManager : MonoBehaviour
 
         bool inCombat = true;
 
-        // loop when in combat
-        while (inCombat)
+        CurrentActor.Where(x => x != null)
+                    .Subscribe(x => SubscribeForCurrentActor(x))
+                    .AddTo(gameObject);
+
+        CurrentActor.Value = worldCharacters.GetNextCharacterToAction();
+    }
+
+    CompositeDisposable subscriptionsForCurrentActor;
+    void SubscribeForCurrentActor(Character chara)
+    {
+        if(subscriptionsForCurrentActor != null)
         {
-            var nextCharacter = worldCharacters.GetNextCharacterToAction();
-            if(nextCharacter.IsPlayer)
-            {
-                CurrentPhase.Value = CombatPhase.PlayerMove;
-            }
-            else
-            {
-                CurrentPhase.Value = CombatPhase.EnemyMove;
-            }
-            var characterManager = characters[nextCharacter];
-
-            yield return StartCoroutine(SequenceCharacterMove(nextCharacter));
-
-            if (nextCharacter.IsPlayer)
-            {
-                CurrentPhase.Value = CombatPhase.PlayerAction;
-            }
-            else
-            {
-                CurrentPhase.Value = CombatPhase.EnemyAction;
-            }
-            yield return StartCoroutine(SequenceCharacterAction(nextCharacter));
+            subscriptionsForCurrentActor.Dispose();
+            subscriptionsForCurrentActor = null;
         }
 
+        subscriptionsForCurrentActor = new CompositeDisposable();
+
+        chara.CurrentPhase.Subscribe(x =>
+                          {
+                              switch(x)
+                              {
+                                  case Character.Phase.Move:
+                                      StartCoroutine(SequenceCharacterMove(chara));
+                                      break;
+                                  case Character.Phase.CombatAction:
+                                      StartCoroutine(SequenceCharacterAction(chara));
+                                      break;
+                                  case Character.Phase.Idle:
+                                      StartCoroutine(SequenceGetNextActor());
+                                      break;
+                              }
+                          })
+                          .AddTo(subscriptionsForCurrentActor);
     }
 
     IEnumerator SequenceSetupPlayers()
@@ -165,7 +172,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMove(Character moveCharacter)
     {
-        var pathDisplay = Instantiate(pathDisplayUIPrefab) as MovePathSelector;
+        var pathDisplay = Instantiate(pathDisplayUIPrefab) as PathSelector;
         pathDisplay.Initialize(this, mapInstance, moveCharacter, worldCharacters);
         yield return StartCoroutine(pathDisplay.SequenceRouting());
     }
@@ -175,6 +182,13 @@ public class GameManager : MonoBehaviour
         var skillSelector = Instantiate(skillSelectorPrefab) as SkillSelector;
         skillSelector.Initialize(this, mapInstance, actCharacter, worldCharacters);
         yield return StartCoroutine(skillSelector.SequenceSelectSkill());
+    }
+
+    IEnumerator SequenceGetNextActor()
+    {
+        yield return null;
+
+        CurrentActor.Value = worldCharacters.GetNextCharacterToAction();
     }
 
     IDisposable SubscribeInputForTheTarget(IInputtable target)

@@ -15,6 +15,13 @@ public class CharacterMoveResult
     }
 }
 
+public class CharacterCombatActionResult
+{
+    public Character user;
+    public Character[] targets;
+    public Skill usedSkill;
+}
+
 public class Character : DisposableCharacter, ICharacter
 {
     public static int canMoveTimePerTurns = 4;
@@ -66,11 +73,20 @@ public class Character : DisposableCharacter, ICharacter
         skills.Add(new Skill
         {
             name = "パンチ",
+            range = new Coord[]
+            {
+                new Coord(0, 1),
+            }
         });
 
         skills.Add(new Skill
         {
             name = "キック",
+            range = new Coord[]
+            {
+                new Coord(1, 0),
+                new Coord(-1, 0),
+            }
         });
     }
 
@@ -83,7 +99,6 @@ public class Character : DisposableCharacter, ICharacter
 
     public ReactiveProperty<Phase> CurrentPhase = new ReactiveProperty<Phase>();
     private int canMoveTime;
-    private bool actionFinished = true;
     public void SetPhase(Phase phase)
     {
         CurrentPhase.Value = phase;
@@ -92,9 +107,6 @@ public class Character : DisposableCharacter, ICharacter
         {
             case Phase.Move:
                 canMoveTime = MaxMove;
-                break;
-            case Phase.CombatAction:
-                actionFinished = false;
                 break;
         }
     }
@@ -116,8 +128,15 @@ public class Character : DisposableCharacter, ICharacter
 
         if(canMoveTime == 0)
         {
-            CurrentPhase.Value = Phase.CombatAction;
+            SetPhase(Phase.CombatAction);
         }
+    }
+
+    public void OnSkillUsed(Skill skill)
+    {
+        // apply changes to the character after using the skill
+
+        SetPhase(Phase.Idle);
     }
 
     public void ApplyHealthChange(int amount)

@@ -75,6 +75,11 @@ public class World : IWorldUtilitiesProvider
         character.Move(direction);
     }
 
+    public void ApplyUseSkill(Character character, Skill skill)
+    {
+        character.OnSkillUsed(skill);
+    }
+
     public bool EnemyIsAnnihilated { get { return enemies.Count - deadEnemies == 0; } }
 
     bool CanMove(Character character, Coord coord)

@@ -37,7 +37,7 @@ public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUti
         }
         else {
 
-            SkillMenu.Current.DisplaySkills(character.GetSkills());
+            SkillMenu.Current.DisplaySkills(character);
 
             gameManager.PlayerInput.Skip(1)
                                    .Subscribe(x =>
@@ -46,7 +46,7 @@ public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUti
                                    })
                                    .AddTo(gameObject);
 
-            var cancel = SkillMenu.Current.SelectedSkill()
+            var cancel = SkillMenu.Current.SubmittedSkill()
                                   .Subscribe(x => selectedSkill = x)
                                   .AddTo(gameObject);
 
@@ -62,6 +62,7 @@ public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUti
     void SelectSkill()
     {
         Debug.Log(selectedSkill.name + " used");
+        world.ApplyUseSkill(character, selectedSkill);
 
         Destroy(gameObject);
     }
