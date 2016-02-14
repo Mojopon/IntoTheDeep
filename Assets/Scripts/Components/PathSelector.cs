@@ -36,6 +36,9 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
             yield return null;
         }
 
+        // destroy selecter when routing is completed
+        yield return null;
+        Destroy(gameObject);
         yield break;
     }
 

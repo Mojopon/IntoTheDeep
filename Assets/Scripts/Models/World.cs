@@ -7,6 +7,8 @@ using System;
 
 public class World : IWorldUtilitiesProvider
 {
+    public ReactiveProperty<Character> CurrentActor = new ReactiveProperty<Character>();
+
     private Map map;
 
     private List<Character> allCharacters = new List<Character>();
@@ -20,7 +22,13 @@ public class World : IWorldUtilitiesProvider
         this.map = map;
     }
 
-    public Character GetNextCharacterToAction()
+    // actor means the character who is moving or fighting in the turn
+    public void GoNextCharacterPhase()
+    {
+        CurrentActor.Value =  GetNextCharacterToAction();
+    }
+
+    Character GetNextCharacterToAction()
     {
         if (allCharacters.Count == 0) return null;
 
@@ -31,14 +39,21 @@ public class World : IWorldUtilitiesProvider
         return character;
     }
 
-    public void AddCharacter(Character character)
+    public bool AddCharacter(Character character)
     {
+        if (allCharacters.Contains(character)) return false;
+        if (!map.CanWalk(character.X, character.Y, character)) return false;
+
+        ProvideWorldUtilities(character);
         allCharacters.Add(character);
+        map.SetCharacter(character);
+
+        return true;
     }
 
-    public void AddCharacterAsEnemy(Character character)
+    public bool AddCharacterAsEnemy(Character character)
     {
-        AddCharacter(character);
+        if (!AddCharacter(character)) return false;
 
         enemies.Add(character);
         character.SetIsPlayer(false);
@@ -55,6 +70,8 @@ public class World : IWorldUtilitiesProvider
                      else deadEnemies--;
                  })
                  .AddTo(character.Disposables);
+
+        return true;
     }
 
     public List<Character> GetAllHostiles(Character character)
@@ -72,7 +89,10 @@ public class World : IWorldUtilitiesProvider
 
     public void ApplyMove(Character character, Direction direction)
     {
+        if (!character.CanMove(direction)) return;
+
         character.Move(direction);
+        map.MoveCharacterToFrom(character, character.Location.Value, character.Location.Value + direction.ToCoord());
     }
 
     public void ApplyUseSkill(Character character, Skill skill)

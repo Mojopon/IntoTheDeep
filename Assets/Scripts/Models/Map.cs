@@ -24,6 +24,27 @@ public class Map
         }
     }
 
+    public void MoveCharacterToFrom(Character character, Coord source, Coord destination)
+    {
+        var sourceCell = GetCell(source);
+        sourceCell.characterInTheCell = null;
+
+        var destinationCell = GetCell(destination);
+        destinationCell.characterInTheCell = character;
+    }
+
+    public bool CanWalk(int x, int y, Character character)
+    {
+        if (IsOutOfRange(x, y)) return false;
+
+        return GetCell(x, y).CanWalk(character);
+    }
+
+    public Cell GetCell(Coord coord)
+    {
+        return GetCell(coord.x, coord.y);
+    }
+
     public Cell GetCell(int x, int y)
     {
         if (IsOutOfRange(x, y)) return null;
@@ -35,6 +56,13 @@ public class Map
         if (IsOutOfRange(x, y)) return;
 
         cells[x, y] = cell;
+    }
+
+    public void SetCharacter(Character character)
+    {
+
+
+        cells[character.X, character.Y].characterInTheCell = character;
     }
 
     bool IsOutOfRange(int x, int y)

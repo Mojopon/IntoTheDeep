@@ -12,24 +12,24 @@ public class GameManager : MonoBehaviour
     public CharacterManager characterManagerPrefab;
     public GameObject menuObjects;
 
-    public PathSelector pathDisplayUIPrefab;
+    public PathSelector pathSelectorPrefab;
     public SkillSelector skillSelectorPrefab;
-
 
     public ReactiveProperty<CombatPhase> CurrentPhase = new ReactiveProperty<CombatPhase>();
     public ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
-    public ReactiveProperty<Character> CurrentActor = new ReactiveProperty<Character>();
+
+    public ReactiveProperty<Character> CurrentActor;
 
     private MapInstance mapInstance;
 
     // Manage Characters In The World(Map)
-    private World worldCharacters;
+    private World world;
     // Add Character to this Container When its Spawned to Find Character Manager for The Character
     private Dictionary<Character, CharacterManager> characters = new Dictionary<Character, CharacterManager>();
 
     private GameObject gameObjectHolder;
 
-    void Start()
+    void Awake()
     {
         if (Instance != null && Instance != this)
         {
@@ -40,6 +40,8 @@ public class GameManager : MonoBehaviour
         Instance = this;
 
         StartCoroutine(SequenceSetupGame());
+
+        StartBattle();
     }
 
     public void Input(PlayerCommand command)
@@ -92,7 +94,8 @@ public class GameManager : MonoBehaviour
 
         // Create World Characters Class To Manage All of Characters
         var currentMap = mapInstance.GetCurrentMap();
-        worldCharacters = new World(currentMap);
+        world = new World(currentMap);
+        CurrentActor = world.CurrentActor;
         StartCoroutine(SequenceSetupPlayers());
         StartCoroutine(SequenceSetupEnemies());
 
@@ -111,16 +114,19 @@ public class GameManager : MonoBehaviour
                        }
                    });
 
-        bool inCombat = true;
-
         CurrentActor.Where(x => x != null)
                     .Subscribe(x => SubscribeForCurrentActor(x))
                     .AddTo(gameObject);
+    }
 
-        CurrentActor.Value = worldCharacters.GetNextCharacterToAction();
+    void StartBattle()
+    {
+        StartCoroutine(SequenceGoNextCharacterPhase());
     }
 
     CompositeDisposable subscriptionsForCurrentActor;
+    private PathSelector pathSelector;
+
     void SubscribeForCurrentActor(Character chara)
     {
         if(subscriptionsForCurrentActor != null)
@@ -142,7 +148,7 @@ public class GameManager : MonoBehaviour
                                       StartCoroutine(SequenceCharacterAction(chara));
                                       break;
                                   case Character.Phase.Idle:
-                                      StartCoroutine(SequenceGetNextActor());
+                                      StartCoroutine(SequenceGoNextCharacterPhase());
                                       break;
                               }
                           })
@@ -153,7 +159,7 @@ public class GameManager : MonoBehaviour
     {
         // create characters
         var character = new Character();
-        worldCharacters.AddCharacter(character);
+        world.AddCharacter(character);
         SpawnCharacterToWorld(character);
 
         yield break;
@@ -163,7 +169,7 @@ public class GameManager : MonoBehaviour
     {
 
         var character = new Character();
-        worldCharacters.AddCharacterAsEnemy(character);
+        world.AddCharacterAsEnemy(character);
         SpawnCharacterToWorld(character);
         character.Location.Value = new Coord(3, 3);
 
@@ -172,23 +178,23 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMove(Character moveCharacter)
     {
-        var pathDisplay = Instantiate(pathDisplayUIPrefab) as PathSelector;
-        pathDisplay.Initialize(this, mapInstance, moveCharacter, worldCharacters);
-        yield return StartCoroutine(pathDisplay.SequenceRouting());
+        var pathSelector = Instantiate(pathSelectorPrefab) as PathSelector;
+        pathSelector.Initialize(this, mapInstance, moveCharacter, world);
+        yield return StartCoroutine(pathSelector.SequenceRouting());
     }
 
     IEnumerator SequenceCharacterAction(Character actCharacter)
     {
         var skillSelector = Instantiate(skillSelectorPrefab) as SkillSelector;
-        skillSelector.Initialize(this, mapInstance, actCharacter, worldCharacters);
+        skillSelector.Initialize(this, mapInstance, actCharacter, world);
         yield return StartCoroutine(skillSelector.SequenceSelectSkill());
     }
 
-    IEnumerator SequenceGetNextActor()
+    IEnumerator SequenceGoNextCharacterPhase()
     {
         yield return null;
 
-        CurrentActor.Value = worldCharacters.GetNextCharacterToAction();
+        world.GoNextCharacterPhase();
     }
 
     IDisposable SubscribeInputForTheTarget(IInputtable target)
@@ -205,7 +211,7 @@ public class GameManager : MonoBehaviour
     void SpawnCharacterToWorld(Character character)
     {
         var newCharacter = Instantiate(characterManagerPrefab, Vector3.zero, Quaternion.identity) as CharacterManager;
-        newCharacter.Spawn(character, mapInstance, worldCharacters);
+        newCharacter.Spawn(character, mapInstance, world);
         newCharacter.transform.SetParent(gameObjectHolder.transform);
 
         characters.Add(character, newCharacter);

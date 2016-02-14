@@ -17,7 +17,7 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
     IEnumerator GetMapInstanceUtilitiesCoroutine()
     {
         var mapInstanceObject = GameObject.FindGameObjectWithTag("MapInstance");
-        if(mapInstanceObject == null)
+        if (mapInstanceObject == null)
         {
             yield return null;
             StartCoroutine(GetMapInstanceUtilitiesCoroutine());
@@ -36,7 +36,7 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
         if(SkillMenu.Current == null)
         {
             yield return null;
-            GetSkillMenuCoroutine();
+            StartCoroutine(GetSkillMenuCoroutine());
         }
         else
         {

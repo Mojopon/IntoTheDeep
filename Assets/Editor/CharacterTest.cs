@@ -86,6 +86,22 @@ public class CharacterTest
     }
 
     [Test]
+    public void ShouldReturnCanMoveorNot()
+    {
+        character.MoveChecker = new Func<Character, Coord, bool>((chara, c) =>
+                                                                {
+                                                                    if (c.x == 1 && c.y == 0) return false;
+
+                                                                    return true;
+                                                                });
+
+        Assert.IsFalse(character.CanMove(Direction.Right));
+        Assert.IsTrue(character.CanMove(Direction.Up));
+        Assert.IsTrue(character.CanMove(Direction.Down));
+        Assert.IsTrue(character.CanMove(Direction.Left));
+    }
+
+    [Test]
     public void ShouldBeIdlePhaseAfterSkillUsed()
     {
         character.SetPhase(Character.Phase.CombatAction);

@@ -14,7 +14,6 @@ public class DisplayPhase : MonoBehaviour
                                                .Subscribe(x =>
                                                {
                                                    text.text = x.ToString();
-                                                   Debug.Log(x);
                                                })
                                                .AddTo(gameObject);
     }

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using NUnit.Framework;
+using UniRx;
 
 [TestFixture]
 public class WorldTest
@@ -35,10 +36,35 @@ public class WorldTest
     }
 
     [Test]
+    public void CantMoveToTheObstacleAfterAddedToTheWorld()
+    {
+        var character = new Character();
+        Assert.IsTrue(character.CanMove(Direction.Right));
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+
+        map = new Map();
+        map.Width = 5;
+        map.Depth = 5;
+        map.Initialize();
+        map.GetCell(1, 0).canWalk = false;
+        world = new World(map);
+
+        world.AddCharacter(character);
+        Assert.IsFalse(character.CanMove(Direction.Right));
+        character.Move(Direction.Right);
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+    }
+
+    [Test]
     public void ShouldReturnNextCharacterAndSetItToBeMovePhase()
     {
         // returns null when no characters in the world
-        Assert.IsNull(world.GetNextCharacterToAction());
+        Assert.IsNull(world.CurrentActor.Value);
+
+        Character currentActor = null;
+        world.CurrentActor.Subscribe(x => currentActor = x);
 
         var character = new Character();
         var characterTwo = new Character();
@@ -49,29 +75,44 @@ public class WorldTest
         Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
 
-        Assert.AreEqual(character, world.GetNextCharacterToAction());
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(character, currentActor);
         Assert.AreEqual(Character.Phase.Move, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
         character.SetPhase(Character.Phase.Idle);
 
-        Assert.AreEqual(characterTwo, world.GetNextCharacterToAction());
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(characterTwo, currentActor);
         Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Move, characterTwo.CurrentPhase.Value);
         characterTwo.SetPhase(Character.Phase.Idle);
 
-        Assert.AreEqual(character, world.GetNextCharacterToAction());
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(character, currentActor);
         Assert.AreEqual(Character.Phase.Move, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
     }
 
     [Test]
-    public void ApplyMovementToTheCharacter()
+    public void ApplyMovementTotheCharacterAndtheMap()
     {
         var character = new Character();
         world.AddCharacter(character);
 
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
+
+        Assert.IsTrue(map.GetCell(0, 0).hasCharacter);
+        Assert.AreEqual(character, map.GetCell(0, 0).characterInTheCell);
+
+        world.ApplyMove(character, Direction.Right);
+        Assert.AreEqual(1, character.X);
+        Assert.AreEqual(0, character.Y);
+        Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
+        Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
+
+        Assert.IsTrue(map.GetCell(1, 0).hasCharacter);
+        Assert.AreEqual(character, map.GetCell(1, 0).characterInTheCell);
     }
 
     [Test]

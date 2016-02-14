@@ -22,7 +22,7 @@ public class CharacterCombatActionResult
     public Skill usedSkill;
 }
 
-public class Character : DisposableCharacter, ICharacter
+public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 {
     public static int canMoveTimePerTurns = 4;
 
@@ -36,6 +36,9 @@ public class Character : DisposableCharacter, ICharacter
     public ReactiveProperty<Coord> Location { get; private set; }
     public ReactiveProperty<int> CurrentHealth { get; private set; }
     public ReactiveProperty<bool> Dead { get; private set; }
+
+    public Func<Character, Coord, bool> MoveChecker { get; set; }
+    public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
     private List<Skill> skills = new List<Skill>();
 
@@ -88,6 +91,15 @@ public class Character : DisposableCharacter, ICharacter
                 new Coord(-1, 0),
             }
         });
+
+        InitializeWorldUtilities();
+    }
+
+    // initialize world utilities so it doesnt make exception before provided utilities by a provider
+    void InitializeWorldUtilities()
+    {
+        MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
+        Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
     }
 
     public enum Phase
@@ -111,10 +123,10 @@ public class Character : DisposableCharacter, ICharacter
         }
     }
 
-    public bool CanMove(Direction direction, Func<int, int, bool> canMove)
+    public bool CanMove(Direction direction)
     {
         var destination = Location.Value + direction.ToCoord();
-        if (!canMove(destination.x, destination.y)) return false;
+        if (!MoveChecker(this, destination)) return false;
 
         return true;
     }
