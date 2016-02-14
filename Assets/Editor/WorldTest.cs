@@ -36,6 +36,17 @@ public class WorldTest
     }
 
     [Test]
+    public void CantAddToTheCellCantMoveTo()
+    {
+        var character = new Character();
+        Assert.IsTrue(world.AddCharacter(character, 0, 0));
+
+        var characterTwo = new Character();
+        // false meand we couldnt add the character to the world(in the place)
+        Assert.False(world.AddCharacter(characterTwo, 0, 0));
+    }
+
+    [Test]
     public void CantMoveToTheObstacleAfterAddedToTheWorld()
     {
         var character = new Character();
@@ -58,6 +69,33 @@ public class WorldTest
     }
 
     [Test]
+    public void CantMoveToTheOccupiedPlace()
+    {
+        var character = new Character();
+        var characterTwo = new Character();
+        var enemy = new Character();
+
+        Assert.IsTrue(world.AddCharacter(character, 0, 1));
+        Assert.IsTrue(world.AddCharacter(characterTwo, 1, 1));
+        Assert.IsTrue(world.AddCharacter(enemy, 0, 2));
+
+        Assert.IsTrue(character.CanMove(Direction.Down));
+        Assert.IsFalse(character.CanMove(Direction.Right));
+        Assert.IsFalse(character.CanMove(Direction.Up));
+
+        Assert.IsTrue(characterTwo.CanMove(Direction.Right));
+
+        characterTwo.SetPhase(Character.Phase.Move);
+        world.ApplyMove(characterTwo, Direction.Right);
+        Assert.AreEqual(2, characterTwo.X);
+        Assert.AreEqual(1, characterTwo.Y);
+
+        Assert.IsTrue(character.CanMove(Direction.Down));
+        Assert.IsTrue(character.CanMove(Direction.Right));
+        Assert.IsFalse(character.CanMove(Direction.Up));
+    }
+
+    [Test]
     public void ShouldReturnNextCharacterAndSetItToBeMovePhase()
     {
         // returns null when no characters in the world
@@ -69,8 +107,8 @@ public class WorldTest
         var character = new Character();
         var characterTwo = new Character();
 
-        world.AddCharacter(character);
-        world.AddCharacter(characterTwo);
+        Assert.IsTrue(world.AddCharacter(character, 0, 0));
+        Assert.IsTrue(world.AddCharacter(characterTwo, 1, 1));
 
         Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
         Assert.AreEqual(Character.Phase.Idle, characterTwo.CurrentPhase.Value);
@@ -105,6 +143,10 @@ public class WorldTest
         Assert.IsTrue(map.GetCell(0, 0).hasCharacter);
         Assert.AreEqual(character, map.GetCell(0, 0).characterInTheCell);
 
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(character, world.CurrentActor.Value);
+
+        Assert.IsTrue(character.CanMove(Direction.Right));
         world.ApplyMove(character, Direction.Right);
         Assert.AreEqual(1, character.X);
         Assert.AreEqual(0, character.Y);
@@ -134,11 +176,12 @@ public class WorldTest
         var enemy = new Character();
         var enemyTwo = new Character();
 
-        world.AddCharacter(character);
-        world.AddCharacter(characterTwo);
+        
+        Assert.IsTrue(world.AddCharacter(character, 0, 0));
+        Assert.IsTrue(world.AddCharacter(characterTwo, 1, 1));
 
-        world.AddCharacterAsEnemy(enemy);
-        world.AddCharacterAsEnemy(enemyTwo);
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemy, 2, 2));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 3, 3));
 
         var playersHostiles = world.GetAllHostiles(character);
 
@@ -176,21 +219,15 @@ public class WorldTest
         var enemy = new Character();
         var enemyTwo = new Character();
 
-        character.Location.Value = new Coord(1, 1);
-        characterTwo.Location.Value = new Coord(5, 5);
-
-        enemy.Location.Value = new Coord(4, 4);
-        enemyTwo.Location.Value = new Coord(3, 3);
-
-        world.AddCharacter(character);
-        world.AddCharacter(characterTwo);
+        world.AddCharacter(character, 1, 1);
+        world.AddCharacter(characterTwo, 5, 5);
 
         //should return null when theres no hostiles
         Assert.IsNull(world.GetClosestHostile(character));
         Assert.IsNull(world.GetClosestHostile(characterTwo));
 
-        world.AddCharacterAsEnemy(enemy);
-        world.AddCharacterAsEnemy(enemyTwo);
+        world.AddCharacterAsEnemy(enemy, 4, 4);
+        world.AddCharacterAsEnemy(enemyTwo, 3, 3);
 
         var closestHostile = world.GetClosestHostile(character);
         Assert.AreEqual(enemyTwo, closestHostile);

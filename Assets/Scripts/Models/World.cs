@@ -41,9 +41,20 @@ public class World : IWorldUtilitiesProvider
 
     public bool AddCharacter(Character character)
     {
-        if (allCharacters.Contains(character)) return false;
-        if (!map.CanWalk(character.X, character.Y, character)) return false;
+        return AddCharacter(character, character.Location.Value);
+    }
 
+    public bool AddCharacter(Character character, int x, int y)
+    {
+        return AddCharacter(character, new Coord(x, y));
+    }
+
+    public bool AddCharacter(Character character, Coord destination)
+    {
+        if (allCharacters.Contains(character)) return false;
+        if (!map.CanWalk(destination.x, destination.y, character)) return false;
+
+        character.SetLocation(destination);
         ProvideWorldUtilities(character);
         allCharacters.Add(character);
         map.SetCharacter(character);
@@ -53,7 +64,17 @@ public class World : IWorldUtilitiesProvider
 
     public bool AddCharacterAsEnemy(Character character)
     {
-        if (!AddCharacter(character)) return false;
+        return AddCharacterAsEnemy(character, character.Location.Value);
+    }
+
+    public bool AddCharacterAsEnemy(Character character, int x, int y)
+    {
+        return AddCharacterAsEnemy(character, new Coord(x, y));
+    }
+
+    public bool AddCharacterAsEnemy(Character character, Coord destination)
+    {
+        if (!AddCharacter(character, destination)) return false;
 
         enemies.Add(character);
         character.SetIsPlayer(false);
@@ -91,8 +112,11 @@ public class World : IWorldUtilitiesProvider
     {
         if (!character.CanMove(direction)) return;
 
+        var locationBeforeMove = character.Location.Value;
         character.Move(direction);
-        map.MoveCharacterToFrom(character, character.Location.Value, character.Location.Value + direction.ToCoord());
+        map.MoveCharacterToFrom(character, locationBeforeMove, locationBeforeMove + direction.ToCoord());
+
+        Debug.Log(character.Location.Value);
     }
 
     public void ApplyUseSkill(Character character, Skill skill)
@@ -107,7 +131,7 @@ public class World : IWorldUtilitiesProvider
         int x = coord.x;
         int y = coord.y;
         if (x < 0 || y < 0 || x >= map.Width || y >= map.Depth) return false;
-        if (!map.GetCell(x, y).canWalk) return false;
+        if (!map.CanWalk(coord.x, coord.y ,character)) return false;
 
         return true;
     }

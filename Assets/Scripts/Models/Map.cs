@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using UniRx;
 
 [Serializable]
 public class Map
@@ -60,8 +61,6 @@ public class Map
 
     public void SetCharacter(Character character)
     {
-
-
         cells[character.X, character.Y].characterInTheCell = character;
     }
 

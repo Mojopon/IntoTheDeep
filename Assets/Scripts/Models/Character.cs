@@ -7,11 +7,11 @@ using System.Collections.Generic;
 public class CharacterMoveResult
 {
     public Character target;
-    public List<Direction> moveDirections;
-    public CharacterMoveResult(Character target, List<Direction> moveDirections)
+    public Direction direction;
+    public CharacterMoveResult(Character target, Direction direction)
     {
         this.target = target;
-        this.moveDirections = moveDirections;
+        this.direction = direction;
     }
 }
 
@@ -33,6 +33,8 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public Alliance Alliance { get; private set; }
     public int MaxMove { get; private set; }
 
+    public ReactiveProperty<CharacterMoveResult> MoveResult { get; private set; }
+
     public ReactiveProperty<Coord> Location { get; private set; }
     public ReactiveProperty<int> CurrentHealth { get; private set; }
     public ReactiveProperty<bool> Dead { get; private set; }
@@ -45,6 +47,8 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     public Character()
     {
+        this.MoveResult = new ReactiveProperty<CharacterMoveResult>();
+
         this.Location = new ReactiveProperty<Coord>();
         this.CurrentHealth = new ReactiveProperty<int>(1);
         this.Dead = new ReactiveProperty<bool>(false);
@@ -123,8 +127,17 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         }
     }
 
+    public void SetLocation(Coord location)
+    {
+        if (this.X != location.x || this.Y != location.y)
+        {
+            this.Location.Value = location;
+        }
+    }
+
     public bool CanMove(Direction direction)
     {
+        if (canMoveTime <= 0) return false;
         var destination = Location.Value + direction.ToCoord();
         if (!MoveChecker(this, destination)) return false;
 
@@ -136,6 +149,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         if (canMoveTime <= 0) return;
 
         this.Location.Value += direction.ToCoord();
+        MoveResult.Value = new CharacterMoveResult(this, direction);
         canMoveTime--;
 
         if(canMoveTime == 0)

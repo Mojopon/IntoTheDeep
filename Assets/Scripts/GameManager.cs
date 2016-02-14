@@ -169,9 +169,8 @@ public class GameManager : MonoBehaviour
     {
 
         var character = new Character();
-        world.AddCharacterAsEnemy(character);
+        world.AddCharacterAsEnemy(character, 3, 3);
         SpawnCharacterToWorld(character);
-        character.Location.Value = new Coord(3, 3);
 
         yield break;
     }

@@ -40,4 +40,23 @@ public class MapTest
         Assert.IsTrue(map.CanWalk(0, 0, character));
         Assert.IsFalse(map.CanWalk(0, 0, characterTwo));
     }
+
+    [Test]
+    public void ShouldAddCharacterToTheCell()
+    {
+        var character = new Character();
+        character.Location.Value = new Coord(0, 0);
+        Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
+        Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
+
+        map.SetCharacter(character);
+        Assert.IsTrue(map.GetCell(0, 0).hasCharacter);
+        Assert.AreEqual(character, map.GetCell(0, 0).characterInTheCell);
+
+        map.MoveCharacterToFrom(character, character.Location.Value, new Coord(1, 0));
+        Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
+        Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
+        Assert.IsTrue(map.GetCell(1, 0).hasCharacter);
+        Assert.AreEqual(character, map.GetCell(1, 0).characterInTheCell);
+    }
 }

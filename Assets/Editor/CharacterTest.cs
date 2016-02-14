@@ -70,6 +70,21 @@ public class CharacterTest
     }
 
     [Test]
+    public void ShouldSendMoveResultWhenMoved()
+    {
+        CharacterMoveResult moveResult = null;
+        character.MoveResult.Subscribe(x => moveResult = x);
+
+        character.SetPhase(Character.Phase.Move);
+        character.Move(Direction.Right);
+
+        Assert.IsNotNull(moveResult);
+        Assert.AreEqual(character, moveResult.target);
+        Assert.AreEqual(Direction.Right, moveResult.direction);
+
+    }
+
+    [Test]
     public void DiesAtLessThanZeroHealth()
     {
         var isDead = false;
@@ -94,6 +109,10 @@ public class CharacterTest
 
                                                                     return true;
                                                                 });
+
+        // should return false when its not in move phase
+        Assert.IsFalse(character.CanMove(Direction.Up));
+        character.SetPhase(Character.Phase.Move);
 
         Assert.IsFalse(character.CanMove(Direction.Right));
         Assert.IsTrue(character.CanMove(Direction.Up));
