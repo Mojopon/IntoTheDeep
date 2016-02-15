@@ -50,6 +50,7 @@ public class WorldTest
     public void CantMoveToTheObstacleAfterAddedToTheWorld()
     {
         var character = new Character();
+        character.SetPhase(Character.Phase.Move);
         Assert.IsTrue(character.CanMove(Direction.Right));
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
@@ -72,7 +73,9 @@ public class WorldTest
     public void CantMoveToTheOccupiedPlace()
     {
         var character = new Character();
+        character.SetPhase(Character.Phase.Move);
         var characterTwo = new Character();
+        characterTwo.SetPhase(Character.Phase.Move);
         var enemy = new Character();
 
         Assert.IsTrue(world.AddCharacter(character, 0, 1));

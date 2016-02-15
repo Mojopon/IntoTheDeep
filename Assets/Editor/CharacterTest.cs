@@ -33,6 +33,7 @@ public class CharacterTest
         var changedToCombatActionPhase = false;
         character.CurrentPhase.Where(x => x == Character.Phase.CombatAction).Subscribe(x => changedToCombatActionPhase = true);
         // cant move until it goes move phase
+        Assert.IsFalse(character.CanMove(Direction.Right));
         character.Move(Direction.Right);
         Assert.AreEqual(0, coordAfterMove.x);
         Assert.AreEqual(0, coordAfterMove.y);

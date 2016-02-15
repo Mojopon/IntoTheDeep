@@ -115,8 +115,6 @@ public class World : IWorldUtilitiesProvider
         var locationBeforeMove = character.Location.Value;
         character.Move(direction);
         map.MoveCharacterToFrom(character, locationBeforeMove, locationBeforeMove + direction.ToCoord());
-
-        Debug.Log(character.Location.Value);
     }
 
     public void ApplyUseSkill(Character character, Skill skill)

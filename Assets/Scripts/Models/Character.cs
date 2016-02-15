@@ -146,7 +146,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     public void Move(Direction direction)
     {
-        if (canMoveTime <= 0) return;
+        if (!CanMove(direction)) return;
 
         this.Location.Value += direction.ToCoord();
         MoveResult.Value = new CharacterMoveResult(this, direction);
