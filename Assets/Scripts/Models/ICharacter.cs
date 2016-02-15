@@ -11,8 +11,6 @@ public interface ICharacter
     Alliance Alliance { get; }
     int MaxMove { get; }
 
-    ReactiveProperty<CharacterMoveResult> MoveResult { get; }
-
     ReactiveProperty<Coord> Location { get; }
     ReactiveProperty<int> CurrentHealth { get; }
     ReactiveProperty<bool> Dead { get; }

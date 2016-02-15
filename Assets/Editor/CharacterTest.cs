@@ -71,21 +71,6 @@ public class CharacterTest
     }
 
     [Test]
-    public void ShouldSendMoveResultWhenMoved()
-    {
-        CharacterMoveResult moveResult = null;
-        character.MoveResult.Subscribe(x => moveResult = x);
-
-        character.SetPhase(Character.Phase.Move);
-        character.Move(Direction.Right);
-
-        Assert.IsNotNull(moveResult);
-        Assert.AreEqual(character, moveResult.target);
-        Assert.AreEqual(Direction.Right, moveResult.direction);
-
-    }
-
-    [Test]
     public void DiesAtLessThanZeroHealth()
     {
         var isDead = false;

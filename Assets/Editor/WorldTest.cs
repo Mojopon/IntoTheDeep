@@ -36,6 +36,17 @@ public class WorldTest
     }
 
     [Test]
+    public void ShouldUpdateAddedCharacterWhenCharacterAdded()
+    {
+        var character = new Character();
+        Character addedCharacter = null;
+        world.AddedCharacter.Subscribe(x => addedCharacter = x);
+        world.AddCharacter(character);
+        Assert.IsNotNull(addedCharacter);
+        Assert.AreEqual(addedCharacter, character);
+    }
+
+    [Test]
     public void CantAddToTheCellCantMoveTo()
     {
         var character = new Character();
@@ -139,6 +150,8 @@ public class WorldTest
     {
         var character = new Character();
         world.AddCharacter(character);
+        CharacterMoveResult moveResult = null;
+        world.MoveResult.Subscribe(x => moveResult = x);
 
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
@@ -153,6 +166,11 @@ public class WorldTest
         world.ApplyMove(character, Direction.Right);
         Assert.AreEqual(1, character.X);
         Assert.AreEqual(0, character.Y);
+        // MoveResult property should be updated when applied move 
+        Assert.IsNotNull(moveResult);
+        Assert.AreEqual(character, moveResult.target);
+        Assert.AreEqual(new Coord(0, 0), moveResult.source);
+        Assert.AreEqual(new Coord(1, 0), moveResult.destination);
         Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
         Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
 

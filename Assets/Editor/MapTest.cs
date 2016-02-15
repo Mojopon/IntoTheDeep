@@ -21,7 +21,7 @@ public class MapTest
     public void CheckIfTheCharacterCanMoveToTheCell()
     {
         var character = new Character();
-        character.Location.Value = new Coord(0, 0);
+        character.SetLocation(0, 0);
 
         for(int y = 0; y < map.Depth; y++)
         {
@@ -45,7 +45,7 @@ public class MapTest
     public void ShouldAddCharacterToTheCell()
     {
         var character = new Character();
-        character.Location.Value = new Coord(0, 0);
+        character.SetLocation(0, 0);
         Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
         Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
 
@@ -58,5 +58,19 @@ public class MapTest
         Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
         Assert.IsTrue(map.GetCell(1, 0).hasCharacter);
         Assert.AreEqual(character, map.GetCell(1, 0).characterInTheCell);
+    }
+    
+    [Test]
+    public void ShouldSetAddedCharacterToTheWorld()
+    {
+        var world = new World(map);
+        var character = new Character();
+        character.SetLocation(0, 0);
+        Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
+        Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
+
+        world.AddCharacter(character);
+        Assert.IsTrue(map.GetCell(0, 0).hasCharacter);
+        Assert.AreEqual(character, map.GetCell(0, 0).characterInTheCell);
     }
 }

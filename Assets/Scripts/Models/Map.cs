@@ -4,7 +4,7 @@ using System;
 using UniRx;
 
 [Serializable]
-public class Map
+public class Map : IWorldEventSubscriber
 {
     public int Width;
     public int Depth;
@@ -73,4 +73,23 @@ public class Map
 
         return false;
     }
+
+    #region IWorldEventSubscriber Method
+    public IDisposable Subscribe(IWorldEventPublisher publisher)
+    {
+        var compositeDisposable = new CompositeDisposable();
+
+        publisher.MoveResult
+                 .Where(x => x != null)
+                 .Subscribe(x => MoveCharacterToFrom(x.target, x.source, x.destination))
+                 .AddTo(compositeDisposable);
+
+        publisher.AddedCharacter
+                 .Where(x => x != null)
+                 .Subscribe(x => SetCharacter(x))
+                 .AddTo(compositeDisposable);
+
+        return compositeDisposable;
+    }
+    #endregion
 }

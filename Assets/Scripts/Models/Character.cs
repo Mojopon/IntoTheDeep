@@ -7,15 +7,17 @@ using System.Collections.Generic;
 public class CharacterMoveResult
 {
     public Character target;
-    public Direction direction;
-    public CharacterMoveResult(Character target, Direction direction)
+    public Coord source;
+    public Coord destination;
+    public CharacterMoveResult(Character target, Coord source, Coord destination)
     {
         this.target = target;
-        this.direction = direction;
+        this.source = source;
+        this.destination = destination;
     }
 }
 
-public class CharacterCombatActionResult
+public class CharacterCombatResult
 {
     public Character user;
     public Character[] targets;
@@ -33,8 +35,6 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public Alliance Alliance { get; private set; }
     public int MaxMove { get; private set; }
 
-    public ReactiveProperty<CharacterMoveResult> MoveResult { get; private set; }
-
     public ReactiveProperty<Coord> Location { get; private set; }
     public ReactiveProperty<int> CurrentHealth { get; private set; }
     public ReactiveProperty<bool> Dead { get; private set; }
@@ -47,8 +47,6 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     public Character()
     {
-        this.MoveResult = new ReactiveProperty<CharacterMoveResult>();
-
         this.Location = new ReactiveProperty<Coord>();
         this.CurrentHealth = new ReactiveProperty<int>(1);
         this.Dead = new ReactiveProperty<bool>(false);
@@ -127,6 +125,11 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         }
     }
 
+    public void SetLocation(int x, int y)
+    {
+        SetLocation(new Coord(x, y));
+    }
+
     public void SetLocation(Coord location)
     {
         if (this.X != location.x || this.Y != location.y)
@@ -144,18 +147,22 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         return true;
     }
 
-    public void Move(Direction direction)
+    public CharacterMoveResult Move(Direction direction)
     {
-        if (!CanMove(direction)) return;
+        if (!CanMove(direction)) return null;
 
+        var locationBeforeMove = this.Location.Value;
         this.Location.Value += direction.ToCoord();
-        MoveResult.Value = new CharacterMoveResult(this, direction);
+
+        var moveResult = new CharacterMoveResult(this, locationBeforeMove, this.Location.Value);
         canMoveTime--;
 
         if(canMoveTime == 0)
         {
             SetPhase(Phase.CombatAction);
         }
+
+        return moveResult;
     }
 
     public void OnSkillUsed(Skill skill)

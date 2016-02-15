@@ -5,9 +5,14 @@ using UniRx;
 using System.Linq;
 using System;
 
-public class World : IWorldUtilitiesProvider
+public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 {
-    public ReactiveProperty<Character> CurrentActor = new ReactiveProperty<Character>();
+    #region IWorldEvents Property Group
+    public ReactiveProperty<Character> AddedCharacter { get; private set; }
+    public ReactiveProperty<Character> CurrentActor { get; private set; }
+    public ReactiveProperty<CharacterMoveResult> MoveResult { get; private set; }
+    public ReactiveProperty<CharacterCombatResult> CombatResult { get; private set; }
+    #endregion
 
     private Map map;
 
@@ -17,9 +22,21 @@ public class World : IWorldUtilitiesProvider
     private List<Character> enemies = new List<Character>();
     private int deadEnemies = 0;
 
+    private CompositeDisposable disposables = new CompositeDisposable();
     public World(Map map)
     {
+        AddedCharacter = new ReactiveProperty<Character>();
+        CurrentActor = new ReactiveProperty<Character>();
+        MoveResult = new ReactiveProperty<CharacterMoveResult>();
+        CombatResult = new ReactiveProperty<CharacterCombatResult>();
+
         this.map = map;
+        map.Subscribe(this)
+           .AddTo(disposables);
+
+        AddedCharacter.Where(x => x != null)
+                      .Subscribe(x => allCharacters.Add(x))
+                      .AddTo(disposables);
     }
 
     // actor means the character who is moving or fighting in the turn
@@ -55,9 +72,9 @@ public class World : IWorldUtilitiesProvider
         if (!map.CanWalk(destination.x, destination.y, character)) return false;
 
         character.SetLocation(destination);
+        // provide utilities for the character to act in the world
         ProvideWorldUtilities(character);
-        allCharacters.Add(character);
-        map.SetCharacter(character);
+        AddedCharacter.Value = character;
 
         return true;
     }
@@ -90,7 +107,7 @@ public class World : IWorldUtilitiesProvider
                      if (x) deadEnemies++;
                      else deadEnemies--;
                  })
-                 .AddTo(character.Disposables);
+                 .AddTo(disposables);
 
         return true;
     }
@@ -113,8 +130,7 @@ public class World : IWorldUtilitiesProvider
         if (!character.CanMove(direction)) return;
 
         var locationBeforeMove = character.Location.Value;
-        character.Move(direction);
-        map.MoveCharacterToFrom(character, locationBeforeMove, locationBeforeMove + direction.ToCoord());
+        this.MoveResult.Value = character.Move(direction);
     }
 
     public void ApplyUseSkill(Character character, Skill skill)
@@ -177,4 +193,11 @@ public class World : IWorldUtilitiesProvider
         user.MoveChecker = new Func<Character, Coord, bool>((character, coord) => CanMove(character, coord));
         user.Pathfinding = new Func<Coord, Coord, Direction[]>((source, target) => GeneratePath(source, target));
     }
+
+    #region IDisposables Method
+    public void Dispose()
+    {
+        disposables.Dispose();
+    }
+    #endregion
 }
