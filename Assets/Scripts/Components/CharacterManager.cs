@@ -2,8 +2,9 @@
 using System.Collections;
 using System;
 using UniRx;
+using System.Collections.Generic;
 
-public class CharacterManager : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
+public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
     public Transform characterPrefab;
 
@@ -11,48 +12,41 @@ public class CharacterManager : MonoBehaviour, IWorldUtilitiesUser, IMapInstance
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
-    private Transform characterObj;
-    private Character character;
     private World world;
+    private Dictionary<Character, CharacterController> characters = new Dictionary<Character, CharacterController>();
 
-    public void Spawn(Character character, MapInstance mapToSpawn, World world)
+    public void Initialize(MapInstance mapInstance, World world)
     {
-        this.world = world;
+        mapInstance.ProvideMapInstanceUtilities(this);
         world.ProvideWorldUtilities(this);
+        Subscribe(world).AddTo(gameObject);
+    }
 
-        mapToSpawn.ProvideMapInstanceUtilities(this);
-
-        characterObj = Instantiate(characterPrefab,
-                                   Vector3.zero,
-                                   characterPrefab.rotation) as Transform;
+    public void Spawn(Character character)
+    {
+        var characterObj = Instantiate(characterPrefab,
+                                       CoordToWorldPositionConverter(character.X, character.Y),
+                                       characterPrefab.rotation) as Transform;
         characterObj.SetParent(transform);
+
+        var characterController = characterObj.GetComponent<CharacterController>();
+        characters.Add(character, characterController);
 
         character.Location
                  .Subscribe(coord => 
                  {
-                     StopCoroutine("SequenceMoveTransform");
-                     StartCoroutine("SequenceMoveTransform", coord);
+                     characterController.Move(CoordToWorldPositionConverter(coord.x, coord.y));
                  });
-
-        this.character = character;
     }
 
-    private float timeToFinishMove = 0.1f;
-    // Process Move Object in the Game Scene
-    IEnumerator SequenceMoveTransform(Coord coord)
+    public IDisposable Subscribe(IWorldEventPublisher publisher)
     {
-        var destination = CoordToWorldPositionConverter(coord.x, coord.y);
+        var disposables = new CompositeDisposable();
+        publisher.AddedCharacter
+                 .Where(x => x != null)
+                 .Subscribe(x => Spawn(x))
+                 .AddTo(disposables);
 
-        float speed = 1 / timeToFinishMove;
-
-        float progress = 0;
-        while(Vector3.Distance(transform.position, destination) > Mathf.Epsilon)
-        {
-            progress += speed * Time.deltaTime;
-            transform.position = Vector3.Lerp(transform.position, destination, progress);
-            yield return null;
-        }
-
-        yield break;
+        return disposables;
     }
 }

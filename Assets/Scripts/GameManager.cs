@@ -24,8 +24,6 @@ public class GameManager : MonoBehaviour
 
     // Manage Characters In The World(Map)
     private World world;
-    // Add Character to this Container When its Spawned to Find Character Manager for The Character
-    private Dictionary<Character, CharacterManager> characters = new Dictionary<Character, CharacterManager>();
 
     private GameObject gameObjectHolder;
 
@@ -96,6 +94,10 @@ public class GameManager : MonoBehaviour
         var currentMap = mapInstance.GetCurrentMap();
         world = new World(currentMap);
         CurrentActor = world.CurrentActor;
+
+        CharacterManager characterManager = Instantiate(characterManagerPrefab);
+        characterManager.transform.SetParent(gameObjectHolder.transform);
+        characterManager.Initialize(mapInstance, world);
         StartCoroutine(SequenceSetupPlayers());
         StartCoroutine(SequenceSetupEnemies());
 
@@ -160,7 +162,6 @@ public class GameManager : MonoBehaviour
         // create characters
         var character = new Character();
         world.AddCharacter(character);
-        SpawnCharacterToWorld(character);
 
         yield break;
     }
@@ -170,7 +171,6 @@ public class GameManager : MonoBehaviour
 
         var character = new Character();
         world.AddCharacterAsEnemy(character, 3, 3);
-        SpawnCharacterToWorld(character);
 
         yield break;
     }
@@ -205,14 +205,5 @@ public class GameManager : MonoBehaviour
                            {
                                target.Input(x);
                            });
-    }
-
-    void SpawnCharacterToWorld(Character character)
-    {
-        var newCharacter = Instantiate(characterManagerPrefab, Vector3.zero, Quaternion.identity) as CharacterManager;
-        newCharacter.Spawn(character, mapInstance, world);
-        newCharacter.transform.SetParent(gameObjectHolder.transform);
-
-        characters.Add(character, newCharacter);
     }
 }
