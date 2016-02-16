@@ -40,6 +40,7 @@ public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUti
             SkillMenu.Current.DisplaySkills(character);
 
             gameManager.PlayerInput.Skip(1)
+                                   .Where(x => !gameManager.MenuIsOpened)
                                    .Subscribe(x =>
                                    {
                                        SkillMenu.Current.Input(x);

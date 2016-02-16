@@ -4,6 +4,8 @@ using System;
 using UniRx;
 using System.Collections.Generic;
 
+// class to spawn character transforms and observe World Events to send
+// message the controller
 public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
     public Transform characterPrefab;
@@ -11,6 +13,8 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
     public Func<Character,Coord, bool> MoveChecker { get; set; }
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
+
+    public bool AllActionsDone { get { return true;  } }
 
     private World world;
     private Dictionary<Character, CharacterController> characters = new Dictionary<Character, CharacterController>();
@@ -31,12 +35,12 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
 
         var characterController = characterObj.GetComponent<CharacterController>();
         characters.Add(character, characterController);
+    }
 
-        character.Location
-                 .Subscribe(coord => 
-                 {
-                     characterController.Move(CoordToWorldPositionConverter(coord.x, coord.y));
-                 });
+    void OnCharacterMove(CharacterMoveResult moveResult)
+    {
+        var controller = characters[moveResult.target];
+        controller.Move(CoordToWorldPositionConverter(moveResult.destination.x, moveResult.destination.y));
     }
 
     public IDisposable Subscribe(IWorldEventPublisher publisher)
@@ -46,6 +50,10 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
                  .Where(x => x != null)
                  .Subscribe(x => Spawn(x))
                  .AddTo(disposables);
+
+        publisher.MoveResult
+                 .Where(x => x != null)
+                 .Subscribe(x => OnCharacterMove(x));
 
         return disposables;
     }

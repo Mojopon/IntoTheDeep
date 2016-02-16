@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    public float characterMoveSpeed = 0.1f;
+
     public MapInstance mapPrefab;
     public CharacterManager characterManagerPrefab;
     public GameObject menuObjects;
@@ -20,10 +22,14 @@ public class GameManager : MonoBehaviour
 
     public ReactiveProperty<Character> CurrentActor;
 
+    // Spawn Maptiles and Manage Maps
     private MapInstance mapInstance;
 
     // Manage Characters In The World(Map)
     private World world;
+
+    // Spawn Character Transforms to the Scene and Manage it(CharacterControllers)
+    private CharacterManager characterManager;
 
     private GameObject gameObjectHolder;
 
@@ -37,7 +43,12 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
 
-        StartCoroutine(SequenceSetupGame());
+        StartCoroutine(StartGame());
+    }
+
+    IEnumerator StartGame()
+    {
+        yield return StartCoroutine(SequenceSetupGame());
 
         StartBattle();
     }
@@ -85,19 +96,19 @@ public class GameManager : MonoBehaviour
         }
         gameObjectHolder = new GameObject("GameObjectHolder");
 
-        mapInstance = Instantiate(mapPrefab, Vector3.zero, Quaternion.identity) as MapInstance;
-        mapInstance.Generate();
-        mapInstance.transform.SetParent(gameObjectHolder.transform);
+        this.mapInstance = Instantiate(mapPrefab, Vector3.zero, Quaternion.identity) as MapInstance;
+        this.mapInstance.Generate();
+        this.mapInstance.transform.SetParent(gameObjectHolder.transform);
         yield return null;
 
         // Create World Characters Class To Manage All of Characters
         var currentMap = mapInstance.GetCurrentMap();
-        world = new World(currentMap);
-        CurrentActor = world.CurrentActor;
+        this.world = new World(currentMap);
+        this.CurrentActor = world.CurrentActor;
 
-        CharacterManager characterManager = Instantiate(characterManagerPrefab);
-        characterManager.transform.SetParent(gameObjectHolder.transform);
-        characterManager.Initialize(mapInstance, world);
+        this.characterManager = Instantiate(characterManagerPrefab);
+        this.characterManager.transform.SetParent(gameObjectHolder.transform);
+        this.characterManager.Initialize(mapInstance, world);
         StartCoroutine(SequenceSetupPlayers());
         StartCoroutine(SequenceSetupEnemies());
 
@@ -168,7 +179,6 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceSetupEnemies()
     {
-
         var character = new Character();
         world.AddCharacterAsEnemy(character, 3, 3);
 
@@ -191,19 +201,11 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceGoNextCharacterPhase()
     {
-        yield return null;
+        while(!characterManager.AllActionsDone)
+        {
+            yield return null;
+        }
 
         world.GoNextCharacterPhase();
-    }
-
-    IDisposable SubscribeInputForTheTarget(IInputtable target)
-    {
-        // subscribe input to command the target.
-        // this will be ignored when a menu is opened
-        return PlayerInput.Where(x => openedMenu == null)
-                           .Subscribe(x => 
-                           {
-                               target.Input(x);
-                           });
     }
 }
