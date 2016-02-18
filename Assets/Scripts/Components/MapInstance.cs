@@ -27,11 +27,6 @@ public class MapInstance : MonoBehaviour, IMapInstanceUtilitiesProvider
         CoordToWorldPositionConverter = new Func<int, int, Vector2>((x, y) => CoordToWorldPosition(x, y));
     }
 
-    public void ProvideMapInstanceUtilities(IMapInstanceUtilitiesUser user)
-    {
-        user.CoordToWorldPositionConverter = new Func<int, int, Vector2>((x, y) => CoordToWorldPosition(x, y));
-    }
-
     public Map GetCurrentMap()
     {
         return currentMap;

@@ -17,11 +17,10 @@ public class CharacterMoveResult
     }
 }
 
-public class CharacterCombatResult
+public class Attributes
 {
-    public Character user;
-    public Character[] targets;
-    public Skill usedSkill;
+    public int health;
+    public int strength;
 }
 
 public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
@@ -36,19 +35,47 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public int MaxMove { get; private set; }
 
     public ReactiveProperty<Coord> Location { get; private set; }
-    public ReactiveProperty<int> CurrentHealth { get; private set; }
     public ReactiveProperty<bool> Dead { get; private set; }
 
     public Func<Character, Coord, bool> MoveChecker { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
+    // character attributes
+    public int maxHealth { get; private set; }
+    public int maxStrength { get; private set; }
+
+    public ReactiveProperty<int> CurrentHealth { get; private set; }
+    public ReactiveProperty<int> CurrentStrength { get; private set; }
+
     private List<Skill> skills = new List<Skill>();
 
-
-    public Character()
+    public static Character Create(Attributes initialAttributes)
     {
+        return new Character(initialAttributes);
+    }
+
+    public static Character Create()
+    {
+        return new Character();
+    }
+
+    protected Character() : this(null) { }
+
+    protected Character(Attributes initialAttributes)
+    {
+        SetCharacterAttributes(initialAttributes);
+        InitializeAttributes();
+
+        Initialize();
+    }
+
+    void Initialize()
+    {
+        // initialize world utilities first so it doesnt make exceptions
+        MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
+        Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
+
         this.Location = new ReactiveProperty<Coord>();
-        this.CurrentHealth = new ReactiveProperty<int>(1);
         this.Dead = new ReactiveProperty<bool>(false);
 
         this.MaxMove = canMoveTimePerTurns;
@@ -59,17 +86,17 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         this.Alliance = Alliance.Player;
 
         this.CurrentHealth.Subscribe(x =>
-            {
-                if (x <= 0) Dead.Value = true;
-                else Dead.Value = false;
-            })
-            .AddTo(Disposables);
+        {
+            if (x <= 0) Dead.Value = true;
+            else Dead.Value = false;
+        })
+        .AddTo(Disposables);
 
         this.Location.Subscribe(coord =>
-            {
-                 X = coord.x;
-                 Y = coord.y;
-            })
+        {
+            X = coord.x;
+            Y = coord.y;
+        })
             .AddTo(Disposables);
 
         this.Dead.Subscribe(x => IsDead = x)
@@ -79,9 +106,9 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         {
             name = "パンチ",
             range = new Coord[]
-            {
+    {
                 new Coord(0, 1),
-            }
+    }
         });
 
         skills.Add(new Skill
@@ -93,15 +120,26 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
                 new Coord(-1, 0),
             }
         });
-
-        InitializeWorldUtilities();
     }
 
-    // initialize world utilities so it doesnt make exception before provided utilities by a provider
-    void InitializeWorldUtilities()
+    void InitializeAttributes()
     {
-        MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
-        Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
+        this.CurrentHealth = new ReactiveProperty<int>(maxHealth);
+        this.CurrentStrength = new ReactiveProperty<int>(maxStrength);
+    }
+
+    void SetCharacterAttributes(Attributes attributes)
+    {
+        if (attributes == null)
+        {
+            this.maxHealth = 10;
+            this.maxStrength = 5;
+        }
+        else
+        {
+            this.maxHealth = attributes.health;
+            this.maxStrength = attributes.strength;
+        }
     }
 
     public enum Phase
@@ -147,6 +185,13 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         return true;
     }
 
+    public bool CanTransferTo(Coord destination)
+    {
+        if (!MoveChecker(this, destination)) return false;
+
+        return true;
+    }
+
     public CharacterMoveResult Move(Direction direction)
     {
         if (!CanMove(direction)) return null;
@@ -165,6 +210,16 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         return moveResult;
     }
 
+    public CharacterMoveResult Transfer(Coord destination)
+    {
+        if (!CanTransferTo(destination)) return null;
+
+        var locationBeforeMove = this.Location.Value;
+        this.Location.Value = destination;
+
+        return new CharacterMoveResult(this, locationBeforeMove, this.Location.Value);
+    }
+
     public void OnSkillUsed(Skill skill)
     {
         // apply changes to the character after using the skill
@@ -172,10 +227,10 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         SetPhase(Phase.Idle);
     }
 
-    public void ApplyHealthChange(int amount)
+    public void ApplyAttributeChanges(Attributes changes)
     {
-        this.CurrentHealth.Value += amount;
-    }
+        CurrentHealth.Value += changes.health;
+    } 
 
     public void SetIsPlayer(bool flag)
     {
@@ -190,5 +245,11 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public Skill[] GetSkills()
     {
         return skills.ToArray();
+    }
+
+    public void GetWorldUtilities(IWorldUtilitiesProvider provider)
+    {
+        MoveChecker = provider.MoveChecker;
+        Pathfinding = provider.Pathfinding;
     }
 }

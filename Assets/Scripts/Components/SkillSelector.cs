@@ -3,13 +3,12 @@ using System.Collections;
 using System;
 using UniRx;
 
-public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
+public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 {
     public Transform marker;
 
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
     public Func<Character, Coord, bool> MoveChecker { get; set; }
-    public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
     private GameManager gameManager;
     private Character character;
@@ -21,9 +20,8 @@ public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUti
         this.character = character;
         this.gameManager = gameManager;
         this.world = world;
-        world.ProvideWorldUtilities(this);
 
-        mapInstance.ProvideMapInstanceUtilities(this);
+        GetMapInstanceUtilities(mapInstance);
 
         selectedSkill = null;
     }
@@ -63,7 +61,7 @@ public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUti
     void SelectSkill()
     {
         Debug.Log(selectedSkill.name + " used");
-        world.ApplyUseSkill(character, selectedSkill);
+        world.ApplyCombat(character, selectedSkill);
 
         Destroy(gameObject);
     }
@@ -77,5 +75,10 @@ public class SkillSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUti
         selectedSkill = availableSkills[UnityEngine.Random.Range(0, availableSkills.Length - 1)];
 
         SelectSkill();
+    }
+
+    public void GetMapInstanceUtilities(IMapInstanceUtilitiesProvider provider)
+    {
+        CoordToWorldPositionConverter = provider.CoordToWorldPositionConverter;
     }
 }

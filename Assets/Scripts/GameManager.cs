@@ -171,7 +171,7 @@ public class GameManager : MonoBehaviour
     IEnumerator SequenceSetupPlayers()
     {
         // create characters
-        var character = new Character();
+        var character = Character.Create();
         world.AddCharacter(character);
 
         yield break;
@@ -179,7 +179,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceSetupEnemies()
     {
-        var character = new Character();
+        var character = Character.Create();
         world.AddCharacterAsEnemy(character, 3, 3);
 
         yield break;

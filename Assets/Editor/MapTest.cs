@@ -20,7 +20,7 @@ public class MapTest
     [Test]
     public void CheckIfTheCharacterCanMoveToTheCell()
     {
-        var character = new Character();
+        var character = Character.Create();
         character.SetLocation(0, 0);
 
         for(int y = 0; y < map.Depth; y++)
@@ -35,7 +35,7 @@ public class MapTest
         Assert.IsFalse(map.CanWalk(1, 1, character));
 
         map.SetCharacter(character);
-        var characterTwo = new Character();
+        var characterTwo = Character.Create();
         // returns false when occupied by another character and true when its a same character
         Assert.IsTrue(map.CanWalk(0, 0, character));
         Assert.IsFalse(map.CanWalk(0, 0, characterTwo));
@@ -44,7 +44,7 @@ public class MapTest
     [Test]
     public void ShouldAddCharacterToTheCell()
     {
-        var character = new Character();
+        var character = Character.Create();
         character.SetLocation(0, 0);
         Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
         Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
@@ -64,7 +64,7 @@ public class MapTest
     public void ShouldSetAddedCharacterToTheWorld()
     {
         var world = new World(map);
-        var character = new Character();
+        var character = Character.Create();
         character.SetLocation(0, 0);
         Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
         Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
@@ -72,5 +72,22 @@ public class MapTest
         world.AddCharacter(character);
         Assert.IsTrue(map.GetCell(0, 0).hasCharacter);
         Assert.AreEqual(character, map.GetCell(0, 0).characterInTheCell);
+    }
+
+    [Test]
+    public void ShouldGetCharacterInTheCell()
+    {
+        var character = Character.Create();
+        character.SetLocation(1, 0);
+        map.SetCharacter(character);
+
+        Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
+        Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
+        Assert.IsTrue(map.GetCell(1, 0).hasCharacter);
+        Assert.AreEqual(character, map.GetCell(1, 0).characterInTheCell);
+
+        // should return null when no character found in the cell
+        Assert.IsNull(map.GetCharacter(new Coord(0, 0)));
+        Assert.AreEqual(character, map.GetCharacter(new Coord(1, 0)));
     }
 }

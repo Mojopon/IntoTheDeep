@@ -21,16 +21,16 @@ public class WorldTest
     [Test]
     public void ShouldReturnTrueWhenAllEnemiesAreDead()
     {
-        var enemyOne = new Character();
-        var enemyTwo = new Character();
+        var enemyOne = Character.Create();
+        var enemyTwo = Character.Create();
         Assert.IsTrue(world.EnemyIsAnnihilated);
 
         world.AddCharacterAsEnemy(enemyOne);
         world.AddCharacterAsEnemy(enemyTwo);
 
         Assert.IsFalse(world.EnemyIsAnnihilated);
-        enemyOne.ApplyHealthChange(-10);
-        enemyTwo.ApplyHealthChange(-10);
+        enemyOne.ApplyAttributeChanges(new Attributes() { health = -20 });
+        enemyTwo.ApplyAttributeChanges(new Attributes() { health = -20 });
 
         Assert.IsTrue(world.EnemyIsAnnihilated);
     }
@@ -38,7 +38,7 @@ public class WorldTest
     [Test]
     public void ShouldUpdateAddedCharacterWhenCharacterAdded()
     {
-        var character = new Character();
+        var character = Character.Create();
         Character addedCharacter = null;
         world.AddedCharacter.Subscribe(x => addedCharacter = x);
         world.AddCharacter(character);
@@ -47,12 +47,21 @@ public class WorldTest
     }
 
     [Test]
+    public void ShouldGetCharacterInTheCell()
+    {
+        var character = Character.Create();
+        character.SetLocation(0, 0);
+        world.AddCharacter(character);
+        Assert.AreEqual(character, world.GetCharacter(new Coord(0, 0)));
+    }
+
+    [Test]
     public void CantAddToTheCellCantMoveTo()
     {
-        var character = new Character();
+        var character = Character.Create();
         Assert.IsTrue(world.AddCharacter(character, 0, 0));
 
-        var characterTwo = new Character();
+        var characterTwo = Character.Create();
         // false meand we couldnt add the character to the world(in the place)
         Assert.False(world.AddCharacter(characterTwo, 0, 0));
     }
@@ -60,7 +69,7 @@ public class WorldTest
     [Test]
     public void CantMoveToTheObstacleAfterAddedToTheWorld()
     {
-        var character = new Character();
+        var character = Character.Create();
         character.SetPhase(Character.Phase.Move);
         Assert.IsTrue(character.CanMove(Direction.Right));
         Assert.AreEqual(0, character.X);
@@ -81,13 +90,42 @@ public class WorldTest
     }
 
     [Test]
+    public void CantTransferToTheObstacleOrOtherCharacter()
+    {
+        var character = Character.Create();
+        Assert.IsTrue(character.CanTransferTo(new Coord(1, 0)));
+
+        map = new Map();
+        map.Width = 5;
+        map.Depth = 5;
+        map.Initialize();
+        map.GetCell(1, 0).canWalk = false;
+        world = new World(map);
+
+        Assert.True(world.AddCharacter(character));
+        // cant transfer out of the map
+        Assert.IsFalse(character.CanTransferTo(new Coord(2, 6)));
+        Assert.IsFalse(character.CanTransferTo(new Coord(-1, 0)));
+
+        Assert.IsFalse(character.CanTransferTo(new Coord(1, 0)));
+        Assert.IsNull(character.Transfer(new Coord(1, 0)));
+
+        Assert.IsTrue(character.CanTransferTo(new Coord(2, 0)));
+        var characterTwo = Character.Create();
+        characterTwo.SetLocation(2, 0);
+        Assert.True(world.AddCharacter(characterTwo));
+        Assert.IsFalse(character.CanTransferTo(new Coord(2, 0)));
+        Assert.IsNull(character.Transfer(new Coord(2, 0)));
+    }
+
+    [Test]
     public void CantMoveToTheOccupiedPlace()
     {
-        var character = new Character();
+        var character = Character.Create();
         character.SetPhase(Character.Phase.Move);
-        var characterTwo = new Character();
+        var characterTwo = Character.Create();
         characterTwo.SetPhase(Character.Phase.Move);
-        var enemy = new Character();
+        var enemy = Character.Create();
 
         Assert.IsTrue(world.AddCharacter(character, 0, 1));
         Assert.IsTrue(world.AddCharacter(characterTwo, 1, 1));
@@ -118,8 +156,8 @@ public class WorldTest
         Character currentActor = null;
         world.CurrentActor.Subscribe(x => currentActor = x);
 
-        var character = new Character();
-        var characterTwo = new Character();
+        var character = Character.Create();
+        var characterTwo = Character.Create();
 
         Assert.IsTrue(world.AddCharacter(character, 0, 0));
         Assert.IsTrue(world.AddCharacter(characterTwo, 1, 1));
@@ -148,7 +186,7 @@ public class WorldTest
     [Test]
     public void ApplyMovementTotheCharacterAndtheMap()
     {
-        var character = new Character();
+        var character = Character.Create();
         world.AddCharacter(character);
         CharacterMoveResult moveResult = null;
         world.MoveResult.Subscribe(x => moveResult = x);
@@ -179,9 +217,47 @@ public class WorldTest
     }
 
     [Test]
+    public void ShouldApplyTransferResult()
+    {
+        var character = Character.Create();
+        world.AddCharacter(character);
+        CharacterMoveResult moveResult = null;
+        world.MoveResult.Subscribe(x => moveResult = x);
+
+        // failed transfer doesnt make moveResult changed
+        Assert.IsFalse(character.CanTransferTo(new Coord(11, 0)));
+        world.ApplyTransfer(character, new Coord(11, 0));
+        Assert.IsNull(moveResult);
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+
+        Assert.True(character.CanTransferTo(new Coord(5, 2)));
+        world.ApplyTransfer(character, new Coord(5, 2));
+        Assert.AreEqual(character, moveResult.target);
+        Assert.AreEqual(new Coord(0, 0), moveResult.source);
+        Assert.AreEqual(new Coord(5, 2), moveResult.destination);
+    }
+
+
+    [Test]
+    public void ApplyTransferToTheCharacter()
+    {
+        var character = Character.Create();
+        world.AddCharacter(character);
+        CharacterMoveResult moveResult = null;
+        world.MoveResult.Subscribe(x => moveResult = x);
+
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+
+        Assert.IsTrue(map.GetCell(0, 0).hasCharacter);
+        Assert.AreEqual(character, map.GetCell(0, 0).characterInTheCell);
+    }
+
+    [Test]
     public void ShouldSetToBeEnemyAllianceWhenAddedAsEnemy()
     {
-        var enemy = new Character();
+        var enemy = Character.Create();
         //should be created as player on default
         Assert.AreEqual(Alliance.Player, enemy.Alliance);
         world.AddCharacterAsEnemy(enemy);
@@ -191,11 +267,11 @@ public class WorldTest
     [Test]
     public void ShouldReturnHostiles()
     {
-        var character = new Character();
-        var characterTwo = new Character();
+        var character = Character.Create();
+        var characterTwo = Character.Create();
 
-        var enemy = new Character();
-        var enemyTwo = new Character();
+        var enemy = Character.Create();
+        var enemyTwo = Character.Create();
 
         
         Assert.IsTrue(world.AddCharacter(character, 0, 0));
@@ -234,11 +310,11 @@ public class WorldTest
     [Test]
     public void ShouldReturnClosestHostile()
     {
-        var character = new Character();
-        var characterTwo = new Character();
+        var character = Character.Create();
+        var characterTwo = Character.Create();
 
-        var enemy = new Character();
-        var enemyTwo = new Character();
+        var enemy = Character.Create();
+        var enemyTwo = Character.Create();
 
         world.AddCharacter(character, 1, 1);
         world.AddCharacter(characterTwo, 5, 5);

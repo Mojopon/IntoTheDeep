@@ -64,6 +64,13 @@ public class Map : IWorldEventSubscriber
         cells[character.X, character.Y].characterInTheCell = character;
     }
 
+    public Character GetCharacter(Coord location)
+    {
+        if (IsOutOfRange(location) || !cells[location.x, location.y].hasCharacter) return null;
+
+        return cells[location.x, location.y].characterInTheCell;
+    }
+
     bool IsOutOfRange(int x, int y)
     {
         if(x < 0 || y < 0 || x >= Width || y >= Depth)
@@ -72,6 +79,11 @@ public class Map : IWorldEventSubscriber
         }
 
         return false;
+    }
+
+    bool IsOutOfRange(Coord location)
+    {
+        return IsOutOfRange(location.x, location.y);
     }
 
     #region IWorldEventSubscriber Method

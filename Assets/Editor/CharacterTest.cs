@@ -14,7 +14,7 @@ public class CharacterTest
     [SetUp]
     public void Initialize()
     {
-        character = new Character();
+        character = Character.Create();
     }
 
     [Test]
@@ -71,19 +71,23 @@ public class CharacterTest
     }
 
     [Test]
-    public void DiesAtLessThanZeroHealth()
+    public void ShouldReturnMoveResult()
     {
-        var isDead = false;
-        Assert.IsFalse(character.IsDead);
+        var moveResult = character.Move(Direction.Right);
+        // should return null when the character failed moving
+        Assert.IsNull(moveResult);
 
-        character.Dead
-                 .Subscribe(x => isDead = x)
-                 .AddTo(disposables);
-        Assert.IsFalse(isDead);
+        character.SetPhase(Character.Phase.Move);
+        moveResult = character.Move(Direction.Right);
+        Assert.AreEqual(character, moveResult.target);
+        Assert.AreEqual(new Coord(0, 0), moveResult.source);
+        Assert.AreEqual(new Coord(1, 0), moveResult.destination);
 
-        character.ApplyHealthChange(-50);
-        Assert.IsTrue(isDead);
-        Assert.IsTrue(character.IsDead);
+        moveResult = character.Move(Direction.Up);
+
+        Assert.AreEqual(character, moveResult.target);
+        Assert.AreEqual(new Coord(1, 0), moveResult.source);
+        Assert.AreEqual(new Coord(1, 1), moveResult.destination);
     }
 
     [Test]
@@ -116,6 +120,84 @@ public class CharacterTest
         character.OnSkillUsed(skill);
 
         Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
+    }
+
+    [Test]
+    public void ShouldTransferCharacterToTheLocation()
+    {
+        // character can be transfered without going to move phase 
+        Assert.IsTrue(character.CanTransferTo(new Coord(5, 6)));
+
+        var moveResult = character.Transfer(new Coord(5, 6));
+        Assert.AreEqual(5, character.X);
+        Assert.AreEqual(6, character.Y);
+
+        Assert.AreEqual(character,moveResult.target);
+        Assert.AreEqual(new Coord(0, 0), moveResult.source);
+        Assert.AreEqual(new Coord(5, 6), moveResult.destination);
+    }
+
+    // Combat test
+    [Test]
+    public void ShouldCreateCharacterWithGivenAttributes ()
+    {
+        int initialHealth = 20;
+        int initialStrength = 10;
+
+        var attributes = new Attributes()
+        {
+            health = initialHealth,
+            strength = initialStrength,
+        };
+
+        var createdCharacter = Character.Create(attributes);
+
+        Assert.AreEqual(initialHealth, createdCharacter.maxHealth);
+        Assert.AreEqual(initialStrength, createdCharacter.maxStrength);
+    }
+
+    [Test]
+    public void ShouldApplyAttributesChange()
+    {
+        int initialHealth = 20;
+        int initialStrength = 10;
+
+        var attributes = new Attributes()
+        {
+            health = initialHealth,
+            strength = initialStrength,
+        };
+
+        character = Character.Create(attributes);
+
+        var attributeChanges = new Attributes()
+        {
+            health = -15,
+            strength = -2,
+        };
+
+        character.ApplyAttributeChanges(attributeChanges);
+        Assert.AreEqual(5, character.CurrentHealth.Value);
+    }
+
+    [Test]
+    public void DiesAtLessThanZeroHealth()
+    {
+        var isDead = false;
+        Assert.IsFalse(character.IsDead);
+
+        character.Dead
+                 .Subscribe(x => isDead = x)
+                 .AddTo(disposables);
+        Assert.IsFalse(isDead);
+
+        var attributeChanges = new Attributes()
+        {
+            health = -15,
+        };
+        character.ApplyAttributeChanges(attributeChanges);
+        Assert.IsTrue(isDead);
+        Assert.IsTrue(character.IsDead);
     }
 
     [TearDown]

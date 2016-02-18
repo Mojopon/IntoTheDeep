@@ -8,6 +8,7 @@ public class Skill
     public string name;
     public SkillType skillType;
     public EffectType effectType;
+    public int power;
 
     public Coord[] range;
 }

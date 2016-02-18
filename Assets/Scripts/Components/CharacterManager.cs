@@ -21,9 +21,10 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
 
     public void Initialize(MapInstance mapInstance, World world)
     {
-        mapInstance.ProvideMapInstanceUtilities(this);
-        world.ProvideWorldUtilities(this);
+        GetMapInstanceUtilities(mapInstance);
+
         Subscribe(world).AddTo(gameObject);
+        GetWorldUtilities(world);
     }
 
     public void Spawn(Character character)
@@ -56,5 +57,16 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
                  .Subscribe(x => OnCharacterMove(x));
 
         return disposables;
+    }
+
+    public void GetWorldUtilities(IWorldUtilitiesProvider provider)
+    {
+        MoveChecker = provider.MoveChecker;
+        Pathfinding = provider.Pathfinding;
+    }
+
+    public void GetMapInstanceUtilities(IMapInstanceUtilitiesProvider provider)
+    {
+        CoordToWorldPositionConverter = provider.CoordToWorldPositionConverter;
     }
 }

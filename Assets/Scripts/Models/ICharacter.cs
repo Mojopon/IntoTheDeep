@@ -2,7 +2,7 @@
 using System.Collections;
 using UniRx;
 
-public interface ICharacter
+public interface ICharacter : ICharacterAttributes
 {
     int X { get; }
     int Y { get; }
@@ -12,6 +12,5 @@ public interface ICharacter
     int MaxMove { get; }
 
     ReactiveProperty<Coord> Location { get; }
-    ReactiveProperty<int> CurrentHealth { get; }
     ReactiveProperty<bool> Dead { get; }
 }

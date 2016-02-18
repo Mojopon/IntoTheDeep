@@ -25,7 +25,7 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
         else
         {
             var mapInstance = mapInstanceObject.GetComponent<IMapInstanceUtilitiesProvider>();
-            mapInstance.ProvideMapInstanceUtilities(this);
+            GetMapInstanceUtilities(mapInstance);
 
             StartCoroutine(GetSkillMenuCoroutine());
         }
@@ -76,5 +76,10 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
         {
             Destroy(previewObjectsHolder);
         }
+    }
+
+    public void GetMapInstanceUtilities(IMapInstanceUtilitiesProvider provider)
+    {
+        CoordToWorldPositionConverter = provider.CoordToWorldPositionConverter;
     }
 }

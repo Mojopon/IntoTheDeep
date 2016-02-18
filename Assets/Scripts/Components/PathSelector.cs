@@ -20,9 +20,10 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
         this.character = character;
         this.gameManager = gameManager;
         this.world = world;
-        world.ProvideWorldUtilities(this);
 
-        mapInstance.ProvideMapInstanceUtilities(this);
+        GetWorldUtilities(world);
+
+        GetMapInstanceUtilities(mapInstance);
     }
 
     private ReactiveProperty<bool> moveDone = new ReactiveProperty<bool>();
@@ -157,5 +158,16 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
         }
 
         moveDone.Value = true;
+    }
+
+    public void GetWorldUtilities(IWorldUtilitiesProvider provider)
+    {
+        MoveChecker = provider.MoveChecker;
+        Pathfinding = provider.Pathfinding;
+    }
+
+    public void GetMapInstanceUtilities(IMapInstanceUtilitiesProvider provider)
+    {
+        CoordToWorldPositionConverter = provider.CoordToWorldPositionConverter;
     }
 }

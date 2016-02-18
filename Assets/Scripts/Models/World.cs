@@ -14,6 +14,12 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     public ReactiveProperty<CharacterCombatResult> CombatResult { get; private set; }
     #endregion
 
+    #region IWorldUtilities Property Group
+    public Func<Character, Coord, bool> MoveChecker { get; private set; }
+    public Func<Coord, Coord, Direction[]> Pathfinding { get; private set; }
+    public Func<Coord, Character> CharacterOnTheLocation { get; private set; }
+    #endregion
+
     private Map map;
 
     private List<Character> allCharacters = new List<Character>();
@@ -29,6 +35,10 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         CurrentActor = new ReactiveProperty<Character>();
         MoveResult = new ReactiveProperty<CharacterMoveResult>();
         CombatResult = new ReactiveProperty<CharacterCombatResult>();
+
+        MoveChecker = new Func<Character, Coord, bool>((chara, coord) => CanMove(chara, coord));
+        Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => GeneratePath(c1, c2));
+        CharacterOnTheLocation = new Func<Coord, Character>((coord) => GetCharacter(coord));
 
         this.map = map;
         map.Subscribe(this)
@@ -56,6 +66,11 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         return character;
     }
 
+    public Character GetCharacter(Coord location)
+    {
+        return map.GetCharacter(location);
+    }
+
     public bool AddCharacter(Character character)
     {
         return AddCharacter(character, character.Location.Value);
@@ -73,7 +88,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
         character.SetLocation(destination);
         // provide utilities for the character to act in the world
-        ProvideWorldUtilities(character);
+        character.GetWorldUtilities(this);
         AddedCharacter.Value = character;
 
         return true;
@@ -133,7 +148,15 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         this.MoveResult.Value = character.Move(direction);
     }
 
-    public void ApplyUseSkill(Character character, Skill skill)
+    public void ApplyTransfer(Character character, Coord destination)
+    {
+        if (!character.CanTransferTo(destination)) return;
+
+        var locationBeforeMove = character.Location.Value;
+        this.MoveResult.Value = character.Transfer(destination);
+    }
+
+    public void ApplyCombat(Character character, Skill skill)
     {
         character.OnSkillUsed(skill);
     }
@@ -186,12 +209,6 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         }
 
         return directions.ToArray();
-    }
-
-    public void ProvideWorldUtilities(IWorldUtilitiesUser user)
-    {
-        user.MoveChecker = new Func<Character, Coord, bool>((character, coord) => CanMove(character, coord));
-        user.Pathfinding = new Func<Coord, Coord, Direction[]>((source, target) => GeneratePath(source, target));
     }
 
     #region IDisposables Method

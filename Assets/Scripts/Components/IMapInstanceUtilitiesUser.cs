@@ -4,5 +4,5 @@ using System;
 
 public interface IMapInstanceUtilitiesUser
 {
-    Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
+    void GetMapInstanceUtilities(IMapInstanceUtilitiesProvider provider);
 }
