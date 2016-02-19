@@ -22,6 +22,31 @@ public class CombatTest
     }
 
     [Test]
+    public void UserShouldBeTheCharacterSkillUsed()
+    {
+        var character = CreateCharacter();
+        character.SetLocation(1, 1);
+
+        var skill = new Skill()
+        {
+            name = "斬る",
+            skillType = SkillType.Active,
+            effectType = EffectType.Damage,
+            minMultiply = 1f,
+            maxMultiply = 1f,
+            range = new Coord[]
+            {
+                new Coord(-1, 0),
+                new Coord(0, 1),
+            }
+        };
+
+        Assert.IsTrue(world.AddCharacter(character));
+        var combatResult = Combat.GetCombatResult(character, skill, new System.Func<Coord, Character>((coord) => world.GetCharacter(coord)), 0);
+        Assert.AreEqual(character, combatResult.user);
+    }
+
+    [Test]
     public void ShouldEffectToCharactersInTheRange()
     {
         var character = CreateCharacter();
@@ -32,7 +57,8 @@ public class CombatTest
             name = "斬る",
             skillType = SkillType.Active,
             effectType = EffectType.Damage,
-            power = 1,
+            minMultiply = 1f,
+            maxMultiply = 1f,
             range = new Coord[]
             {
                 new Coord(-1, 0),
@@ -62,10 +88,46 @@ public class CombatTest
     }
 
     [Test]
-    public void ShouldDealDamageToTheCharacter()
+    public void ShouldPerformUsedSkill()
     {
-        Assert.Fail();
-    } 
+        var character = CreateCharacter();
+        character.SetLocation(1, 1);
+
+        var skill = new Skill()
+        {
+            name = "斬る",
+            skillType = SkillType.Active,
+            effectType = EffectType.Damage,
+            minMultiply = 1f,
+            maxMultiply = 1f,
+            range = new Coord[]
+            {
+                new Coord(-1, 0),
+                new Coord(0, 1),
+            }
+        };
+
+
+        var enemyOne = CreateCharacter();
+        enemyOne.SetLocation(0, 1);
+        var enemyTwo = CreateCharacter();
+        enemyTwo.SetLocation(1, 2);
+        var enemyThree = CreateCharacter();
+        enemyThree.SetLocation(0, 0);
+
+        Assert.IsTrue(world.AddCharacter(character));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
+
+        var combatResult = Combat.GetCombatResult(character, skill, new System.Func<Coord, Character>((coord) => world.GetCharacter(coord)), 0);
+
+        var performances = combatResult.GetPerformances();
+        foreach(var performance in performances)
+        {
+            Assert.AreEqual(skill, performance.receivedSkill);
+        }
+    }
 
     Character CreateCharacter()
     {

@@ -141,43 +141,78 @@ public class CharacterTest
     [Test]
     public void ShouldCreateCharacterWithGivenAttributes ()
     {
-        int initialHealth = 20;
-        int initialStrength = 10;
+        int initialStamina = 20;
+        int initialStrength = 12;
+        int initialAgility = 15;
+        int initialIntellect = 14;
 
         var attributes = new Attributes()
         {
-            health = initialHealth,
+            stamina = initialStamina,
             strength = initialStrength,
+            agility = initialAgility,
+            intellect = initialIntellect,
         };
 
         var createdCharacter = Character.Create(attributes);
 
-        Assert.AreEqual(initialHealth, createdCharacter.maxHealth);
-        Assert.AreEqual(initialStrength, createdCharacter.maxStrength);
+        Assert.AreEqual(initialStamina, createdCharacter.stamina);
+        Assert.AreEqual(initialStrength, createdCharacter.strength);
+        Assert.AreEqual(initialAgility, createdCharacter.agility);
+        Assert.AreEqual(initialIntellect, createdCharacter.intellect);
     }
 
     [Test]
-    public void ShouldApplyAttributesChange()
+    public void AllAttributesShouldBeTenByDefault()
     {
-        int initialHealth = 20;
-        int initialStrength = 10;
+        Assert.AreEqual(10, character.stamina);
+        Assert.AreEqual(10, character.strength);
+        Assert.AreEqual(10, character.agility);
+        Assert.AreEqual(10, character.intellect);
+    }
 
-        var attributes = new Attributes()
-        {
-            health = initialHealth,
-            strength = initialStrength,
-        };
+    [Test]
+    public void CharacterMaxHealthShouldBeTenTimesOfStamina()
+    {
+        Assert.AreEqual(10 * character.stamina, character.maxHealth);
+    }
 
-        character = Character.Create(attributes);
+    [Test]
+    public void CharacterMaxManaShouldBeTenTimesOfIntellect()
+    {
+        Assert.AreEqual(10 * character.intellect, character.maxMana);
+    }
 
-        var attributeChanges = new Attributes()
-        {
-            health = -15,
-            strength = -2,
-        };
+    [Test]
+    public void ShouldSetCurrentHealthByCharactersMaxHealth()
+    {
+        Assert.AreEqual(character.maxHealth, character.Health.Value);
+    }
 
-        character.ApplyAttributeChanges(attributeChanges);
-        Assert.AreEqual(5, character.CurrentHealth.Value);
+    [Test]
+    public void ShouldSetCurrentmanaByCharactersMaxMana()
+    {
+        Assert.AreEqual(character.maxMana, character.Mana.Value);
+    }
+
+    [Test]
+    public void ShouldApplyHealthChange()
+    {
+        character = Character.Create();
+
+        var currentHealth = character.Health.Value;
+        // set minus value to deal damage to the character 
+        character.ApplyHealthChange(-50);
+        Assert.AreEqual(currentHealth - 50, character.Health.Value);
+
+        // set plus value to heal the character
+        currentHealth = character.Health.Value;
+        character.ApplyHealthChange(10);
+        Assert.AreEqual(currentHealth + 10, character.Health.Value);
+
+        // current health should never go over maxhealth
+        character.ApplyHealthChange(100);
+        Assert.AreEqual(character.maxHealth, character.Health.Value);
     }
 
     [Test]
@@ -191,11 +226,7 @@ public class CharacterTest
                  .AddTo(disposables);
         Assert.IsFalse(isDead);
 
-        var attributeChanges = new Attributes()
-        {
-            health = -15,
-        };
-        character.ApplyAttributeChanges(attributeChanges);
+        character.ApplyHealthChange(-100);
         Assert.IsTrue(isDead);
         Assert.IsTrue(character.IsDead);
     }

@@ -19,14 +19,17 @@ public class CharacterMoveResult
 
 public class Attributes
 {
-    public int health;
-    public int strength;
+    public int stamina { get; set; }
+    public int strength { get; set; }
+    public int agility { get; set; }
+    public int intellect { get; set; }
 }
 
 public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 {
     public static int canMoveTimePerTurns = 4;
 
+    public string Name { get; set; }
     public int X { get; private set; }
     public int Y { get; private set; }
     public bool IsDead { get; private set; }
@@ -40,12 +43,24 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public Func<Character, Coord, bool> MoveChecker { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
-    // character attributes
-    public int maxHealth { get; private set; }
-    public int maxStrength { get; private set; }
+    #region ICharacterAttributes Property Group
+    public int stamina { get; private set; }
+    public int strength { get; private set; }
+    public int agility { get; private set; }
+    public int intellect { get; private set; }
 
-    public ReactiveProperty<int> CurrentHealth { get; private set; }
-    public ReactiveProperty<int> CurrentStrength { get; private set; }
+    public int maxHealth { get { return stamina * 10; } }
+    public int maxMana { get { return intellect * 10; } }
+
+    public ReactiveProperty<int> Health { get; private set; }
+    public ReactiveProperty<int> Mana { get; private set; }
+
+    public int armor { get; private set; }
+    public int meleePower { get; private set; }
+    public int rangePower { get; private set; }
+    public int spellPower { get; private set; }
+
+    #endregion
 
     private List<Skill> skills = new List<Skill>();
 
@@ -85,7 +100,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         // create in player side on default
         this.Alliance = Alliance.Player;
 
-        this.CurrentHealth.Subscribe(x =>
+        this.Health.Subscribe(x =>
         {
             if (x <= 0) Dead.Value = true;
             else Dead.Value = false;
@@ -124,21 +139,30 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     void InitializeAttributes()
     {
-        this.CurrentHealth = new ReactiveProperty<int>(maxHealth);
-        this.CurrentStrength = new ReactiveProperty<int>(maxStrength);
+        this.Health = new ReactiveProperty<int>(maxHealth);
+        this.Mana = new ReactiveProperty<int>(maxMana);
+
+        armor = (stamina * 10) / 2;
+        meleePower = (strength * 10) / 2;
+        rangePower = (agility * 10) / 2;
+        spellPower = (intellect * 10) / 2;
     }
 
     void SetCharacterAttributes(Attributes attributes)
     {
         if (attributes == null)
         {
-            this.maxHealth = 10;
-            this.maxStrength = 5;
+            this.stamina = 10;
+            this.strength = 10;
+            this.agility = 10;
+            this.intellect = 10;
         }
         else
         {
-            this.maxHealth = attributes.health;
-            this.maxStrength = attributes.strength;
+            this.stamina = attributes.stamina;
+            this.strength = attributes.strength;
+            this.agility = attributes.agility;
+            this.intellect = attributes.intellect;
         }
     }
 
@@ -227,9 +251,14 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         SetPhase(Phase.Idle);
     }
 
-    public void ApplyAttributeChanges(Attributes changes)
+    public void ApplyHealthChange(int change)
     {
-        CurrentHealth.Value += changes.health;
+        if(maxHealth < Health.Value + change)
+        {
+            change = maxHealth - Health.Value;
+        }
+
+        Health.Value += change;
     } 
 
     public void SetIsPlayer(bool flag)
@@ -251,5 +280,10 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     {
         MoveChecker = provider.MoveChecker;
         Pathfinding = provider.Pathfinding;
+    }
+
+    public override string ToString()
+    {
+        return string.Format("[{0}] Health:{1}", Name, Health.Value);
     }
 }

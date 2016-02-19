@@ -29,21 +29,29 @@ public class CharacterCombatResult
 
     public void Apply()
     {
-
+        foreach(var performance in performances)
+        {
+            performance.Apply();
+        }
     }
 }
 
 public class Performance
 {
     public Character target;
-    public Attributes changes;
     public Skill receivedSkill;
+    public SkillEffect skillEffect;
 
-    public Performance(Character target, Attributes changes, Skill receivedSkill)
+    public Performance(Character target, Skill receivedSkill, SkillEffect skillEffect)
     {
         this.target = target;
-        this.changes = changes;
         this.receivedSkill = receivedSkill;
+        this.skillEffect = skillEffect;
+    }
+
+    public void Apply()
+    {
+        skillEffect.Apply();
     }
 }
 
@@ -53,11 +61,14 @@ public static class Combat
     {
         var combatResult = new CharacterCombatResult(user, skill);
 
-        var skillRanges = skill.range.Select(x => x + user.Location.Value);
+        var skillRanges = skill.range.Select(x => x + new Coord(user.X, user.Y));
         foreach(var range in skillRanges)
         {
             var target = characterOnTheLocation(range);
-            if (target == null) continue;
+            if (target == null)
+            {
+                continue;
+            }
 
             var performance = PerformSkill(user, target, skill);
             combatResult.AddPerformance(performance);
@@ -66,21 +77,53 @@ public static class Combat
         return combatResult;
     }
 
+
     private static Performance PerformSkill(Character user, Character target, Skill skill)
     {
-        Attributes attributeChanges = null;
+        var magnitude = CalculateMagnitude(user, target, skill);
+
+        SkillEffect effect = null;
         switch(skill.effectType)
         {
             case EffectType.Damage:
+                effect = new DamageSkillEffect(target, magnitude);
+                break;
+        }
+
+        return new Performance(target, skill, effect);
+    }
+
+    public static int CalculateMagnitude(ICharacterAttributes user, ICharacterAttributes target, Skill skill)
+    {
+        int power = 0;
+        float reduction = 0;
+
+        switch(skill.effectAttribute)
+        {
+            case EffectAttribute.MeleePower:
                 {
-                    attributeChanges = new Attributes()
-                    {
-                        health = -user.CurrentStrength.Value,
-                    };
+                    power = user.meleePower;
+                    reduction = 0.1f;
+                }
+                break;
+            case EffectAttribute.RangePower:
+                {
+                    power = user.rangePower;
+                    reduction = 0.1f;
+                }
+                break;
+            case EffectAttribute.SpellPower:
+                {
+                    power = user.spellPower;
                 }
                 break;
         }
 
-        return new Performance(target, attributeChanges, skill);
+        var powerRange = UnityEngine.Random.Range(skill.minMultiply, skill.maxMultiply);
+        float actualPower = power * powerRange;
+        float reducedPower = actualPower - (actualPower * reduction);
+        int magnitude = Mathf.RoundToInt(reducedPower);
+
+        return magnitude;
     }
 }

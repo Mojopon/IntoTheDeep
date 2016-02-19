@@ -66,7 +66,10 @@ public class Map : IWorldEventSubscriber
 
     public Character GetCharacter(Coord location)
     {
-        if (IsOutOfRange(location) || !cells[location.x, location.y].hasCharacter) return null;
+        if (IsOutOfRange(location) || !cells[location.x, location.y].hasCharacter)
+        {
+            return null;
+        }
 
         return cells[location.x, location.y].characterInTheCell;
     }

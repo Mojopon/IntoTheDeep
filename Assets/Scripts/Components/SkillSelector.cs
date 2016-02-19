@@ -60,8 +60,7 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 
     void SelectSkill()
     {
-        Debug.Log(selectedSkill.name + " used");
-        world.ApplyCombat(character, selectedSkill);
+        world.ApplyUseSkill(character, selectedSkill);
 
         Destroy(gameObject);
     }

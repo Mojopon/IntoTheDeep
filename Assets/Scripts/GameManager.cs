@@ -172,6 +172,7 @@ public class GameManager : MonoBehaviour
     {
         // create characters
         var character = Character.Create();
+        character.Name = "Player";
         world.AddCharacter(character);
 
         yield break;
@@ -180,6 +181,7 @@ public class GameManager : MonoBehaviour
     IEnumerator SequenceSetupEnemies()
     {
         var character = Character.Create();
+        character.Name = "Enemy";
         world.AddCharacterAsEnemy(character, 3, 3);
 
         yield break;
@@ -187,6 +189,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMove(Character moveCharacter)
     {
+        yield return null;
         var pathSelector = Instantiate(pathSelectorPrefab) as PathSelector;
         pathSelector.Initialize(this, mapInstance, moveCharacter, world);
         yield return StartCoroutine(pathSelector.SequenceRouting());
@@ -194,6 +197,8 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceCharacterAction(Character actCharacter)
     {
+        // need to wait for one frame for models to finish all these stuffs
+        yield return null;
         var skillSelector = Instantiate(skillSelectorPrefab) as SkillSelector;
         skillSelector.Initialize(this, mapInstance, actCharacter, world);
         yield return StartCoroutine(skillSelector.SequenceSelectSkill());

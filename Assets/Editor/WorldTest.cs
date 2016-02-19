@@ -29,8 +29,8 @@ public class WorldTest
         world.AddCharacterAsEnemy(enemyTwo);
 
         Assert.IsFalse(world.EnemyIsAnnihilated);
-        enemyOne.ApplyAttributeChanges(new Attributes() { health = -20 });
-        enemyTwo.ApplyAttributeChanges(new Attributes() { health = -20 });
+        enemyOne.ApplyHealthChange(-100);
+        enemyTwo.ApplyHealthChange(-100);
 
         Assert.IsTrue(world.EnemyIsAnnihilated);
     }
@@ -337,5 +337,96 @@ public class WorldTest
 
         closestHostile = world.GetClosestHostile(enemyTwo);
         Assert.AreEqual(character, closestHostile);
+    }
+
+    [Test]
+    public void ShouldDealDamageToTheCharacter()
+    {
+        var character = Character.Create();
+        character.SetLocation(1, 1);
+
+        var enemyOne = Character.Create();
+        enemyOne.SetLocation(0, 1);
+        var enemyTwo = Character.Create();
+        enemyTwo.SetLocation(1, 2);
+        var enemyThree = Character.Create();
+        enemyThree.SetLocation(0, 0);
+
+        var skill = new Skill()
+        {
+            name = "斬る",
+            skillType = SkillType.Active,
+            effectType = EffectType.Damage,
+            minMultiply = 1f,
+            maxMultiply = 1f,
+            range = new Coord[]
+            {
+                new Coord(-1, 0),
+                new Coord(0, 1),
+            }
+        };
+
+        Assert.IsTrue(world.AddCharacter(character));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
+
+        // characters health should be 100 by default
+        Assert.AreEqual(100, enemyOne.Health.Value);
+        Assert.AreEqual(100, enemyTwo.Health.Value);
+        Assert.AreEqual(100, enemyThree.Health.Value);
+
+        world.ApplyUseSkill(character, skill);
+
+        Assert.IsTrue(100 > enemyOne.Health.Value);
+        Assert.IsTrue(100 > enemyTwo.Health.Value);
+        Assert.IsTrue(100 == enemyThree.Health.Value);
+    }
+
+    [Test]
+    public void ShouldUpdateCombatResult()
+    {
+        CharacterCombatResult result = null;
+        world.CombatResult.Subscribe(x => result = x);
+
+        var character = Character.Create();
+        character.SetLocation(1, 1);
+
+        var enemyOne = Character.Create();
+        enemyOne.SetLocation(0, 1);
+        var enemyTwo = Character.Create();
+        enemyTwo.SetLocation(1, 2);
+        var enemyThree = Character.Create();
+        enemyThree.SetLocation(0, 0);
+
+        var skill = new Skill()
+        {
+            name = "斬る",
+            skillType = SkillType.Active,
+            effectType = EffectType.Damage,
+            minMultiply = 1f,
+            maxMultiply = 1f,
+            range = new Coord[]
+            {
+                new Coord(-1, 0),
+                new Coord(0, 1),
+            }
+        };
+
+        Assert.IsTrue(world.AddCharacter(character));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
+
+        // characters health should be 100 by default
+        Assert.AreEqual(100, enemyOne.Health.Value);
+        Assert.AreEqual(100, enemyTwo.Health.Value);
+        Assert.AreEqual(100, enemyThree.Health.Value);
+
+        world.ApplyUseSkill(character, skill);
+        Assert.IsNotNull(result);
+
+        Assert.AreEqual(character, result.user);
+        Assert.AreEqual(skill ,result.usedSkill);
     }
 }

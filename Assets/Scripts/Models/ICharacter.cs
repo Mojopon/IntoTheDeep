@@ -4,6 +4,7 @@ using UniRx;
 
 public interface ICharacter : ICharacterAttributes
 {
+    string Name { get; }
     int X { get; }
     int Y { get; }
     bool IsDead { get; }

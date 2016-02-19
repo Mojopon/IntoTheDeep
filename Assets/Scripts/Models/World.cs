@@ -156,9 +156,12 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         this.MoveResult.Value = character.Transfer(destination);
     }
 
-    public void ApplyCombat(Character character, Skill skill)
+    public void ApplyUseSkill(Character character, Skill skill)
     {
         character.OnSkillUsed(skill);
+        var result = Combat.GetCombatResult(character, skill, CharacterOnTheLocation, UnityEngine.Random.Range(0, 10000));
+        result.Apply();
+        this.CombatResult.Value = result;
     }
 
     public bool EnemyIsAnnihilated { get { return enemies.Count - deadEnemies == 0; } }

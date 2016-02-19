@@ -4,9 +4,18 @@ using UniRx;
 
 public interface ICharacterAttributes
 {
-    int maxHealth { get; }
-    int maxStrength { get; }
+    int stamina { get; }
+    int strength { get; }
+    int agility { get; }
+    int intellect { get; }
 
-    ReactiveProperty<int> CurrentHealth { get; }
-    ReactiveProperty<int> CurrentStrength { get; }
+    int armor { get; }
+    int meleePower { get; }
+    int rangePower { get; }
+    int spellPower { get; }
+
+    int maxHealth { get; }
+    int maxMana { get; }
+    ReactiveProperty<int> Health { get; }
+    ReactiveProperty<int> Mana { get; }
 }
