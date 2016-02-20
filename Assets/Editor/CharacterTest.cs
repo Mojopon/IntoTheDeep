@@ -31,7 +31,7 @@ public class CharacterTest
                  }).AddTo(disposables);
 
         var changedToCombatActionPhase = false;
-        character.CurrentPhase.Where(x => x == Character.Phase.CombatAction).Subscribe(x => changedToCombatActionPhase = true);
+        character.CurrentPhase.Where(x => x == Character.Phase.Combat).Subscribe(x => changedToCombatActionPhase = true);
         // cant move until it goes move phase
         Assert.IsFalse(character.CanMoveTo(Direction.Right));
         character.Move(Direction.Right);
@@ -68,6 +68,45 @@ public class CharacterTest
         character.Move(Direction.Up);
         Assert.AreEqual(1, coordAfterMove.x);
         Assert.AreEqual(3, coordAfterMove.y);
+    }
+
+    [Test]
+    public void ShouldBeAbleToWaitInThePlace()
+    {
+        Assert.IsFalse(character.CanMove);
+        Assert.IsFalse(character.CanMoveTo(Direction.None));
+
+        character.SetPhase(Character.Phase.Move);
+        Assert.IsTrue(character.CanMoveTo(Direction.None));
+        Assert.IsTrue(character.CanMove);
+        // character has chances to move 4 times per turn
+        Assert.IsTrue(character.CanMove);
+        Assert.IsTrue(character.CanMoveTo(Direction.None));
+        Assert.IsTrue(character.Move(Direction.None));
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+        Assert.IsTrue(character.CanMove);
+        Assert.IsTrue(character.CanMoveTo(Direction.None));
+        Assert.IsTrue(character.Move(Direction.None));
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+        Assert.IsTrue(character.CanMove);
+        Assert.IsTrue(character.CanMoveTo(Direction.None));
+        Assert.IsTrue(character.Move(Direction.None));
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+        Assert.IsTrue(character.CanMove);
+        Assert.IsTrue(character.CanMoveTo(Direction.None));
+        Assert.IsTrue(character.Move(Direction.None));
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
+        //it should be failed
+        Assert.IsFalse(character.CanMove);
+        Assert.IsFalse(character.CanMoveTo(Direction.None));
+        Assert.False(character.Move(Direction.None));
+        Assert.AreEqual(Character.Phase.Combat, character.CurrentPhase.Value);
+        Assert.AreEqual(0, character.X);
+        Assert.AreEqual(0, character.Y);
     }
 
     [Test]
@@ -117,18 +156,6 @@ public class CharacterTest
         Assert.IsTrue(character.CanMoveTo(Direction.Up));
         Assert.IsTrue(character.CanMoveTo(Direction.Down));
         Assert.IsTrue(character.CanMoveTo(Direction.Left));
-    }
-
-    [Test]
-    public void ShouldBeIdlePhaseAfterSkillUsed()
-    {
-        character.SetPhase(Character.Phase.CombatAction);
-
-        var skill = character.GetSkills()[0];
-
-        character.UseSkill(skill);
-
-        Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
     }
 
     [Test]
@@ -234,6 +261,38 @@ public class CharacterTest
         character.ApplyHealthChange(-100);
         Assert.IsTrue(isDead);
         Assert.IsTrue(character.IsDead);
+    }
+
+    [Test]
+    public void ShouldGoToCombatPhaseFromMovePhase()
+    {
+        Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
+
+        character.SetPhase(Character.Phase.Move);
+        Assert.AreEqual(Character.Phase.Move, character.CurrentPhase.Value);
+
+        // character can move 4 times per turn by default
+        Assert.IsTrue(character.Move(Direction.Right));
+        Assert.IsTrue(character.Move(Direction.Right));
+        Assert.IsTrue(character.Move(Direction.Right));
+        Assert.IsTrue(character.Move(Direction.Right));
+        Assert.AreEqual(Character.Phase.Combat, character.CurrentPhase.Value);
+
+        Assert.IsFalse(character.Move(Direction.Right));
+    }
+
+    [Test]
+    public void ShouldGoToTurnEndPhaseFromCombatPhase()
+    {
+        var skill = character.GetSkills()[0];
+
+        Assert.IsFalse(character.CanUseSkill(skill));
+
+        character.SetPhase(Character.Phase.Combat);
+        Assert.AreEqual(Character.Phase.Combat, character.CurrentPhase.Value);
+
+        Assert.IsTrue(character.CanUseSkill(skill));
+        character.UseSkill(skill);
     }
 
     [TearDown]

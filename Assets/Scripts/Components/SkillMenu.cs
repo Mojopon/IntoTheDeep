@@ -120,6 +120,7 @@ public class SkillMenu : MonoBehaviour, IInputtable {
                 break;
             case PlayerCommand.Left:
             case PlayerCommand.Right:
+            case PlayerCommand.Enter:
                 Submit();
                 break;
         }

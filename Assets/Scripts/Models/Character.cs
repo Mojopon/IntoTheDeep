@@ -51,7 +51,8 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     {
         Idle,
         Move,
-        CombatAction,
+        Combat,
+        TurnEnd,
     }
 
     public ReactiveProperty<Phase> CurrentPhase { get; private set; }
@@ -237,7 +238,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         canMoveTime--;
         if(canMoveTime == 0)
         {
-            SetPhase(Phase.CombatAction);
+            SetPhase(Phase.Combat);
         }
 
         return true;
@@ -254,6 +255,8 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     public bool CanUseSkill(Skill skill)
     {
+        if (CurrentPhase.Value != Phase.Combat) return false;
+
         return true;
     }
 
@@ -264,7 +267,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         UsedSkill.Value = null;
 
         UsedSkill.Value = skill;
-        SetPhase(Phase.Idle);
+        SetPhase(Phase.TurnEnd);
 
         return true;
     }

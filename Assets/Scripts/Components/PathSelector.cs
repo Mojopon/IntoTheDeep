@@ -157,6 +157,12 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
             yield return new WaitForSeconds(gameManager.characterMoveSpeed);
         }
 
+        while(character.CanMove)
+        {
+            world.ApplyMove(character, Direction.None);
+            yield return null;
+        }
+
         moveDone.Value = true;
     }
 

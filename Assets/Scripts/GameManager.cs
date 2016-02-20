@@ -157,10 +157,10 @@ public class GameManager : MonoBehaviour
                                   case Character.Phase.Move:
                                       StartCoroutine(SequenceCharacterMove(chara));
                                       break;
-                                  case Character.Phase.CombatAction:
+                                  case Character.Phase.Combat:
                                       StartCoroutine(SequenceCharacterAction(chara));
                                       break;
-                                  case Character.Phase.Idle:
+                                  case Character.Phase.TurnEnd:
                                       StartCoroutine(SequenceGoNextCharacterPhase());
                                       break;
                               }
@@ -193,6 +193,8 @@ public class GameManager : MonoBehaviour
         var pathSelector = Instantiate(pathSelectorPrefab) as PathSelector;
         pathSelector.Initialize(this, mapInstance, moveCharacter, world);
         yield return StartCoroutine(pathSelector.SequenceRouting());
+
+        Debug.Log(moveCharacter.Name + " Routing done");
     }
 
     IEnumerator SequenceCharacterAction(Character actCharacter)

@@ -376,6 +376,7 @@ public class WorldTest
         Assert.AreEqual(100, enemyTwo.Health.Value);
         Assert.AreEqual(100, enemyThree.Health.Value);
 
+        character.SetPhase(Character.Phase.Combat);
         world.ApplyUseSkill(character, skill);
 
         Assert.IsTrue(100 > enemyOne.Health.Value);
@@ -423,6 +424,7 @@ public class WorldTest
         Assert.AreEqual(100, enemyTwo.Health.Value);
         Assert.AreEqual(100, enemyThree.Health.Value);
 
+        character.SetPhase(Character.Phase.Combat);
         world.ApplyUseSkill(character, skill);
         Assert.IsNotNull(result);
         Assert.AreEqual(result, world.CombatResult.Value);
@@ -439,6 +441,7 @@ public class WorldTest
         Assert.IsTrue(enemyTwoHealth == enemyTwo.Health.Value);
         Assert.IsTrue(100 == enemyThree.Health.Value);
 
+        character.SetPhase(Character.Phase.Combat);
         world.ApplyUseSkill(character, skill);
         Assert.AreNotEqual(oldResult, world.CombatResult.Value);
         Assert.AreNotEqual(oldResult, result);

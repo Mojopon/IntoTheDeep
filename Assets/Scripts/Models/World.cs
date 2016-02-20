@@ -52,7 +52,14 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     // actor means the character who is moving or fighting in the turn
     public void GoNextCharacterPhase()
     {
-        CurrentActor.Value =  GetNextCharacterToAction();
+        if (CurrentActor.Value != null)
+        {
+            var currentCharacter = CurrentActor.Value;
+            currentCharacter.SetPhase(Character.Phase.Idle);
+        }
+
+        var nextCharacter = GetNextCharacterToAction();
+        CurrentActor.Value = nextCharacter;
     }
 
     Character GetNextCharacterToAction()

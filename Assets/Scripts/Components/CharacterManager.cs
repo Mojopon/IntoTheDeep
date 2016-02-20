@@ -60,11 +60,11 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
                  .Where(x => x != null)
                  .Subscribe(x =>
                  {
-                     Debug.Log(x.user + " used " + x.usedSkill.name);
+                     //Debug.Log(x.user + " used " + x.usedSkill.name);
                      foreach(var performance in x.GetPerformances())
                      {
-                         Debug.Log(performance.target + " received " + performance.receivedSkill);
-                         Debug.Log(performance.skillEffect);
+                         //Debug.Log(performance.target + " received " + performance.receivedSkill);
+                         //Debug.Log(performance.skillEffect);
                      }
                  });
         return disposables;
