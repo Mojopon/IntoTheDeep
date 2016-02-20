@@ -97,7 +97,7 @@ public class Map : IWorldEventSubscriber
         publisher.MoveResult
                  .Where(x => x != null)
                  .Subscribe(x => MoveCharacterToFrom(x.target, x.source, x.destination))
-                 .AddTo(compositeDisposable);
+                 .AddTo(compositeDisposable); 
 
         publisher.AddedCharacter
                  .Where(x => x != null)

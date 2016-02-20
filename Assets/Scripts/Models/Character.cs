@@ -216,14 +216,13 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         return true;
     }
 
-    public CharacterMoveResult Move(Direction direction)
+    public bool Move(Direction direction)
     {
-        if (!CanMove(direction)) return null;
+        if (!CanMove(direction)) return false;
 
         var locationBeforeMove = this.Location.Value;
         this.Location.Value += direction.ToCoord();
 
-        var moveResult = new CharacterMoveResult(this, locationBeforeMove, this.Location.Value);
         canMoveTime--;
 
         if(canMoveTime == 0)
@@ -231,7 +230,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
             SetPhase(Phase.CombatAction);
         }
 
-        return moveResult;
+        return true;
     }
 
     public CharacterMoveResult Transfer(Coord destination)

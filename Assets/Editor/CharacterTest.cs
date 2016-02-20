@@ -71,24 +71,32 @@ public class CharacterTest
     }
 
     [Test]
-    public void ShouldReturnMoveResult()
+    public void ShouldReturnMoveSucceed()
     {
-        var moveResult = character.Move(Direction.Right);
-        // should return null when the character failed moving
-        Assert.IsNull(moveResult);
+        Assert.IsFalse(character.Move(Direction.Right));
 
         character.SetPhase(Character.Phase.Move);
-        moveResult = character.Move(Direction.Right);
-        Assert.AreEqual(character, moveResult.target);
-        Assert.AreEqual(new Coord(0, 0), moveResult.source);
-        Assert.AreEqual(new Coord(1, 0), moveResult.destination);
-
-        moveResult = character.Move(Direction.Up);
-
-        Assert.AreEqual(character, moveResult.target);
-        Assert.AreEqual(new Coord(1, 0), moveResult.source);
-        Assert.AreEqual(new Coord(1, 1), moveResult.destination);
+        Assert.IsTrue(character.Move(Direction.Right));
+        Assert.IsTrue(character.Move(Direction.Up));
     }
+
+    [Test]
+    public void ShouldScanMoves()
+    {
+        character.SetPhase(Character.Phase.Move);
+        character.Location
+                 .Scan((x, y) => 
+                       {
+                           Debug.Log(x + " " +  y);
+                           return y;
+                       })
+                 .Subscribe(x => Debug.Log("moved to " + x));
+
+        character.Move(Direction.Right);
+        character.Move(Direction.Right);
+        character.Move(Direction.Up);
+    }
+
 
     [Test]
     public void ShouldReturnCanMoveorNot()

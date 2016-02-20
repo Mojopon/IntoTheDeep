@@ -89,6 +89,15 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         character.SetLocation(destination);
         // provide utilities for the character to act in the world
         character.GetWorldUtilities(this);
+        character.Location
+                 .DistinctUntilChanged()
+                 .Scan((x, y) =>
+                      {
+                          MoveResult.Value = new CharacterMoveResult(character, x, y);
+                          return y;
+                      })
+                 .Subscribe(x => { })
+                 .AddTo(disposables);
         AddedCharacter.Value = character;
 
         return true;
@@ -144,8 +153,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     {
         if (!character.CanMove(direction)) return;
 
-        var locationBeforeMove = character.Location.Value;
-        this.MoveResult.Value = character.Move(direction);
+        character.Move(direction);
     }
 
     public void ApplyTransfer(Character character, Coord destination)
