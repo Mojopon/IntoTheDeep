@@ -11,9 +11,10 @@ public interface ICharacter : ICharacterAttributes
     bool IsPlayer { get; }
     Alliance Alliance { get; }
     int MaxMove { get; }
+    bool CanMove { get; }
 
+    ReactiveProperty<Character.Phase> CurrentPhase { get; }
     ReactiveProperty<Coord> Location { get; }
     ReactiveProperty<bool> Dead { get; }
-
     ReactiveProperty<Skill> UsedSkill { get; }
 }

@@ -36,10 +36,27 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public bool IsPlayer { get; private set; }
     public Alliance Alliance { get; private set; }
     public int MaxMove { get; private set; }
+    public bool CanMove
+    {
+        get
+        {
+            if (CurrentPhase.Value != Phase.Move || canMoveTime <= 0)
+                return false;
 
+            return true;
+        }
+    }
+
+    public enum Phase
+    {
+        Idle,
+        Move,
+        CombatAction,
+    }
+
+    public ReactiveProperty<Phase> CurrentPhase { get; private set; }
     public ReactiveProperty<Coord> Location { get; private set; }
     public ReactiveProperty<bool> Dead { get; private set; }
-
     public ReactiveProperty<Skill> UsedSkill { get; private set; }
 
     public Func<Character, Coord, bool> MoveChecker { get; set; }
@@ -91,10 +108,10 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         this.MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
         this.Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
 
-        this.UsedSkill = new ReactiveProperty<Skill>();
-
+        this.CurrentPhase = new ReactiveProperty<Phase>(Phase.Idle);
         this.Location = new ReactiveProperty<Coord>();
         this.Dead = new ReactiveProperty<bool>(false);
+        this.UsedSkill = new ReactiveProperty<Skill>();
 
         this.MaxMove = canMoveTimePerTurns;
         // create as a player on default
@@ -169,14 +186,6 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         }
     }
 
-    public enum Phase
-    {
-        Idle,
-        Move,
-        CombatAction,
-    }
-
-    public ReactiveProperty<Phase> CurrentPhase = new ReactiveProperty<Phase>();
     private int canMoveTime;
     public void SetPhase(Phase phase)
     {
@@ -203,7 +212,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         }
     }
 
-    public bool CanMove(Direction direction)
+    public bool CanMoveTo(Direction direction)
     {
         if (canMoveTime <= 0) return false;
         var destination = Location.Value + direction.ToCoord();
@@ -221,7 +230,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     public bool Move(Direction direction)
     {
-        if (!CanMove(direction)) return false;
+        if (!CanMoveTo(direction)) return false;
 
         this.Location.Value += direction.ToCoord();
 

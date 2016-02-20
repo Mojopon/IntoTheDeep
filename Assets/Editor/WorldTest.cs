@@ -71,7 +71,7 @@ public class WorldTest
     {
         var character = Character.Create();
         character.SetPhase(Character.Phase.Move);
-        Assert.IsTrue(character.CanMove(Direction.Right));
+        Assert.IsTrue(character.CanMoveTo(Direction.Right));
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
 
@@ -83,7 +83,7 @@ public class WorldTest
         world = new World(map);
 
         world.AddCharacter(character);
-        Assert.IsFalse(character.CanMove(Direction.Right));
+        Assert.IsFalse(character.CanMoveTo(Direction.Right));
         character.Move(Direction.Right);
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
@@ -131,20 +131,20 @@ public class WorldTest
         Assert.IsTrue(world.AddCharacter(characterTwo, 1, 1));
         Assert.IsTrue(world.AddCharacter(enemy, 0, 2));
 
-        Assert.IsTrue(character.CanMove(Direction.Down));
-        Assert.IsFalse(character.CanMove(Direction.Right));
-        Assert.IsFalse(character.CanMove(Direction.Up));
+        Assert.IsTrue(character.CanMoveTo(Direction.Down));
+        Assert.IsFalse(character.CanMoveTo(Direction.Right));
+        Assert.IsFalse(character.CanMoveTo(Direction.Up));
 
-        Assert.IsTrue(characterTwo.CanMove(Direction.Right));
+        Assert.IsTrue(characterTwo.CanMoveTo(Direction.Right));
 
         characterTwo.SetPhase(Character.Phase.Move);
         world.ApplyMove(characterTwo, Direction.Right);
         Assert.AreEqual(2, characterTwo.X);
         Assert.AreEqual(1, characterTwo.Y);
 
-        Assert.IsTrue(character.CanMove(Direction.Down));
-        Assert.IsTrue(character.CanMove(Direction.Right));
-        Assert.IsFalse(character.CanMove(Direction.Up));
+        Assert.IsTrue(character.CanMoveTo(Direction.Down));
+        Assert.IsTrue(character.CanMoveTo(Direction.Right));
+        Assert.IsFalse(character.CanMoveTo(Direction.Up));
     }
 
     [Test]
@@ -200,7 +200,7 @@ public class WorldTest
         world.GoNextCharacterPhase();
         Assert.AreEqual(character, world.CurrentActor.Value);
 
-        Assert.IsTrue(character.CanMove(Direction.Right));
+        Assert.IsTrue(character.CanMoveTo(Direction.Right));
         world.ApplyMove(character, Direction.Right);
         Assert.AreEqual(1, character.X);
         Assert.AreEqual(0, character.Y);

@@ -147,6 +147,8 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         return true;
     }
 
+    public bool EnemyIsAnnihilated { get { return enemies.Count - deadEnemies == 0; } }
+
     public List<Character> GetAllHostiles(Character character)
     {
         return allCharacters.Where(x => x.Alliance != character.Alliance).ToList();
@@ -162,7 +164,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
     public void ApplyMove(Character character, Direction direction)
     {
-        if (!character.CanMove(direction)) return;
+        if (!character.CanMoveTo(direction)) return;
 
         character.Move(direction);
     }
@@ -178,8 +180,6 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     {
         character.UseSkill(skill);
     }
-
-    public bool EnemyIsAnnihilated { get { return enemies.Count - deadEnemies == 0; } }
 
     bool CanMove(Character character, Coord coord)
     {

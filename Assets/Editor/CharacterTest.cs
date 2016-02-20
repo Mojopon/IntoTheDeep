@@ -33,7 +33,7 @@ public class CharacterTest
         var changedToCombatActionPhase = false;
         character.CurrentPhase.Where(x => x == Character.Phase.CombatAction).Subscribe(x => changedToCombatActionPhase = true);
         // cant move until it goes move phase
-        Assert.IsFalse(character.CanMove(Direction.Right));
+        Assert.IsFalse(character.CanMoveTo(Direction.Right));
         character.Move(Direction.Right);
         Assert.AreEqual(0, coordAfterMove.x);
         Assert.AreEqual(0, coordAfterMove.y);
@@ -71,6 +71,25 @@ public class CharacterTest
     }
 
     [Test]
+    public void CanMoveShouldBeTrueWhenItCanMove()
+    {
+        Assert.IsFalse(character.CanMove);
+
+        character.SetPhase(Character.Phase.Move);
+        Assert.IsTrue(character.CanMove);
+
+        // can move 4 times per turn by default
+        character.Move(Direction.Right);
+        Assert.IsTrue(character.CanMove);
+        character.Move(Direction.Right);
+        Assert.IsTrue(character.CanMove);
+        character.Move(Direction.Right);
+        Assert.IsTrue(character.CanMove);
+        character.Move(Direction.Right);
+        Assert.IsFalse(character.CanMove);
+    }
+
+    [Test]
     public void ShouldReturnMoveSucceed()
     {
         Assert.IsFalse(character.Move(Direction.Right));
@@ -91,13 +110,13 @@ public class CharacterTest
                                                                 });
 
         // should return false when its not in move phase
-        Assert.IsFalse(character.CanMove(Direction.Up));
+        Assert.IsFalse(character.CanMoveTo(Direction.Up));
         character.SetPhase(Character.Phase.Move);
 
-        Assert.IsFalse(character.CanMove(Direction.Right));
-        Assert.IsTrue(character.CanMove(Direction.Up));
-        Assert.IsTrue(character.CanMove(Direction.Down));
-        Assert.IsTrue(character.CanMove(Direction.Left));
+        Assert.IsFalse(character.CanMoveTo(Direction.Right));
+        Assert.IsTrue(character.CanMoveTo(Direction.Up));
+        Assert.IsTrue(character.CanMoveTo(Direction.Down));
+        Assert.IsTrue(character.CanMoveTo(Direction.Left));
     }
 
     [Test]
