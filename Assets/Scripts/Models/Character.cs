@@ -40,6 +40,8 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public ReactiveProperty<Coord> Location { get; private set; }
     public ReactiveProperty<bool> Dead { get; private set; }
 
+    public ReactiveProperty<Skill> UsedSkill { get; private set; }
+
     public Func<Character, Coord, bool> MoveChecker { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
@@ -61,7 +63,6 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public int spellPower { get; private set; }
 
     #endregion
-
     private List<Skill> skills = new List<Skill>();
 
     public static Character Create(Attributes initialAttributes)
@@ -87,8 +88,10 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     void Initialize()
     {
         // initialize world utilities first so it doesnt make exceptions
-        MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
-        Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
+        this.MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
+        this.Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
+
+        this.UsedSkill = new ReactiveProperty<Skill>();
 
         this.Location = new ReactiveProperty<Coord>();
         this.Dead = new ReactiveProperty<bool>(false);
@@ -240,11 +243,21 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         return true;
     }
 
-    public void OnSkillUsed(Skill skill)
+    public bool CanUseSkill(Skill skill)
     {
-        // apply changes to the character after using the skill
+        return true;
+    }
 
+    public bool UseSkill(Skill skill)
+    {
+        if (!CanUseSkill(skill)) return false;
+        // reset value or it wont update same value
+        UsedSkill.Value = null;
+
+        UsedSkill.Value = skill;
         SetPhase(Phase.Idle);
+
+        return true;
     }
 
     public void ApplyHealthChange(int change)

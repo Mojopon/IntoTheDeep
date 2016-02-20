@@ -425,8 +425,26 @@ public class WorldTest
 
         world.ApplyUseSkill(character, skill);
         Assert.IsNotNull(result);
+        Assert.AreEqual(result, world.CombatResult.Value);
 
         Assert.AreEqual(character, result.user);
-        Assert.AreEqual(skill ,result.usedSkill);
+        Assert.AreEqual(skill, result.usedSkill);
+
+        var enemyOneHealth = enemyOne.Health.Value;
+        var enemyTwoHealth = enemyTwo.Health.Value;
+
+        var oldResult = result;
+
+        Assert.IsTrue(enemyOneHealth == enemyOne.Health.Value);
+        Assert.IsTrue(enemyTwoHealth == enemyTwo.Health.Value);
+        Assert.IsTrue(100 == enemyThree.Health.Value);
+
+        world.ApplyUseSkill(character, skill);
+        Assert.AreNotEqual(oldResult, world.CombatResult.Value);
+        Assert.AreNotEqual(oldResult, result);
+
+        Assert.IsTrue(enemyOneHealth > enemyOne.Health.Value);
+        Assert.IsTrue(enemyTwoHealth > enemyTwo.Health.Value);
+        Assert.IsTrue(100 == enemyThree.Health.Value);
     }
 }

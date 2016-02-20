@@ -107,7 +107,7 @@ public class CharacterTest
 
         var skill = character.GetSkills()[0];
 
-        character.OnSkillUsed(skill);
+        character.UseSkill(skill);
 
         Assert.AreEqual(Character.Phase.Idle, character.CurrentPhase.Value);
     }

@@ -93,10 +93,20 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
                  .DistinctUntilChanged()
                  .Scan((x, y) =>
                       {
-                          MoveResult.Value = new CharacterMoveResult(character, x, y);
+                          this.MoveResult.Value = new CharacterMoveResult(character, x, y);
                           return y;
                       })
                  .Subscribe(x => { })
+                 .AddTo(disposables);
+
+        character.UsedSkill
+                 .Where(x => x != null)
+                 .Subscribe(x =>
+                 {
+                     var result = Combat.GetCombatResult(character, x, CharacterOnTheLocation, UnityEngine.Random.Range(0, 10000));
+                     result.Apply();
+                     this.CombatResult.Value = result;
+                 })
                  .AddTo(disposables);
 
         AddedCharacter.Value = character;
@@ -166,10 +176,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
     public void ApplyUseSkill(Character character, Skill skill)
     {
-        character.OnSkillUsed(skill);
-        var result = Combat.GetCombatResult(character, skill, CharacterOnTheLocation, UnityEngine.Random.Range(0, 10000));
-        result.Apply();
-        this.CombatResult.Value = result;
+        character.UseSkill(skill);
     }
 
     public bool EnemyIsAnnihilated { get { return enemies.Count - deadEnemies == 0; } }

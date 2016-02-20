@@ -14,4 +14,6 @@ public interface ICharacter : ICharacterAttributes
 
     ReactiveProperty<Coord> Location { get; }
     ReactiveProperty<bool> Dead { get; }
+
+    ReactiveProperty<Skill> UsedSkill { get; }
 }
