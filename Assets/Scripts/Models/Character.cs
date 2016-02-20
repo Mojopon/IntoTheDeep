@@ -220,11 +220,9 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     {
         if (!CanMove(direction)) return false;
 
-        var locationBeforeMove = this.Location.Value;
         this.Location.Value += direction.ToCoord();
 
         canMoveTime--;
-
         if(canMoveTime == 0)
         {
             SetPhase(Phase.CombatAction);
@@ -233,14 +231,13 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         return true;
     }
 
-    public CharacterMoveResult Transfer(Coord destination)
+    public bool Transfer(Coord destination)
     {
-        if (!CanTransferTo(destination)) return null;
+        if (!CanTransferTo(destination)) return false;
 
-        var locationBeforeMove = this.Location.Value;
         this.Location.Value = destination;
 
-        return new CharacterMoveResult(this, locationBeforeMove, this.Location.Value);
+        return true;
     }
 
     public void OnSkillUsed(Skill skill)

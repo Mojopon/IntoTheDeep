@@ -108,14 +108,14 @@ public class WorldTest
         Assert.IsFalse(character.CanTransferTo(new Coord(-1, 0)));
 
         Assert.IsFalse(character.CanTransferTo(new Coord(1, 0)));
-        Assert.IsNull(character.Transfer(new Coord(1, 0)));
+        Assert.IsFalse(character.Transfer(new Coord(1, 0)));
 
         Assert.IsTrue(character.CanTransferTo(new Coord(2, 0)));
         var characterTwo = Character.Create();
         characterTwo.SetLocation(2, 0);
         Assert.True(world.AddCharacter(characterTwo));
         Assert.IsFalse(character.CanTransferTo(new Coord(2, 0)));
-        Assert.IsNull(character.Transfer(new Coord(2, 0)));
+        Assert.IsFalse(character.Transfer(new Coord(2, 0)));
     }
 
     [Test]

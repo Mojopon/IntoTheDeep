@@ -81,24 +81,6 @@ public class CharacterTest
     }
 
     [Test]
-    public void ShouldScanMoves()
-    {
-        character.SetPhase(Character.Phase.Move);
-        character.Location
-                 .Scan((x, y) => 
-                       {
-                           Debug.Log(x + " " +  y);
-                           return y;
-                       })
-                 .Subscribe(x => Debug.Log("moved to " + x));
-
-        character.Move(Direction.Right);
-        character.Move(Direction.Right);
-        character.Move(Direction.Up);
-    }
-
-
-    [Test]
     public void ShouldReturnCanMoveorNot()
     {
         character.MoveChecker = new Func<Character, Coord, bool>((chara, c) =>
@@ -139,10 +121,6 @@ public class CharacterTest
         var moveResult = character.Transfer(new Coord(5, 6));
         Assert.AreEqual(5, character.X);
         Assert.AreEqual(6, character.Y);
-
-        Assert.AreEqual(character,moveResult.target);
-        Assert.AreEqual(new Coord(0, 0), moveResult.source);
-        Assert.AreEqual(new Coord(5, 6), moveResult.destination);
     }
 
     // Combat test

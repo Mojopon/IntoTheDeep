@@ -98,6 +98,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
                       })
                  .Subscribe(x => { })
                  .AddTo(disposables);
+
         AddedCharacter.Value = character;
 
         return true;
@@ -160,8 +161,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     {
         if (!character.CanTransferTo(destination)) return;
 
-        var locationBeforeMove = character.Location.Value;
-        this.MoveResult.Value = character.Transfer(destination);
+        character.Transfer(destination);
     }
 
     public void ApplyUseSkill(Character character, Skill skill)
