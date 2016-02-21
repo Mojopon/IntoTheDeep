@@ -12,6 +12,7 @@ public interface ICharacter : ICharacterAttributes
     Alliance Alliance { get; }
     int MaxMove { get; }
     bool CanMove { get; }
+    bool IsOnExit { get; }
 
     ReactiveProperty<Character.Phase> CurrentPhase { get; }
     ReactiveProperty<Coord> Location { get; }

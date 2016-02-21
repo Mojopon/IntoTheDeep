@@ -7,6 +7,7 @@ using UniRx;
 public class MapTest
 {
     Map map;
+    Coord exitLocation = new Coord(2, 4);
 
     [SetUp]
     public void Initialize()
@@ -14,6 +15,7 @@ public class MapTest
         map = new Map();
         map.Width = 3;
         map.Depth = 5;
+        map.exitLocation = exitLocation;
         map.Initialize();
     }
 
@@ -75,6 +77,24 @@ public class MapTest
     }
 
     [Test]
+    public void ShouldBeIsOnExitTrueWhenCharacterIsOnExit()
+    {
+        var world = new World(map);
+        var character = Character.Create();
+        character.SetLocation(2, 2);
+
+        world.AddCharacter(character);
+        character.SetPhase(Character.Phase.Move);
+        Assert.IsFalse(character.IsOnExit);
+        Assert.IsTrue(character.Move(Direction.Up));
+        Assert.IsFalse(character.IsOnExit);
+        Assert.IsTrue(character.Move(Direction.Up));
+        Assert.IsTrue(character.IsOnExit);
+        Assert.IsTrue(character.Move(Direction.Down));
+        Assert.IsFalse(character.IsOnExit);
+    }
+
+    [Test]
     public void ShouldGetCharacterInTheCell()
     {
         var character = Character.Create();
@@ -89,5 +109,11 @@ public class MapTest
         // should return null when no character found in the cell
         Assert.IsNull(map.GetCharacter(new Coord(0, 0)));
         Assert.AreEqual(character, map.GetCharacter(new Coord(1, 0)));
+    }
+
+    [Test]
+    public void ShouldCreateExit()
+    {
+        Assert.IsTrue(map.GetCell(exitLocation.x, exitLocation.y).isExit);
     }
 }

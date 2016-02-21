@@ -193,8 +193,6 @@ public class GameManager : MonoBehaviour
         var pathSelector = Instantiate(pathSelectorPrefab) as PathSelector;
         pathSelector.Initialize(this, mapInstance, moveCharacter, world);
         yield return StartCoroutine(pathSelector.SequenceRouting());
-
-        Debug.Log(moveCharacter.Name + " Routing done");
     }
 
     IEnumerator SequenceCharacterAction(Character actCharacter)

@@ -3,8 +3,9 @@ using System.Collections;
 
 public class Cell
 {
+    public bool isExit = false;
     public bool canWalk = true;
-    public Character characterInTheCell = null;
+    public Character characterInTheCell { get; private set; }
     public bool hasCharacter { get { return characterInTheCell != null; } }
     public Cell()
     {
@@ -18,5 +19,30 @@ public class Cell
         if (hasCharacter && characterInTheCell != character) return false;
 
         return true;
+    }
+
+    public void SetCharacter(Character character)
+    {
+        if(character == null)
+        {
+            RemoveCharacter();
+            return;
+        }
+
+        this.characterInTheCell = character;
+        if(isExit)
+        {
+            characterInTheCell.IsOnExit = true;
+        }
+    }
+
+    public void RemoveCharacter()
+    {
+        if(isExit)
+        {
+            characterInTheCell.IsOnExit = false;
+        }
+
+        this.characterInTheCell = null;
     }
 }

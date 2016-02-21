@@ -9,6 +9,9 @@ public class Map : IWorldEventSubscriber
     public int Width;
     public int Depth;
 
+    public Coord exitLocation;
+    public bool PlayerIsInExit = false;
+
     private Cell[,] cells;
 
     public Map() { }
@@ -23,15 +26,17 @@ public class Map : IWorldEventSubscriber
                 cells[x, y] = new Cell();
             }
         }
+
+        cells[exitLocation.x, exitLocation.y].isExit = true;
     }
 
     public void MoveCharacterToFrom(Character character, Coord source, Coord destination)
     {
         var sourceCell = GetCell(source);
-        sourceCell.characterInTheCell = null;
+        sourceCell.SetCharacter(null);
 
         var destinationCell = GetCell(destination);
-        destinationCell.characterInTheCell = character;
+        destinationCell.SetCharacter(character);
     }
 
     public bool CanWalk(int x, int y, Character character)
@@ -61,7 +66,7 @@ public class Map : IWorldEventSubscriber
 
     public void SetCharacter(Character character)
     {
-        cells[character.X, character.Y].characterInTheCell = character;
+        cells[character.X, character.Y].SetCharacter(character);
     }
 
     public Character GetCharacter(Coord location)

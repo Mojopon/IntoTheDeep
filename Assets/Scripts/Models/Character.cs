@@ -46,6 +46,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
             return true;
         }
     }
+    public bool IsOnExit { get; set; }
 
     public enum Phase
     {

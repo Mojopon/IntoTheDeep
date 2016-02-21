@@ -171,15 +171,11 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
     public void ApplyMove(Character character, Direction direction)
     {
-        if (!character.CanMoveTo(direction)) return;
-
         character.Move(direction);
     }
 
     public void ApplyTransfer(Character character, Coord destination)
     {
-        if (!character.CanTransferTo(destination)) return;
-
         character.Transfer(destination);
     }
 
