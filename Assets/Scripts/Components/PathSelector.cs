@@ -4,7 +4,7 @@ using System;
 using UniRx;
 using System.Collections.Generic;
 
-public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
+public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser, IInputtable
 {
     public Transform marker;
 
@@ -37,6 +37,7 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
             yield return null;
         }
 
+        InputManager.Instance.Deregister(this);
         // destroy selecter when routing is completed
         yield return null;
         Destroy(gameObject);
@@ -61,6 +62,7 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
         }
     }
 
+    private ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>(PlayerCommand.None);
     void PlayerRouting()
     {
         var markerObject = Instantiate(marker, Vector3.zero, Quaternion.identity) as Transform;
@@ -75,29 +77,23 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
                          Destroy(markerObject.gameObject);
                      });
 
+        /*
         gameManager.PlayerInput
                    .Where(x => !gameManager.MenuIsOpened && x != PlayerCommand.None)
                    .Subscribe(x => OnInput(x))
                    .AddTo(markerObject.gameObject);
+                   */
+                   
+        PlayerInput.DistinctUntilChanged()
+                   .Subscribe(x => Input(x))
+                   .AddTo(markerObject.gameObject);
+
+        InputManager.Instance.Register(this);
     }
 
-    void NPCRouting()
+    public void Input(PlayerCommand command)
     {
-        var closestHostile = world.GetClosestHostile(character);
-
-        var routes = Pathfinding(character.Location.Value, closestHostile.Location.Value);
-
-        foreach(var direction in routes)
-        {
-            movedDirections.Add(direction);
-        }
-
-        ApplyMove();
-    }
-
-    void OnInput(PlayerCommand command)
-    {
-        switch(command)
+        switch (command)
         {
             case PlayerCommand.Left:
                 MoveMarker(Direction.Left);
@@ -118,6 +114,20 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
                 ApplyMove();
                 break;
         }
+    }
+
+    void NPCRouting()
+    {
+        var closestHostile = world.GetClosestHostile(character);
+
+        var routes = Pathfinding(character.Location.Value, closestHostile.Location.Value);
+
+        foreach(var direction in routes)
+        {
+            movedDirections.Add(direction);
+        }
+
+        ApplyMove();
     }
 
     private List<Direction> movedDirections = new List<Direction>();

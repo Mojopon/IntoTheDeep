@@ -37,17 +37,9 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 
             SkillMenu.Current.DisplaySkills(character);
 
-            gameManager.PlayerInput.Skip(1)
-                                   .Where(x => !gameManager.MenuIsOpened)
-                                   .Subscribe(x =>
-                                   {
-                                       SkillMenu.Current.Input(x);
-                                   })
-                                   .AddTo(gameObject);
-
-            var cancel = SkillMenu.Current.SubmittedSkill()
-                                  .Subscribe(x => selectedSkill = x)
-                                  .AddTo(gameObject);
+            SkillMenu.Current.SubmittedSkill()
+                     .Subscribe(x => selectedSkill = x)
+                     .AddTo(gameObject);
 
             while (selectedSkill == null)
             {

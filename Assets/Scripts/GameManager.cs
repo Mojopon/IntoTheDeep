@@ -4,7 +4,7 @@ using UniRx;
 using System;
 using System.Collections.Generic;
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviour, IInputtable
 {
     public static GameManager Instance { get; private set; }
 
@@ -114,8 +114,13 @@ public class GameManager : MonoBehaviour
 
         // create InputManager
         var inputManager = new GameObject("InputManager");
-        inputManager.AddComponent<InputManager>().gameManager = this;
+        inputManager.AddComponent<InputManager>().Register(this);
         yield return null;
+
+        bool selected = false;
+        yield return PopupWindow.PopupYesNoWindow("Game" + "\n" + "Start?").StartAsCoroutine(x => selected = x);
+
+        Debug.Log("selected: " + selected);
 
         // subscribe input to open menu
         PlayerInput.Where(x => x == PlayerCommand.Menu)

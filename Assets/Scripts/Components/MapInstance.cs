@@ -49,6 +49,7 @@ public class MapInstance : MonoBehaviour, IMapInstanceUtilitiesProvider
                 newTile.localScale = newTile.localScale * tileSize;
                 newTile.SetParent(transform);
                 if (!currentMap.GetCell(x, y).canWalk) newTile.localScale = newTile.localScale / 2;
+                if (currentMap.GetCell(x, y).isExit) newTile.localScale = newTile.localScale / 3;
             }
         }
     }

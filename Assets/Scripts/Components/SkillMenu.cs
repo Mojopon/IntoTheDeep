@@ -48,6 +48,8 @@ public class SkillMenu : MonoBehaviour, IInputtable {
 
     IEnumerator SequenceSelectSkill(IObserver<Skill> observer)
     {
+        InputManager.Instance.Register(this);
+
         while(skillToSubmit == null)
         {
             yield return null;
@@ -56,6 +58,8 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         observer.OnNext(skillToSubmit);
         skillToSubmit = null;
         observer.OnCompleted();
+
+        InputManager.Instance.Deregister(this);
     }
 
     public void DisplaySkills(Character user)

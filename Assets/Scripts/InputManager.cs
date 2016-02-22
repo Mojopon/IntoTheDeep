@@ -1,18 +1,39 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class InputManager : MonoBehaviour
 {
-    [HideInInspector]
-    public GameManager gameManager;
+    public static InputManager Instance;
 
-	void Update ()
+    private List<IInputtable> inputtables = new List<IInputtable>();
+
+    void Awake()
     {
-	    if(gameManager != null)
+        if (Instance != null && Instance != this)
         {
-            gameManager.Input(InputToCommand());
+            Destroy(gameObject);
+            return;
         }
-	}
+
+        Instance = this;
+    }
+
+    void Update()
+    {
+        if (inputtables.Count <= 0) return;
+        inputtables[0].Input(InputToCommand());
+    }
+
+    public void Register(IInputtable inputtable)
+    {
+        inputtables.Insert(0, inputtable);
+    }
+
+    public void Deregister(IInputtable inputtable)
+    {
+        inputtables.Remove(inputtable);
+    }
 
     PlayerCommand InputToCommand()
     {
