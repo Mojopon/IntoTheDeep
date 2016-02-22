@@ -10,6 +10,9 @@ public class Map : IWorldEventSubscriber
     public int Depth;
 
     public Coord exitLocation;
+    public Coord playerStartPosition;
+
+    [HideInInspector]
     public bool PlayerIsInExit = false;
 
     private Cell[,] cells;

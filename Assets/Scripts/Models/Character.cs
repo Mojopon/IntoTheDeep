@@ -29,6 +29,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 {
     public static int canMoveTimePerTurns = 4;
 
+    public bool GodMode { get; set; }
     public string Name { get; set; }
     public int X { get; private set; }
     public int Y { get; private set; }
@@ -236,7 +237,10 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
         this.Location.Value += direction.ToCoord();
 
-        canMoveTime--;
+        if (!GodMode)
+        {
+            canMoveTime--;
+        }
         if(canMoveTime == 0)
         {
             SetPhase(Phase.Combat);

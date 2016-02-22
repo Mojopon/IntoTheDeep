@@ -236,6 +236,8 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     public void Dispose()
     {
         disposables.Dispose();
+
+        foreach (var enemy in enemies) enemy.Dispose();
     }
     #endregion
 }
