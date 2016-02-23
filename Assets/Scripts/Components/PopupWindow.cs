@@ -27,8 +27,6 @@ public class PopupWindow : MonoBehaviour, IInputtable
 
     IEnumerator PopUpSelectOptions(IObserver<bool> observer)
     {
-        InputManager.Instance.Register(this);
-
         while(selected == null)
         {
             yield return null;
@@ -46,7 +44,6 @@ public class PopupWindow : MonoBehaviour, IInputtable
         selected = currentSelect;
 
         popupWindowUI.gameObject.SetActive(false);
-        InputManager.Instance.Deregister(this);
     }
 
     public void Input(PlayerCommand command)

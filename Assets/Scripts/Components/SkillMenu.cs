@@ -16,7 +16,7 @@ public class SkillInfo
     }
 }
 
-public class SkillMenu : MonoBehaviour, IInputtable {
+public class SkillMenu : MonoBehaviour {
 
     public static SkillMenu Current;
 
@@ -48,8 +48,6 @@ public class SkillMenu : MonoBehaviour, IInputtable {
 
     IEnumerator SequenceSelectSkill(IObserver<Skill> observer)
     {
-        InputManager.Instance.Register(this);
-
         while(skillToSubmit == null)
         {
             yield return null;
@@ -58,8 +56,6 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         observer.OnNext(skillToSubmit);
         skillToSubmit = null;
         observer.OnCompleted();
-
-        InputManager.Instance.Deregister(this);
     }
 
     public void DisplaySkills(Character user)
@@ -80,7 +76,7 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         OnSelect();
     }
 
-    void MoveDown()
+    public void MoveDown()
     {
         skillNameDisplays[selectedSkillNumber].color = Color.white;
 
@@ -90,7 +86,7 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         OnSelect();
     }
 
-    void MoveUp()
+    public void MoveUp()
     {
         skillNameDisplays[selectedSkillNumber].color = Color.white;
 
@@ -106,28 +102,10 @@ public class SkillMenu : MonoBehaviour, IInputtable {
         SelectedSkill.Value = new SkillInfo(SkillUser, skills[selectedSkillNumber]);
     }
 
-    void Submit()
+    public void Submit()
     {
         skillToSubmit = skills[selectedSkillNumber];
         CloseSkillMenu();
-    }
-
-    public void Input(PlayerCommand command)
-    {
-        switch(command)
-        {
-            case PlayerCommand.Up:
-                MoveUp();
-                break;
-            case PlayerCommand.Down:
-                MoveDown();
-                break;
-            case PlayerCommand.Left:
-            case PlayerCommand.Right:
-            case PlayerCommand.Enter:
-                Submit();
-                break;
-        }
     }
 
     void CloseSkillMenu()

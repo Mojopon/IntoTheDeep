@@ -37,6 +37,8 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 
             SkillMenu.Current.DisplaySkills(character);
 
+            SubscribePlayerInput(InputManager.Root).AddTo(gameObject);
+
             SkillMenu.Current.SubmittedSkill()
                      .Subscribe(x => selectedSkill = x)
                      .AddTo(gameObject);
@@ -48,6 +50,35 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 
             SelectSkill();
         }
+    }
+
+    IDisposable SubscribePlayerInput(IPlayerInput inputs)
+    {
+        var compositeDisposable = new CompositeDisposable();
+
+        inputs.MoveDirectionObservable
+              .Skip(1)
+              .Where(x => x != Direction.None)
+              .Subscribe(x =>
+              {
+                  if (x == Direction.Up)
+                  {
+                      SkillMenu.Current.MoveUp();
+                  }
+                  else if (x == Direction.Down)
+                  {
+                      SkillMenu.Current.MoveDown();
+                  }
+              })
+              .AddTo(compositeDisposable);
+
+        inputs.OnEnterButtonObservable
+              .Skip(1)
+              .Where(x => x)
+              .Subscribe(x => SkillMenu.Current.Submit())
+              .AddTo(compositeDisposable);
+
+        return compositeDisposable;
     }
 
     void SelectSkill()

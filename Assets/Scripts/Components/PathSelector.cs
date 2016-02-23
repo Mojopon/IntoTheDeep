@@ -4,7 +4,7 @@ using System;
 using UniRx;
 using System.Collections.Generic;
 
-public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser, IInputtable
+public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
     public Transform marker;
 
@@ -74,45 +74,35 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
                      .Subscribe(x =>
                      {
                          Destroy(markerObject.gameObject);
-                     });
+                     })
+                     .AddTo(markerObject.gameObject);
 
-        /*
-        gameManager.PlayerInput
-                   .Where(x => !gameManager.MenuIsOpened && x != PlayerCommand.None)
-                   .Subscribe(x => OnInput(x))
-                   .AddTo(markerObject.gameObject);
-                   */
-                   
-        PlayerInput.DistinctUntilChanged()
-                   .Subscribe(x => Input(x))
-                   .AddTo(markerObject.gameObject);
-
-        InputManager.Instance.Register(this);
+        SubscribePlayerInput(InputManager.Root).AddTo(markerObject.gameObject);
     }
 
-    public void Input(PlayerCommand command)
+    IDisposable SubscribePlayerInput(IPlayerInput inputs)
     {
-        switch (command)
-        {
-            case PlayerCommand.Left:
-                MoveMarker(Direction.Left);
-                break;
-            case PlayerCommand.Right:
-                MoveMarker(Direction.Right);
-                break;
-            case PlayerCommand.Down:
-                MoveMarker(Direction.Down);
-                break;
-            case PlayerCommand.Up:
-                MoveMarker(Direction.Up);
-                break;
-            case PlayerCommand.Cancel:
-                CancelMove();
-                break;
-            case PlayerCommand.Enter:
-                ApplyMove();
-                break;
-        }
+        var compositeDisposable = new CompositeDisposable();
+
+        inputs.MoveDirectionObservable
+              .Skip(1)
+              .Where(x => x != Direction.None)
+              .Subscribe(x => MoveMarker(x))
+              .AddTo(compositeDisposable);
+
+        inputs.OnEnterButtonObservable
+              .Skip(1)
+              .Where(x => x)
+              .Subscribe(x => ApplyMove())
+              .AddTo(compositeDisposable);
+
+        inputs.OnCancelButtonObservable
+              .Skip(1)
+              .Where(x => x)
+              .Subscribe(x => CancelMove())
+              .AddTo(compositeDisposable);
+
+        return compositeDisposable;
     }
 
     void NPCRouting()
@@ -154,8 +144,6 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
     void ApplyMove()
     {
         moveSubmitted.Value = true;
-
-        InputManager.Instance.Deregister(this);
 
         StartCoroutine(SequenceApplyMove());
     }

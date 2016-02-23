@@ -4,7 +4,7 @@ using UniRx;
 using System;
 using System.Collections.Generic;
 
-public class GameManager : MonoBehaviour, IInputtable
+public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
@@ -13,7 +13,6 @@ public class GameManager : MonoBehaviour, IInputtable
     public MapEditor mapEditorPrefab;
     public MapInstance mapPrefab;
     public CharacterManager characterManagerPrefab;
-    public GameObject menuObjects;
 
     public PathSelector pathSelectorPrefab;
     public SkillSelector skillSelectorPrefab;
@@ -22,6 +21,8 @@ public class GameManager : MonoBehaviour, IInputtable
     public ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
 
     public ReactiveProperty<Character> CurrentActor;
+
+    public MenuManager menuManager;
 
     private MapEditor mapEditor;
     private Map[] maps;
@@ -58,44 +59,10 @@ public class GameManager : MonoBehaviour, IInputtable
         yield return StartCoroutine(SequenceSetupWorld());
     }
 
-    public void Input(PlayerCommand command)
-    {
-        PlayerInput.Value = command;
-    }
-
-    //Input to This instead of subscribed input target when the Menu is opened
-    private MenuManager openedMenu;
-    public bool MenuIsOpened = false;
-    private IDisposable menuInputSubscription;
-    public void OpenMenu()
-    {
-        MenuIsOpened = true;
-        menuObjects.SetActive(true);
-        var menuManager = menuObjects.GetComponentInChildren<MenuManager>();
-        openedMenu = menuManager;
-
-        // we add skip operator otherwise it will submit menu command to the menu
-        // by the frame we openned menu as well
-        menuInputSubscription = PlayerInput.Skip(1)
-                                           .Subscribe(x => { menuManager.Input(x); })
-                                           .AddTo(gameObject);
-    }
-
-    public void CloseMenu()
-    {
-        openedMenu = null;
-
-        menuInputSubscription.Dispose();
-        menuInputSubscription = null;
-
-        menuObjects.SetActive(false);
-        MenuIsOpened = false;
-    }
-
     IEnumerator SequenceSetupGame()
     {
         var inputManager = new GameObject("InputManager");
-        inputManager.AddComponent<InputManager>().Register(this);
+        inputManager.AddComponent<InputManager>();
 
         this.mapEditor = Instantiate(mapEditorPrefab, Vector3.zero, Quaternion.identity) as MapEditor;
         this.maps = mapEditor.GetMaps();
@@ -110,29 +77,12 @@ public class GameManager : MonoBehaviour, IInputtable
         this.transition = new TransitionWorld(maps);
         transition.AddPlayer(player);
 
+        // wait for input manager to finish awake method
         yield return null;
-        bool selected = false;
-        yield return PopupWindow.PopupYesNoWindow("Game" + "\n" + "Start?").StartAsCoroutine(x => selected = x);
-
-        Debug.Log("selected: " + selected);
-
-        // subscribe input to open menu
-        PlayerInput.Where(x => x == PlayerCommand.Menu)
-                   .Subscribe(x =>
-                   {
-                       if(openedMenu == null)
-                       {
-                           OpenMenu();
-                       }
-                   });
     }
 
     IEnumerator SequenceSetupWorld()
     {
-        // create InputManager
-        var inputManager = new GameObject("InputManager");
-        inputManager.AddComponent<InputManager>().Register(this);
-
         if (gameObjectHolder != null)
         {
             Destroy(gameObjectHolder);

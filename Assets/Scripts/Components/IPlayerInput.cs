@@ -1,15 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UniRx;
 
-public class IPlayerInput : MonoBehaviour {
-
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+public interface IPlayerInput
+{
+    IObservable<bool> OnEnterButtonObservable { get; }
+    IObservable<bool> OnCancelButtonObservable { get; }
+    IObservable<Direction> MoveDirectionObservable { get; }
 }
