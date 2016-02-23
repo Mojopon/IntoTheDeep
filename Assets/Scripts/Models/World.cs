@@ -8,7 +8,7 @@ using System;
 public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 {
     #region IWorldEvents Property Group
-    public ReactiveProperty<Character> AddedCharacter { get; private set; }
+    public ReactiveCollection<Character> AddedCharacter { get; private set; }
     public ReactiveProperty<Character> CurrentActor { get; private set; }
     public ReactiveProperty<CharacterMoveResult> MoveResult { get; private set; }
     public ReactiveProperty<CharacterCombatResult> CombatResult { get; private set; }
@@ -20,7 +20,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     public Func<Coord, Character> CharacterOnTheLocation { get; private set; }
     #endregion
 
-    private Map map;
+    public Map map;
 
     private List<Character> allCharacters = new List<Character>();
     private int currentActingCharacter = 0;
@@ -31,7 +31,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     private CompositeDisposable disposables = new CompositeDisposable();
     public World(Map map)
     {
-        AddedCharacter = new ReactiveProperty<Character>();
+        AddedCharacter = new ReactiveCollection<Character>().AddTo(disposables);
         CurrentActor = new ReactiveProperty<Character>();
         MoveResult = new ReactiveProperty<CharacterMoveResult>();
         CombatResult = new ReactiveProperty<CharacterCombatResult>();
@@ -44,7 +44,9 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         map.Subscribe(this)
            .AddTo(disposables);
 
-        AddedCharacter.Where(x => x != null)
+        AddedCharacter.ObserveAdd()
+                      .Select(x => x.Value)
+                      .Where(x => x != null)
                       .Subscribe(x => allCharacters.Add(x))
                       .AddTo(disposables);
     }
@@ -116,7 +118,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
                  })
                  .AddTo(disposables);
 
-        AddedCharacter.Value = character;
+        AddedCharacter.Add(character);
 
         return true;
     }
@@ -131,25 +133,27 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         return AddCharacterAsEnemy(character, new Coord(x, y));
     }
 
-    public bool AddCharacterAsEnemy(Character character, Coord destination)
+    public bool AddCharacterAsEnemy(Character enemy, Coord destination)
     {
-        if (!AddCharacter(character, destination)) return false;
+        if (!AddCharacter(enemy, destination)) return false;
 
-        enemies.Add(character);
-        character.SetIsPlayer(false);
-        character.SetAlliance(Alliance.Enemy);
+        enemies.Add(enemy);
+        enemy.SetIsPlayer(false);
+        enemy.SetAlliance(Alliance.Enemy);
         deadEnemies++;
 
-        character.Dead
-                 .DistinctUntilChanged()
-                 .Subscribe(x =>
-                 {
-                     // the added character should return Dead as false for the first time 
-                     // so we subtract one to keep zero when the character isnt dead and we add one when the character dies
-                     if (x) deadEnemies++;
-                     else deadEnemies--;
-                 })
-                 .AddTo(disposables);
+        enemy.Dead
+             .DistinctUntilChanged()
+             .Subscribe(x =>
+             {
+                 // the added character should return Dead as false for the first time 
+                 // so we subtract one to keep zero when the character isnt dead and we add one when the character dies
+                 if (x) deadEnemies++;
+                 else deadEnemies--;
+             })
+             .AddTo(disposables);
+
+        enemy.AddTo(disposables);
 
         return true;
     }
@@ -236,8 +240,6 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     public void Dispose()
     {
         disposables.Dispose();
-
-        foreach (var enemy in enemies) enemy.Dispose();
     }
     #endregion
 }

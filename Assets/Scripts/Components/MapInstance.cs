@@ -9,18 +9,13 @@ public class MapInstance : MonoBehaviour, IMapInstanceUtilitiesProvider
     public float tileSize = 1.0f;
     public Vector2 center = Vector2.zero;
 
-    public Map[] maps;
-
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; private set; }
 
     private Map currentMap;
 
-    public void Generate() { Generate(0); }
-
-    public void Generate(int id)
+    public void Generate(Map map)
     {
-        currentMap = maps[id];
-        currentMap.Initialize();
+        currentMap = map;
 
         DecorateMap();
         InstantiateMap();

@@ -37,7 +37,6 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
             yield return null;
         }
 
-        InputManager.Instance.Deregister(this);
         // destroy selecter when routing is completed
         yield return null;
         Destroy(gameObject);
@@ -156,6 +155,8 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
     {
         moveSubmitted.Value = true;
 
+        InputManager.Instance.Deregister(this);
+
         StartCoroutine(SequenceApplyMove());
     }
 
@@ -170,7 +171,6 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
         while(character.CanMove)
         {
             world.ApplyMove(character, Direction.None);
-            yield return null;
         }
 
         moveDone.Value = true;

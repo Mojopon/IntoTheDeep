@@ -12,8 +12,7 @@ public class InputManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            Destroy(Instance.gameObject);
         }
 
         Instance = this;
@@ -33,6 +32,11 @@ public class InputManager : MonoBehaviour
     public void Deregister(IInputtable inputtable)
     {
         inputtables.Remove(inputtable);
+    }
+
+    public void Reset()
+    {
+        inputtables.Clear();
     }
 
     PlayerCommand InputToCommand()

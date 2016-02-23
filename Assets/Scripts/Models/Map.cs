@@ -108,6 +108,8 @@ public class Map : IWorldEventSubscriber
                  .AddTo(compositeDisposable); 
 
         publisher.AddedCharacter
+                 .ObserveAdd()
+                 .Select(x => x.Value)
                  .Where(x => x != null)
                  .Subscribe(x => SetCharacter(x))
                  .AddTo(compositeDisposable);

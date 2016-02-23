@@ -47,7 +47,16 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
     public IDisposable Subscribe(IWorldEventPublisher publisher)
     {
         var disposables = new CompositeDisposable();
+
         publisher.AddedCharacter
+                 .ToObservable()
+                 .Where(x => x != null)
+                 .Subscribe(x => Spawn(x))
+                 .Dispose();
+
+        publisher.AddedCharacter
+                 .ObserveAdd()
+                 .Select(x => x.Value)
                  .Where(x => x != null)
                  .Subscribe(x => Spawn(x))
                  .AddTo(disposables);

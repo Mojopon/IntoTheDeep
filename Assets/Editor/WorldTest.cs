@@ -40,7 +40,11 @@ public class WorldTest
     {
         var character = Character.Create();
         Character addedCharacter = null;
-        world.AddedCharacter.Subscribe(x => addedCharacter = x);
+        world.AddedCharacter
+             .ObserveAdd()
+             .Select(x => x.Value)
+             .Subscribe(x => addedCharacter = x);
+
         world.AddCharacter(character);
         Assert.IsNotNull(addedCharacter);
         Assert.AreEqual(addedCharacter, character);
