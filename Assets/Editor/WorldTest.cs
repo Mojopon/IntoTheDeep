@@ -25,8 +25,8 @@ public class WorldTest
         var enemyTwo = Character.Create();
         Assert.IsTrue(world.EnemyIsAnnihilated);
 
-        world.AddCharacterAsEnemy(enemyOne);
-        world.AddCharacterAsEnemy(enemyTwo);
+        world.AddCharacterAsEnemy(enemyOne, 0, 0);
+        world.AddCharacterAsEnemy(enemyTwo, 0, 1);
 
         Assert.IsFalse(world.EnemyIsAnnihilated);
         enemyOne.ApplyHealthChange(-100);
@@ -45,7 +45,7 @@ public class WorldTest
              .Select(x => x.Value)
              .Subscribe(x => addedCharacter = x);
 
-        world.AddCharacter(character);
+        world.AddCharacter(character, 0, 0);
         Assert.IsNotNull(addedCharacter);
         Assert.AreEqual(addedCharacter, character);
     }
@@ -54,8 +54,7 @@ public class WorldTest
     public void ShouldGetCharacterInTheCell()
     {
         var character = Character.Create();
-        character.SetLocation(0, 0);
-        world.AddCharacter(character);
+        world.AddCharacter(character, 0, 0);
         Assert.AreEqual(character, world.CharacterOnTheLocation(new Coord(0, 0)));
     }
 
@@ -86,7 +85,7 @@ public class WorldTest
         map.GetCell(1, 0).canWalk = false;
         world = new World(map);
 
-        world.AddCharacter(character);
+        world.AddCharacter(character, 0, 0);
         Assert.IsFalse(character.CanMoveTo(Direction.Right));
         character.Move(Direction.Right);
         Assert.AreEqual(0, character.X);
@@ -106,7 +105,7 @@ public class WorldTest
         map.GetCell(1, 0).canWalk = false;
         world = new World(map);
 
-        Assert.True(world.AddCharacter(character));
+        Assert.True(world.AddCharacter(character, 0, 0));
         // cant transfer out of the map
         Assert.IsFalse(character.CanTransferTo(new Coord(2, 6)));
         Assert.IsFalse(character.CanTransferTo(new Coord(-1, 0)));
@@ -116,8 +115,7 @@ public class WorldTest
 
         Assert.IsTrue(character.CanTransferTo(new Coord(2, 0)));
         var characterTwo = Character.Create();
-        characterTwo.SetLocation(2, 0);
-        Assert.True(world.AddCharacter(characterTwo));
+        Assert.True(world.AddCharacter(characterTwo, 2, 0));
         Assert.IsFalse(character.CanTransferTo(new Coord(2, 0)));
         Assert.IsFalse(character.Transfer(new Coord(2, 0)));
     }
@@ -191,7 +189,7 @@ public class WorldTest
     public void ApplyMovementTotheCharacterAndtheMap()
     {
         var character = Character.Create();
-        world.AddCharacter(character);
+        world.AddCharacter(character, 0, 0);
         CharacterMoveResult moveResult = null;
         world.MoveResult.Subscribe(x => moveResult = x);
 
@@ -224,7 +222,7 @@ public class WorldTest
     public void ShouldApplyTransferResult()
     {
         var character = Character.Create();
-        world.AddCharacter(character);
+        world.AddCharacter(character, 0, 0);
         CharacterMoveResult moveResult = null;
         world.MoveResult.Subscribe(x => moveResult = x);
 
@@ -247,7 +245,7 @@ public class WorldTest
     public void ApplyTransferToTheCharacter()
     {
         var character = Character.Create();
-        world.AddCharacter(character);
+        world.AddCharacter(character, 0, 0);
         CharacterMoveResult moveResult = null;
         world.MoveResult.Subscribe(x => moveResult = x);
 
@@ -264,7 +262,7 @@ public class WorldTest
         var enemy = Character.Create();
         //should be created as player on default
         Assert.AreEqual(Alliance.Player, enemy.Alliance);
-        world.AddCharacterAsEnemy(enemy);
+        world.AddCharacterAsEnemy(enemy, 0, 0);
         Assert.AreEqual(Alliance.Enemy, enemy.Alliance);
     }
 
@@ -347,14 +345,10 @@ public class WorldTest
     public void ShouldDealDamageToTheCharacter()
     {
         var character = Character.Create();
-        character.SetLocation(1, 1);
 
         var enemyOne = Character.Create();
-        enemyOne.SetLocation(0, 1);
         var enemyTwo = Character.Create();
-        enemyTwo.SetLocation(1, 2);
         var enemyThree = Character.Create();
-        enemyThree.SetLocation(0, 0);
 
         var skill = new Skill()
         {
@@ -370,10 +364,10 @@ public class WorldTest
             }
         };
 
-        Assert.IsTrue(world.AddCharacter(character));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
+        Assert.IsTrue(world.AddCharacter(character, 1, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 1, 2));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree, 0, 0));
 
         // characters health should be 100 by default
         Assert.AreEqual(100, enemyOne.Health.Value);
@@ -395,14 +389,10 @@ public class WorldTest
         world.CombatResult.Subscribe(x => result = x);
 
         var character = Character.Create();
-        character.SetLocation(1, 1);
 
         var enemyOne = Character.Create();
-        enemyOne.SetLocation(0, 1);
         var enemyTwo = Character.Create();
-        enemyTwo.SetLocation(1, 2);
         var enemyThree = Character.Create();
-        enemyThree.SetLocation(0, 0);
 
         var skill = new Skill()
         {
@@ -418,10 +408,10 @@ public class WorldTest
             }
         };
 
-        Assert.IsTrue(world.AddCharacter(character));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
+        Assert.IsTrue(world.AddCharacter(character, 1, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 1, 2));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree, 0, 0));
 
         // characters health should be 100 by default
         Assert.AreEqual(100, enemyOne.Health.Value);
@@ -453,5 +443,30 @@ public class WorldTest
         Assert.IsTrue(enemyOneHealth > enemyOne.Health.Value);
         Assert.IsTrue(enemyTwoHealth > enemyTwo.Health.Value);
         Assert.IsTrue(100 == enemyThree.Health.Value);
+    }
+
+    [Test]
+    public void DeadCharacterShouldBeRemovedFromTheMap()
+    {
+        var character = Character.Create();
+
+        var enemyOne = Character.Create();
+
+        var skill = new Skill()
+        {
+            name = "斬る",
+            skillType = SkillType.Active,
+            effectType = EffectType.Damage,
+            minMultiply = 1f,
+            maxMultiply = 1f,
+            range = new Coord[]
+    {
+                new Coord(-1, 0),
+                new Coord(0, 1),
+    }
+        };
+
+        Assert.IsTrue(world.AddCharacter(character, 1, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
     }
 }

@@ -87,11 +87,6 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         return map.GetCell(location);
     }
 
-    public bool AddCharacter(Character character)
-    {
-        return AddCharacter(character, character.Location.Value);
-    }
-
     public bool AddCharacter(Character character, int x, int y)
     {
         return AddCharacter(character, new Coord(x, y));
@@ -128,11 +123,6 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         AddedCharacter.Add(character);
 
         return true;
-    }
-
-    public bool AddCharacterAsEnemy(Character character)
-    {
-        return AddCharacterAsEnemy(character, character.Location.Value);
     }
 
     public bool AddCharacterAsEnemy(Character character, int x, int y)

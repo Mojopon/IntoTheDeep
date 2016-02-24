@@ -25,7 +25,6 @@ public class CombatTest
     public void UserShouldBeTheCharacterSkillUsed()
     {
         var character = CreateCharacter();
-        character.SetLocation(1, 1);
 
         var skill = new Skill()
         {
@@ -41,7 +40,7 @@ public class CombatTest
             }
         };
 
-        Assert.IsTrue(world.AddCharacter(character));
+        Assert.IsTrue(world.AddCharacter(character, 1, 1));
         var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
         Assert.AreEqual(character, combatResult.user);
     }
@@ -74,10 +73,10 @@ public class CombatTest
         var enemyThree = CreateCharacter();
         enemyThree.SetLocation(0, 0);
 
-        Assert.IsTrue(world.AddCharacter(character));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
+        Assert.IsTrue(world.AddCharacter(character, 1, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 1, 2));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree, 0, 0));
 
         var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
 
@@ -115,10 +114,10 @@ public class CombatTest
         var enemyThree = CreateCharacter();
         enemyThree.SetLocation(0, 0);
 
-        Assert.IsTrue(world.AddCharacter(character));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
-        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
+        Assert.IsTrue(world.AddCharacter(character, 1, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 1, 2));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree, 0, 0));
 
         var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
 

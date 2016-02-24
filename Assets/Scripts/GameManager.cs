@@ -68,15 +68,24 @@ public class GameManager : MonoBehaviour
         this.mapEditor = Instantiate(mapEditorPrefab, Vector3.zero, Quaternion.identity) as MapEditor;
         this.maps = mapEditor.GetMaps();
 
-        var player = Character.Create();
-        player.Name = "Player";
+        var player1 = Character.Create();
+        player1.Name = "Player 1";
+        var player2 = Character.Create();
+        player2.Name = "Player 2";
+        var player3 = Character.Create();
+        player3.Name = "Player 3";
+        var player4 = Character.Create();
+        player4.Name = "Player 4";
 
         var enemy = Character.Create();
         enemy.Name = "Enemy";
         enemy.Location.Value = new Coord(3, 3);
 
         this.transition = new TransitionWorld(maps);
-        transition.AddPlayer(player);
+        transition.AddPlayer(player1);
+        transition.AddPlayer(player2);
+        transition.AddPlayer(player3);
+        transition.AddPlayer(player4);
 
         // wait for input manager to finish awake method
         yield return null;

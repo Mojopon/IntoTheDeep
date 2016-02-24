@@ -18,7 +18,13 @@ public class TransitionWorldTest
             Width = 3,
             Depth = 3,
             exitLocation = new Coord(2, 2),
-            playerStartPosition = new Coord(0, 0),
+            playerStartPositions = new Coord[]
+                                   {
+                                       new Coord (0, 0),
+                                       new Coord (1, 0),
+                                       new Coord (2, 0),
+                                       new Coord (2, 1),
+                                   }
         };
 
         maps[1] = new Map()
@@ -26,7 +32,13 @@ public class TransitionWorldTest
             Width = 4,
             Depth = 4,
             exitLocation = new Coord(3, 3),
-            playerStartPosition = new Coord(1, 1),
+            playerStartPositions = new Coord[]
+                                   {
+                                       new Coord (1, 1),
+                                       new Coord (1, 0),
+                                       new Coord (1, 2),
+                                       new Coord (2, 2),
+                                   }
         };
 
         maps[2] = new Map()
@@ -34,7 +46,13 @@ public class TransitionWorldTest
             Width = 5,
             Depth = 5,
             exitLocation = new Coord(4, 4),
-            playerStartPosition = new Coord(1, 2),
+            playerStartPositions = new Coord[]
+                                   {
+                                       new Coord (1, 2),
+                                       new Coord (1, 1),
+                                       new Coord (0, 2),
+                                       new Coord (0, 1),
+                                   }
         };
 
         foreach(var map in maps)
@@ -55,7 +73,7 @@ public class TransitionWorldTest
     {
         var nextWorld = transition.GoNext();
         var currentMap = maps[0];
-        Assert.AreEqual(currentMap.playerStartPosition, playerOne.Location.Value);
+        Assert.AreEqual(currentMap.playerStartPositions[0], playerOne.Location.Value);
         Assert.AreEqual(currentMap.GetCharacter(playerOne.Location.Value), playerOne);
     }
 
@@ -83,7 +101,7 @@ public class TransitionWorldTest
         currentMap = maps[1];
         Assert.IsFalse(playerOne.IsOnExit);
 
-        Assert.AreEqual(currentMap.playerStartPosition, playerOne.Location.Value);
+        Assert.AreEqual(currentMap.playerStartPositions[0], playerOne.Location.Value);
         Assert.AreEqual(currentMap.GetCharacter(playerOne.Location.Value), playerOne);
 
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
@@ -99,7 +117,7 @@ public class TransitionWorldTest
         currentMap = maps[2];
         Assert.IsFalse(playerOne.IsOnExit);
 
-        Assert.AreEqual(currentMap.playerStartPosition, playerOne.Location.Value);
+        Assert.AreEqual(currentMap.playerStartPositions[0], playerOne.Location.Value);
         Assert.AreEqual(currentMap.GetCharacter(playerOne.Location.Value), playerOne);
 
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Up);

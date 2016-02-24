@@ -33,8 +33,7 @@ public class TransitionWorld
 
         for(int i = 0; i < players.Count; i++)
         {
-            players[i].SetLocation(nextMap.playerStartPosition);
-            newWorld.AddCharacter(players[i]);
+            newWorld.AddCharacter(players[i], nextMap.playerStartPositions[i]);
         }
 
         previousWorld = newWorld;

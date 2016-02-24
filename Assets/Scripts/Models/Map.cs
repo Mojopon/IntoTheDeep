@@ -10,7 +10,7 @@ public class Map : IWorldEventSubscriber
     public int Depth;
 
     public Coord exitLocation;
-    public Coord playerStartPosition;
+    public Coord[] playerStartPositions = new Coord[4];
 
     [HideInInspector]
     public bool PlayerIsInExit = false;

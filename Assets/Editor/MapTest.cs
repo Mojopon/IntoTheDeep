@@ -74,11 +74,10 @@ public class MapTest
     {
         var world = new World(map);
         var character = Character.Create();
-        character.SetLocation(0, 0);
         Assert.IsFalse(map.GetCell(0, 0).hasCharacter);
         Assert.IsNull(map.GetCell(0, 0).characterInTheCell);
 
-        world.AddCharacter(character);
+        world.AddCharacter(character, 0, 0);
         Assert.IsTrue(map.GetCell(0, 0).hasCharacter);
         Assert.AreEqual(character, map.GetCell(0, 0).characterInTheCell);
     }
@@ -88,9 +87,8 @@ public class MapTest
     {
         var world = new World(map);
         var character = Character.Create();
-        character.SetLocation(2, 2);
 
-        world.AddCharacter(character);
+        world.AddCharacter(character, 2, 2);
         character.SetPhase(Character.Phase.Move);
         Assert.IsFalse(character.IsOnExit);
         Assert.IsTrue(character.Move(Direction.Up));
