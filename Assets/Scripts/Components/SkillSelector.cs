@@ -6,6 +6,7 @@ using UniRx;
 public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
 {
     public Transform marker;
+    public Transform skillPreviewerPrefab;
 
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
     public Func<Character, Coord, bool> MoveChecker { get; set; }
@@ -35,6 +36,9 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
         }
         else {
 
+            var skillPreviewer = Instantiate(skillPreviewerPrefab) as Transform;
+            skillPreviewer.SetParent(transform);
+
             SkillMenu.Current.DisplaySkills(character);
 
             SubscribePlayerInput(InputManager.Root).AddTo(gameObject);
@@ -48,7 +52,7 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
                 yield return null;
             }
 
-            SelectSkill();
+            OnSelectSkill();
         }
     }
 
@@ -81,7 +85,7 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
         return compositeDisposable;
     }
 
-    void SelectSkill()
+    void OnSelectSkill()
     {
         world.ApplyUseSkill(character, selectedSkill);
 
@@ -96,7 +100,7 @@ public class SkillSelector : MonoBehaviour, IMapInstanceUtilitiesUser
         var availableSkills = character.GetSkills();
         selectedSkill = availableSkills[UnityEngine.Random.Range(0, availableSkills.Length - 1)];
 
-        SelectSkill();
+        OnSelectSkill();
     }
 
     public void GetMapInstanceUtilities(IMapInstanceUtilitiesProvider provider)

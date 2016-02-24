@@ -14,6 +14,7 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
         StartCoroutine(GetMapInstanceUtilitiesCoroutine());
     }
 
+    private IMapInstanceUtilitiesProvider provider;
     IEnumerator GetMapInstanceUtilitiesCoroutine()
     {
         var mapInstanceObject = GameObject.FindGameObjectWithTag("MapInstance");
@@ -24,8 +25,8 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
         }
         else
         {
-            var mapInstance = mapInstanceObject.GetComponent<IMapInstanceUtilitiesProvider>();
-            GetMapInstanceUtilities(mapInstance);
+            provider = mapInstanceObject.GetComponent<IMapInstanceUtilitiesProvider>();
+            GetMapInstanceUtilities(provider);
 
             StartCoroutine(GetSkillMenuCoroutine());
         }
@@ -41,7 +42,8 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
         else
         {
             SkillMenu.Current.SelectedSkill
-                             .Subscribe(x => PreviewSkill(x));
+                             .Subscribe(x => PreviewSkill(x))
+                             .AddTo(gameObject);
         }
     }
 

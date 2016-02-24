@@ -17,9 +17,10 @@ public class MapInstance : MonoBehaviour, IMapInstanceUtilitiesProvider
     {
         currentMap = map;
 
+        CoordToWorldPositionConverter = new Func<int, int, Vector2>((x, y) => CoordToWorldPosition(x, y));
+
         DecorateMap();
         InstantiateMap();
-        CoordToWorldPositionConverter = new Func<int, int, Vector2>((x, y) => CoordToWorldPosition(x, y));
     }
 
     public Map GetCurrentMap()

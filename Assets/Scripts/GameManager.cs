@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     public ReactiveProperty<CombatPhase> CurrentPhase = new ReactiveProperty<CombatPhase>();
     public ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
 
+    // gonna reference world's CurrentActor property later on
     public ReactiveProperty<Character> CurrentActor;
 
     public MenuManager menuManager;
@@ -125,7 +126,7 @@ public class GameManager : MonoBehaviour
             subscriptionsForCurrentActor = null;
         }
 
-        subscriptionsForCurrentActor = new CompositeDisposable();
+        subscriptionsForCurrentActor = new CompositeDisposable().AddTo(gameObjectHolder);
 
         chara.CurrentPhase.Subscribe(x =>
                           {

@@ -246,6 +246,10 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     #region IDisposables Method
     public void Dispose()
     {
+        foreach(var character in allCharacters)
+        {
+            character.SetPhase(Character.Phase.Idle);
+        }
         disposables.Dispose();
     }
     #endregion
