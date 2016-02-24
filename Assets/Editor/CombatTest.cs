@@ -42,7 +42,7 @@ public class CombatTest
         };
 
         Assert.IsTrue(world.AddCharacter(character));
-        var combatResult = Combat.GetCombatResult(character, skill, new System.Func<Coord, Character>((coord) => world.GetCharacter(coord)), 0);
+        var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
         Assert.AreEqual(character, combatResult.user);
     }
 
@@ -79,7 +79,7 @@ public class CombatTest
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
 
-        var combatResult = Combat.GetCombatResult(character, skill, new System.Func<Coord, Character>((coord) => world.GetCharacter(coord)), 0);
+        var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
 
         var performances = combatResult.GetPerformances().Select(x => x.target).ToList();
         Assert.IsTrue(performances.Contains(enemyOne));
@@ -120,7 +120,7 @@ public class CombatTest
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree));
 
-        var combatResult = Combat.GetCombatResult(character, skill, new System.Func<Coord, Character>((coord) => world.GetCharacter(coord)), 0);
+        var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
 
         var performances = combatResult.GetPerformances();
         foreach(var performance in performances)

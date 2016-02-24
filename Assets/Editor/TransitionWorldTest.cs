@@ -71,34 +71,45 @@ public class TransitionWorldTest
         Assert.IsTrue(playerOne.CanMoveTo(Direction.Right));
 
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Up);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Up);
-
         Assert.IsTrue(playerOne.IsOnExit);
 
         nextWorld = transition.GoNext();
         currentMap = maps[1];
+        Assert.IsFalse(playerOne.IsOnExit);
 
         Assert.AreEqual(currentMap.playerStartPosition, playerOne.Location.Value);
         Assert.AreEqual(currentMap.GetCharacter(playerOne.Location.Value), playerOne);
 
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Up);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Up);
         Assert.IsTrue(playerOne.IsOnExit);
 
         nextWorld = transition.GoNext();
         currentMap = maps[2];
+        Assert.IsFalse(playerOne.IsOnExit);
 
         Assert.AreEqual(currentMap.playerStartPosition, playerOne.Location.Value);
         Assert.AreEqual(currentMap.GetCharacter(playerOne.Location.Value), playerOne);
 
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Up);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Up);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
+        Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
         Assert.IsTrue(playerOne.IsOnExit);
     }

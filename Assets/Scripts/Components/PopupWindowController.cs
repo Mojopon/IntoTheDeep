@@ -11,7 +11,6 @@ public class PopupWindowController : MonoBehaviour
 
     public void SetMessage(string text)
     {
-        Debug.Log(text);
         message.text = text;
     }
 

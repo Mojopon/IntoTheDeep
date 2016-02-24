@@ -7,4 +7,5 @@ public interface IWorldUtilitiesProvider
     Func<Character, Coord, bool> MoveChecker { get; }
     Func<Coord, Coord, Direction[]> Pathfinding { get; }
     Func<Coord, Character> CharacterOnTheLocation { get; }
+    Func<Coord, Cell> CellOnTheLocation { get; }
 }

@@ -44,6 +44,13 @@ public class MapTest
     }
 
     [Test]
+    public void ShouldGetCell()
+    {
+        Assert.IsFalse(map.GetCell(0, 0).isExit);
+        Assert.IsTrue(map.GetCell(2, 4).isExit);
+    }
+
+    [Test]
     public void ShouldAddCharacterToTheCell()
     {
         var character = Character.Create();

@@ -56,7 +56,7 @@ public class WorldTest
         var character = Character.Create();
         character.SetLocation(0, 0);
         world.AddCharacter(character);
-        Assert.AreEqual(character, world.GetCharacter(new Coord(0, 0)));
+        Assert.AreEqual(character, world.CharacterOnTheLocation(new Coord(0, 0)));
     }
 
     [Test]

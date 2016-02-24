@@ -16,6 +16,7 @@ public class InputManager : MonoBehaviour
 {
     public static InputGroup Root { get { return instance.rootInputs; } }
     public static InputGroup Menu { get { return instance.menuInputs; } }
+    public static InputGroup Popup { get { return instance.popupInputs; } }
     public static IObservable<bool> OnMenuButtonObservable { get { return instance.toggleMenuInput; } }
 
     private static InputManager instance;

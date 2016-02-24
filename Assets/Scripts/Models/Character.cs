@@ -47,7 +47,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
             return true;
         }
     }
-    public bool IsOnExit { get; set; }
+    public bool IsOnExit { get; private set; }
 
     public enum Phase
     {
@@ -64,6 +64,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     public Func<Character, Coord, bool> MoveChecker { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
+    public Func<Coord, Cell> CellOnTheLocation { get; set; }
 
     #region ICharacterAttributes Property Group
     public int stamina { get; private set; }
@@ -107,9 +108,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     void Initialize()
     {
-        // initialize world utilities first so it doesnt make exceptions
-        this.MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
-        this.Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
+        ResetUtilities();
 
         this.CurrentPhase = new ReactiveProperty<Phase>(Phase.Idle);
         this.Location = new ReactiveProperty<Coord>();
@@ -189,6 +188,20 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         }
     }
 
+    void ResetUtilities()
+    {
+        // this needs to be done first so it doesnt make exceptions without utilities provided
+        this.MoveChecker = new Func<Character, Coord, bool>((chara, coord) => true);
+        this.Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => new Direction[] { Direction.None });
+        this.CellOnTheLocation = new Func<Coord, Cell>((coord) => null);
+    }
+
+    public void OnWorldEnter(World world)
+    {
+        GetWorldUtilities(world);
+        OnChangeLocation(Location.Value);
+    }
+
     private int canMoveTime;
     public void SetPhase(Phase phase)
     {
@@ -235,7 +248,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     {
         if (!CanMoveTo(direction)) return false;
 
-        this.Location.Value += direction.ToCoord();
+        OnChangeLocation(this.Location.Value += direction.ToCoord());
 
         if (!GodMode)
         {
@@ -253,9 +266,20 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     {
         if (!CanTransferTo(destination)) return false;
 
-        this.Location.Value = destination;
+        OnChangeLocation(destination);
 
         return true;
+    }
+
+    void OnChangeLocation(Coord destination)
+    {
+        this.Location.Value = destination;
+
+        var cell = CellOnTheLocation(destination);
+        if (cell == null) return;
+
+        if (cell.isExit) IsOnExit = true;
+        else IsOnExit = false;
     }
 
     public bool CanUseSkill(Skill skill)
@@ -306,6 +330,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     {
         MoveChecker = provider.MoveChecker;
         Pathfinding = provider.Pathfinding;
+        CellOnTheLocation = provider.CellOnTheLocation;
     }
 
     public override string ToString()

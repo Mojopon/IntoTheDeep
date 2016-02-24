@@ -30,19 +30,10 @@ public class Cell
         }
 
         this.characterInTheCell = character;
-        if(isExit)
-        {
-            characterInTheCell.IsOnExit = true;
-        }
     }
 
     public void RemoveCharacter()
     {
-        if(isExit)
-        {
-            characterInTheCell.IsOnExit = false;
-        }
-
         this.characterInTheCell = null;
     }
 }

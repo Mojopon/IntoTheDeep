@@ -18,6 +18,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     public Func<Character, Coord, bool> MoveChecker { get; private set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; private set; }
     public Func<Coord, Character> CharacterOnTheLocation { get; private set; }
+    public Func<Coord, Cell> CellOnTheLocation { get; private set; }
     #endregion
 
     public Map map;
@@ -39,6 +40,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         MoveChecker = new Func<Character, Coord, bool>((chara, coord) => CanMove(chara, coord));
         Pathfinding = new Func<Coord, Coord, Direction[]>((c1, c2) => GeneratePath(c1, c2));
         CharacterOnTheLocation = new Func<Coord, Character>((coord) => GetCharacter(coord));
+        CellOnTheLocation = new Func<Coord, Cell>((coord) => GetCell(coord));
 
         this.map = map;
         map.Subscribe(this)
@@ -75,9 +77,14 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         return character;
     }
 
-    public Character GetCharacter(Coord location)
+    Character GetCharacter(Coord location)
     {
         return map.GetCharacter(location);
+    }
+
+    Cell GetCell(Coord location)
+    {
+        return map.GetCell(location);
     }
 
     public bool AddCharacter(Character character)
@@ -97,7 +104,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
         character.SetLocation(destination);
         // provide utilities for the character to act in the world
-        character.GetWorldUtilities(this);
+        character.OnWorldEnter(this);
         character.Location
                  .DistinctUntilChanged()
                  .Scan((x, y) =>

@@ -172,12 +172,15 @@ public class GameManager : MonoBehaviour
         if(CurrentActor.Value != null && CurrentActor.Value.IsOnExit)
         {
             bool goNextFloor = false;
-            Debug.Log("go next floor?");
-            yield return PopupWindow.PopupYesNoWindow("Go next floor?")
-                                    .Subscribe(x => goNextFloor = x);
 
-            if(goNextFloor)
+            yield return PopupWindow.PopupYesNoWindow("Go next floor?")
+                                    .StartAsCoroutine(x => goNextFloor = x);
+
+            yield return null;
+
+            if (goNextFloor)
             {
+                goNextFloor = false;
                 StartCoroutine(SequenceSetupWorld());
                 yield break;
             }
