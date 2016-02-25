@@ -17,19 +17,12 @@ public class CharacterMoveResult
     }
 }
 
-public class Attributes
-{
-    public int stamina { get; set; }
-    public int strength { get; set; }
-    public int agility { get; set; }
-    public int intellect { get; set; }
-}
-
 public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 {
     public static int canMoveTimePerTurns = 4;
 
     public bool GodMode { get; set; }
+
     public string Name { get; set; }
     public int X { get; private set; }
     public int Y { get; private set; }
@@ -73,7 +66,7 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     public int intellect { get; private set; }
 
     public int maxHealth { get { return stamina * 10; } }
-    public int maxMana { get { return intellect * 10; } }
+    public int maxMana { get { return 100; } }
 
     public ReactiveProperty<int> Health { get; private set; }
     public ReactiveProperty<int> Mana { get; private set; }
@@ -86,21 +79,19 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
     #endregion
     private List<Skill> skills = new List<Skill>();
 
-    public static Character Create(Attributes initialAttributes)
+    public static Character Create(CharacterDataTable characterData)
     {
-        return new Character(initialAttributes);
+        return new Character(characterData);
     }
 
     public static Character Create()
     {
-        return new Character();
+        return new Character(new CharacterDataTable());
     }
 
-    protected Character() : this(null) { }
-
-    protected Character(Attributes initialAttributes)
+    protected Character(CharacterDataTable characterData)
     {
-        SetCharacterAttributes(initialAttributes);
+        SetCharacterAttributes(characterData);
         InitializeAttributes();
 
         Initialize();
@@ -170,22 +161,12 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         spellPower = (intellect * 10) / 2;
     }
 
-    void SetCharacterAttributes(Attributes attributes)
+    void SetCharacterAttributes(CharacterDataTable characterData)
     {
-        if (attributes == null)
-        {
-            this.stamina = 10;
-            this.strength = 10;
-            this.agility = 10;
-            this.intellect = 10;
-        }
-        else
-        {
-            this.stamina = attributes.stamina;
-            this.strength = attributes.strength;
-            this.agility = attributes.agility;
-            this.intellect = attributes.intellect;
-        }
+        this.stamina = characterData.attributes.stamina;
+        this.strength = characterData.attributes.strength;
+        this.agility = characterData.attributes.agility;
+        this.intellect = characterData.attributes.intellect;
     }
 
     void ResetUtilities()

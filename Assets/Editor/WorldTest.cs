@@ -186,6 +186,60 @@ public class WorldTest
     }
 
     [Test]
+    public void SkipDeadCharactersTurn()
+    {
+        var characterOne = Character.Create();
+        var characterTwo = Character.Create();
+        var enemyOne = Character.Create();
+        var enemyTwo = Character.Create();
+
+        Assert.IsTrue(world.AddCharacter(characterOne, 0, 0));
+        Assert.IsTrue(world.AddCharacter(characterTwo, 1, 0));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 2, 3));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 3, 3));
+
+        Character currentActor = null;
+        world.CurrentActor.Subscribe(x => currentActor = x);
+
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(characterOne, currentActor);
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(characterTwo, currentActor);
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(enemyOne, currentActor);
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(enemyTwo, currentActor);
+
+        enemyOne.ApplyHealthChange(-99999);
+        Assert.IsTrue(enemyOne.IsDead);
+
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(characterOne, currentActor);
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(characterTwo, currentActor);
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(enemyTwo, currentActor);
+
+        characterOne.ApplyHealthChange(-99999);
+        Assert.IsTrue(characterOne.IsDead);
+
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(characterTwo, currentActor);
+        world.GoNextCharacterPhase();
+        Assert.AreEqual(enemyTwo, currentActor);
+
+        // should return null when all characters are dead
+
+        enemyTwo.ApplyHealthChange(-99999);
+        Assert.IsTrue(enemyTwo.IsDead);
+        characterTwo.ApplyHealthChange(-99999);
+        Assert.IsTrue(characterTwo.IsDead);
+
+        world.GoNextCharacterPhase();
+        Assert.IsNull(currentActor);
+    }
+
+    [Test]
     public void ApplyMovementTotheCharacterAndtheMap()
     {
         var character = Character.Create();
@@ -446,6 +500,47 @@ public class WorldTest
     }
 
     [Test]
+    public void ShouldReturnAliveCharacters()
+    {
+        var characterOne = Character.Create();
+        var characterTwo = Character.Create();
+
+        var enemyOne = Character.Create();
+        var enemyTwo = Character.Create();
+
+        Assert.IsTrue(world.AddCharacter(characterOne, 0, 0));
+        Assert.IsTrue(world.AddCharacter(characterTwo, 0, 1));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 2, 3));
+        Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 2, 2));
+
+        var aliveCharacters = world.GetAliveCharacters();
+
+        Assert.IsTrue(aliveCharacters.Contains(characterOne));
+        Assert.IsTrue(aliveCharacters.Contains(characterTwo));
+        Assert.IsTrue(aliveCharacters.Contains(enemyOne));
+        Assert.IsTrue(aliveCharacters.Contains(enemyTwo));
+
+        enemyOne.ApplyHealthChange(-99999);
+        Assert.IsTrue(enemyOne.IsDead);
+
+        aliveCharacters = world.GetAliveCharacters();
+        Assert.IsTrue(aliveCharacters.Contains(characterOne));
+        Assert.IsTrue(aliveCharacters.Contains(characterTwo));
+        Assert.IsFalse(aliveCharacters.Contains(enemyOne));
+        Assert.IsTrue(aliveCharacters.Contains(enemyTwo));
+
+        characterOne.ApplyHealthChange(-99999);
+        Assert.IsTrue(enemyOne.IsDead);
+
+        aliveCharacters = world.GetAliveCharacters();
+        Assert.IsFalse(aliveCharacters.Contains(characterOne));
+        Assert.IsTrue(aliveCharacters.Contains(characterTwo));
+        Assert.IsFalse(aliveCharacters.Contains(enemyOne));
+        Assert.IsTrue(aliveCharacters.Contains(enemyTwo));
+    }
+
+
+    [Test]
     public void DeadCharacterShouldBeRemovedFromTheMap()
     {
         var character = Character.Create();
@@ -454,19 +549,31 @@ public class WorldTest
 
         var skill = new Skill()
         {
-            name = "斬る",
+            name = "超強い攻撃",
             skillType = SkillType.Active,
             effectType = EffectType.Damage,
-            minMultiply = 1f,
-            maxMultiply = 1f,
+            minMultiply = 999f,
+            maxMultiply = 999f,
             range = new Coord[]
-    {
+            {
                 new Coord(-1, 0),
                 new Coord(0, 1),
-    }
+            }
         };
+
+        var world = new World(map);
 
         Assert.IsTrue(world.AddCharacter(character, 1, 1));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
+
+        Assert.IsFalse(enemyOne.IsDead);
+
+        character.SetPhase(Character.Phase.Combat);
+        world.ApplyUseSkill(character, skill);
+
+        Assert.IsTrue(enemyOne.Health.Value < 0);
+        Assert.IsTrue(enemyOne.IsDead);
+
+        Assert.IsFalse(map.GetCell(0, 1).hasCharacter);
     }
 }

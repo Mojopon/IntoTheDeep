@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using NUnit.Framework;
+using UniRx;
+using System;
 
 [TestFixture]
 public class TransitionWorldTest
@@ -60,12 +62,10 @@ public class TransitionWorldTest
             map.Initialize();
         }
 
-        playerOne = Character.Create();
-        playerOne.GodMode = true;
-        playerOne.SetPhase(Character.Phase.Move);
+        var characterData = new CharacterDataTable();
 
         this.transition = new TransitionWorld(maps);
-        transition.AddPlayer(playerOne);
+        transition.AddPlayer(characterData);
     }
     
     [Test]
@@ -73,6 +73,9 @@ public class TransitionWorldTest
     {
         var nextWorld = transition.GoNext();
         var currentMap = maps[0];
+
+        nextWorld.CurrentActor.Subscribe(x => playerOne = x);
+        nextWorld.GoNextCharacterPhase();
         Assert.AreEqual(currentMap.playerStartPositions[0], playerOne.Location.Value);
         Assert.AreEqual(currentMap.GetCharacter(playerOne.Location.Value), playerOne);
     }
@@ -82,6 +85,9 @@ public class TransitionWorldTest
     {
         var nextWorld = transition.GoNext();
         var currentMap = maps[0];
+
+        nextWorld.CurrentActor.Subscribe(x => playerOne = x).AddTo(nextWorld.Disposables);
+        nextWorld.GoNextCharacterPhase();
 
         Assert.IsFalse(playerOne.CanMoveTo(Direction.Left));
         Assert.IsFalse(playerOne.CanMoveTo(Direction.Down));
@@ -99,6 +105,11 @@ public class TransitionWorldTest
 
         nextWorld = transition.GoNext();
         currentMap = maps[1];
+
+        var playerInThePreviousMap = playerOne;
+        nextWorld.CurrentActor.Subscribe(x => playerOne = x).AddTo(nextWorld.Disposables);
+        nextWorld.GoNextCharacterPhase();
+        Assert.AreNotEqual(playerOne, playerInThePreviousMap);
         Assert.IsFalse(playerOne.IsOnExit);
 
         Assert.AreEqual(currentMap.playerStartPositions[0], playerOne.Location.Value);
@@ -115,6 +126,9 @@ public class TransitionWorldTest
 
         nextWorld = transition.GoNext();
         currentMap = maps[2];
+        nextWorld.CurrentActor.Subscribe(x => playerOne = x).AddTo(nextWorld.Disposables);
+        nextWorld.GoNextCharacterPhase();
+        Assert.AreNotEqual(playerOne, playerInThePreviousMap);
         Assert.IsFalse(playerOne.IsOnExit);
 
         Assert.AreEqual(currentMap.playerStartPositions[0], playerOne.Location.Value);
@@ -128,6 +142,8 @@ public class TransitionWorldTest
         Assert.IsFalse(playerOne.IsOnExit);
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
         Assert.IsFalse(playerOne.IsOnExit);
+        // player moved 4 times so we need to roll the character phase to keep moving
+        nextWorld.GoNextCharacterPhase();
         CheckIfMoveAppliedToTheMap(currentMap, playerOne, Direction.Right);
         Assert.IsTrue(playerOne.IsOnExit);
     }

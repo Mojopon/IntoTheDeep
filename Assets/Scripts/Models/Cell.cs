@@ -3,13 +3,18 @@ using System.Collections;
 
 public class Cell
 {
+    public int X;
+    public int Y;
+    public Coord Location { get { return new Coord(X, Y); } }
+
     public bool isExit = false;
     public bool canWalk = true;
     public Character characterInTheCell { get; private set; }
     public bool hasCharacter { get { return characterInTheCell != null; } }
-    public Cell()
+    public Cell(int x, int y)
     {
-
+        this.X = x;
+        this.Y = y;
     }
 
     public bool CanWalk(Character character)
@@ -30,6 +35,11 @@ public class Cell
         }
 
         this.characterInTheCell = character;
+    }
+
+    public bool IsAvailable()
+    {
+        return canWalk && !hasCharacter;
     }
 
     public void RemoveCharacter()

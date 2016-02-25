@@ -8,7 +8,8 @@ using System.Collections.Generic;
 // message the controller
 public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
-    public Transform characterPrefab;
+    public Transform playerPrefab;
+    public Transform enemyPrefab;
 
     public Func<Character,Coord, bool> MoveChecker { get; set; }
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
@@ -23,19 +24,38 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
     {
         GetMapInstanceUtilities(mapInstance);
 
-        Subscribe(world).AddTo(gameObject);
+        Subscribe(world).AddTo(world.Disposables);
         GetWorldUtilities(world);
     }
 
     public void Spawn(Character character)
     {
-        var characterObj = Instantiate(characterPrefab,
+        Transform characterObj;
+
+        if(character.IsPlayer)
+        {
+            characterObj = Instantiate(playerPrefab,
                                        CoordToWorldPositionConverter(character.X, character.Y),
-                                       characterPrefab.rotation) as Transform;
+                                       playerPrefab.rotation) as Transform;
+        }
+        else
+        {
+            characterObj = Instantiate(enemyPrefab,
+                                       CoordToWorldPositionConverter(character.X, character.Y),
+                                       playerPrefab.rotation) as Transform;
+        }
         characterObj.SetParent(transform);
 
         var characterController = characterObj.GetComponent<CharacterController>();
         characters.Add(character, characterController);
+
+        character.Dead
+                 .Where(x => x)
+                 .Subscribe(x =>
+                 {
+                     Destroy(characterObj.gameObject);
+                     characters.Remove(character);
+                 }).AddTo(characterObj);
     }
 
     void OnCharacterMove(CharacterMoveResult moveResult)

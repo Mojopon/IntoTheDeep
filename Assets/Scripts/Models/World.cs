@@ -29,10 +29,10 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
     private List<Character> enemies = new List<Character>();
     private int deadEnemies = 0;
 
-    private CompositeDisposable disposables = new CompositeDisposable();
+    public CompositeDisposable Disposables = new CompositeDisposable();
     public World(Map map)
     {
-        AddedCharacter = new ReactiveCollection<Character>().AddTo(disposables);
+        AddedCharacter = new ReactiveCollection<Character>().AddTo(Disposables);
         CurrentActor = new ReactiveProperty<Character>();
         MoveResult = new ReactiveProperty<CharacterMoveResult>();
         CombatResult = new ReactiveProperty<CharacterCombatResult>();
@@ -44,13 +44,13 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
         this.map = map;
         map.Subscribe(this)
-           .AddTo(disposables);
+           .AddTo(Disposables);
 
         AddedCharacter.ObserveAdd()
                       .Select(x => x.Value)
                       .Where(x => x != null)
                       .Subscribe(x => allCharacters.Add(x))
-                      .AddTo(disposables);
+                      .AddTo(Disposables);
     }
 
     // actor means the character who is moving or fighting in the turn
@@ -68,12 +68,24 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
     Character GetNextCharacterToAction()
     {
-        if (allCharacters.Count == 0) return null;
+        if (allCharacters.Count == 0 || GetAliveCharacters().Count == 0) return null;
 
+        var character = NextCharacter();
+        while(character.IsDead)
+        {
+            character = NextCharacter();
+        }
+
+        character.SetPhase(Character.Phase.Move);
+        return character;
+    }
+
+    Character NextCharacter()
+    {
         var character = allCharacters[currentActingCharacter];
         currentActingCharacter++;
         if (currentActingCharacter >= allCharacters.Count) currentActingCharacter = 0;
-        character.SetPhase(Character.Phase.Move);
+
         return character;
     }
 
@@ -102,13 +114,14 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         character.OnWorldEnter(this);
         character.Location
                  .DistinctUntilChanged()
+                 .Where(x => !character.IsDead)
                  .Scan((x, y) =>
                       {
                           this.MoveResult.Value = new CharacterMoveResult(character, x, y);
                           return y;
                       })
                  .Subscribe(x => { })
-                 .AddTo(disposables);
+                 .AddTo(Disposables);
 
         character.UsedSkill
                  .Where(x => x != null)
@@ -118,7 +131,18 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
                      result.Apply();
                      this.CombatResult.Value = result;
                  })
-                 .AddTo(disposables);
+                 .AddTo(Disposables);
+
+        character.Dead
+                 .DistinctUntilChanged()
+                 .Where(x => x)
+                 .Subscribe(x => 
+                           {
+                               map.RemoveCharacter(character, character.Location.Value);
+                           })
+                 .AddTo(Disposables);
+
+        character.AddTo(Disposables);
 
         AddedCharacter.Add(character);
 
@@ -143,14 +167,12 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
              .DistinctUntilChanged()
              .Subscribe(x =>
              {
-                 // the added character should return Dead as false for the first time 
+                 // the added character should return Dead false for the first time 
                  // so we subtract one to keep zero when the character isnt dead and we add one when the character dies
                  if (x) deadEnemies++;
                  else deadEnemies--;
              })
-             .AddTo(disposables);
-
-        enemy.AddTo(disposables);
+             .AddTo(Disposables);
 
         return true;
     }
@@ -159,7 +181,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
 
     public List<Character> GetAllHostiles(Character character)
     {
-        return allCharacters.Where(x => x.Alliance != character.Alliance).ToList();
+        return GetAliveCharacters().Where(x => x.Alliance != character.Alliance).ToList();
     }
 
     public Character GetClosestHostile(Character character)
@@ -168,6 +190,16 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         return hostiles.OrderBy(x => Coord.Distance(x.Location.Value, character.Location.Value))
                        .DefaultIfEmpty(null)
                        .First();
+    }
+
+    public List<Character> GetAliveCharacters()
+    {
+        return allCharacters.Where(x => !x.IsDead).ToList();
+    }
+
+    public List<Cell> GetAvailableCells()
+    {
+        return map.GetAvailableCells();
     }
 
     public void ApplyMove(Character character, Direction direction)
@@ -240,7 +272,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
         {
             character.SetPhase(Character.Phase.Idle);
         }
-        disposables.Dispose();
+        Disposables.Dispose();
     }
     #endregion
 }

@@ -12,10 +12,16 @@ public class TransitionWorld
         this.maps = maps;
     }
 
-    private List<Character> players = new List<Character>();
-    public void AddPlayer(Character player)
+    private List<CharacterDataTable> players = new List<CharacterDataTable>();
+    public void AddPlayer(CharacterDataTable playerData)
     {
-        players.Add(player);
+        players.Add(playerData);
+    }
+
+    private List<CharacterDataTable> enemies = new List<CharacterDataTable>();
+    public void AddEnemy(CharacterDataTable enemyData)
+    {
+        enemies.Add(enemyData);
     }
 
     private World previousWorld;
@@ -33,7 +39,16 @@ public class TransitionWorld
 
         for(int i = 0; i < players.Count; i++)
         {
-            newWorld.AddCharacter(players[i], nextMap.playerStartPositions[i]);
+            var character = Character.Create(players[i]);
+            newWorld.AddCharacter(character, nextMap.playerStartPositions[i]);
+        }
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            var enemy = Character.Create(enemies[i]);
+            var availableCells = nextMap.GetAvailableCells();
+            var locationToSpawn = availableCells[Random.Range(0, availableCells.Count)].Location;
+            newWorld.AddCharacterAsEnemy(enemy, locationToSpawn);
         }
 
         previousWorld = newWorld;

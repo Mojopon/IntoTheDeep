@@ -186,7 +186,9 @@ public class CharacterTest
             intellect = initialIntellect,
         };
 
-        var createdCharacter = Character.Create(attributes);
+        var characterData = new CharacterDataTable("Player", attributes);
+
+        var createdCharacter = Character.Create(characterData);
 
         Assert.AreEqual(initialStamina, createdCharacter.stamina);
         Assert.AreEqual(initialStrength, createdCharacter.strength);
@@ -210,9 +212,9 @@ public class CharacterTest
     }
 
     [Test]
-    public void CharacterMaxManaShouldBeTenTimesOfIntellect()
+    public void CharacterMaxManaShouldBeHundredByDefault()
     {
-        Assert.AreEqual(10 * character.intellect, character.maxMana);
+        Assert.AreEqual(100, character.maxMana);
     }
 
     [Test]

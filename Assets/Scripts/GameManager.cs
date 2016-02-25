@@ -68,24 +68,25 @@ public class GameManager : MonoBehaviour
         this.mapEditor = Instantiate(mapEditorPrefab, Vector3.zero, Quaternion.identity) as MapEditor;
         this.maps = mapEditor.GetMaps();
 
-        var player1 = Character.Create();
-        player1.Name = "Player 1";
-        var player2 = Character.Create();
-        player2.Name = "Player 2";
-        var player3 = Character.Create();
-        player3.Name = "Player 3";
-        var player4 = Character.Create();
-        player4.Name = "Player 4";
+        var playerOneData = new CharacterDataTable("PlayerOne", new Attributes());
+        var playerTwoData = new CharacterDataTable("PlayerTwo", new Attributes());
+        var playerThreeData = new CharacterDataTable("PlayerThree", new Attributes());
+        var playerFourData = new CharacterDataTable("PlayerFour", new Attributes());
 
-        var enemy = Character.Create();
-        enemy.Name = "Enemy";
-        enemy.Location.Value = new Coord(3, 3);
+        var enemyOneData = new CharacterDataTable("EnemyOne", new Attributes());
+        var enemyTwoData = new CharacterDataTable("EnemyTwo", new Attributes());
+        var enemyThreeData = new CharacterDataTable("EnemyThree", new Attributes());
 
         this.transition = new TransitionWorld(maps);
-        transition.AddPlayer(player1);
-        transition.AddPlayer(player2);
-        transition.AddPlayer(player3);
-        transition.AddPlayer(player4);
+        transition.AddPlayer(playerOneData);
+        transition.AddPlayer(playerTwoData);
+        transition.AddPlayer(playerThreeData);
+        transition.AddPlayer(playerFourData);
+
+        transition.AddEnemy(enemyOneData);
+        transition.AddEnemy(enemyTwoData);
+        transition.AddEnemy(enemyThreeData);
+
 
         // wait for input manager to finish awake method
         yield return null;
@@ -179,7 +180,7 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
-        if(CurrentActor.Value != null && CurrentActor.Value.IsOnExit)
+        if(CurrentActor.Value != null && CurrentActor.Value.IsPlayer && CurrentActor.Value.IsOnExit)
         {
             bool goNextFloor = false;
 

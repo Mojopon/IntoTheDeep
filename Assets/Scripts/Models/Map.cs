@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 using UniRx;
 
@@ -26,7 +26,7 @@ public class Map : IWorldEventSubscriber
         {
             for (int x = 0; x < Width; x++)
             {
-                cells[x, y] = new Cell();
+                cells[x, y] = new Cell(x, y);
             }
         }
 
@@ -67,9 +67,35 @@ public class Map : IWorldEventSubscriber
         cells[x, y] = cell;
     }
 
+    public List<Cell> GetAvailableCells()
+    {
+        var availableCells = new List<Cell>();
+
+        for(int y = 0; y < Depth; y++)
+        {
+            for(int x = 0; x < Width; x++)
+            {
+                if(cells[x, y].IsAvailable())
+                {
+                    availableCells.Add(cells[x, y]);
+                }
+            }
+        }
+
+        return availableCells;
+    }
+
     public void SetCharacter(Character character)
     {
         cells[character.X, character.Y].SetCharacter(character);
+    }
+
+    public void RemoveCharacter(Character character, Coord destination)
+    {
+        if(cells[destination.x, destination.y].characterInTheCell == character)
+        {
+            cells[destination.x, destination.y].SetCharacter(null);
+        }
     }
 
     public Character GetCharacter(Coord location)
