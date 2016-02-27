@@ -153,7 +153,7 @@ public class PathSelector : MonoBehaviour, IWorldUtilitiesUser, IMapInstanceUtil
         foreach (var direction in movedDirections)
         {
             world.ApplyMove(character, direction);
-            yield return new WaitForSeconds(gameManager.characterMoveSpeed);
+            yield return new WaitForSeconds(GlobalSettings.Instance.CharacterMoveSpeed);
         }
 
         while(character.CanMove)

@@ -8,8 +8,6 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public float characterMoveSpeed = 0.1f;
-
     public MapEditor mapEditorPrefab;
     public MapInstance mapPrefab;
     public CharacterManager characterManagerPrefab;

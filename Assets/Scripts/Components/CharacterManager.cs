@@ -11,17 +11,21 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
     public Transform playerPrefab;
     public Transform enemyPrefab;
 
+    public HealthBar healthBarPrefab;
+
     public Func<Character,Coord, bool> MoveChecker { get; set; }
     public Func<int, int, Vector2> CoordToWorldPositionConverter { get; set; }
     public Func<Coord, Coord, Direction[]> Pathfinding { get; set; }
 
-    public bool AllActionsDone { get { return true;  } }
+    public bool AllActionsDone { get; private set; }
 
     private World world;
     private Dictionary<Character, CharacterController> characters = new Dictionary<Character, CharacterController>();
 
     public void Initialize(MapInstance mapInstance, World world)
     {
+        AllActionsDone = true;
+
         GetMapInstanceUtilities(mapInstance);
 
         Subscribe(world).AddTo(world.Disposables);
@@ -32,16 +36,18 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
     {
         Transform characterObj;
 
-        if(character.IsPlayer)
+        var positionToSpawn = CoordToWorldPositionConverter(character.X, character.Y);
+
+        if (character.IsPlayer)
         {
             characterObj = Instantiate(playerPrefab,
-                                       CoordToWorldPositionConverter(character.X, character.Y),
+                                       positionToSpawn,
                                        playerPrefab.rotation) as Transform;
         }
         else
         {
             characterObj = Instantiate(enemyPrefab,
-                                       CoordToWorldPositionConverter(character.X, character.Y),
+                                       positionToSpawn,
                                        playerPrefab.rotation) as Transform;
         }
         characterObj.SetParent(transform);
@@ -56,12 +62,30 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
                      Destroy(characterObj.gameObject);
                      characters.Remove(character);
                  }).AddTo(characterObj);
+
+        var healthBar = Instantiate(healthBarPrefab, positionToSpawn, Quaternion.identity) as HealthBar;
+        healthBar.transform.SetParent(characterObj);
+        healthBar.ObserveOnCharacter(character);
     }
 
     void OnCharacterMove(CharacterMoveResult moveResult)
     {
         var controller = characters[moveResult.target];
         controller.Move(CoordToWorldPositionConverter(moveResult.destination.x, moveResult.destination.y));
+    }
+
+    void OnCharacterCombat(CharacterCombatResult combatResult)
+    {
+        StartCoroutine(SequenceCharacterCombatMotions(combatResult));
+    }
+
+    IEnumerator SequenceCharacterCombatMotions(CharacterCombatResult combatResult)
+    {
+        AllActionsDone = false;
+
+        yield return new WaitForSeconds(1f);
+
+        AllActionsDone = true;
     }
 
     public IDisposable Subscribe(IWorldEventPublisher publisher)
@@ -87,15 +111,7 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
 
         publisher.CombatResult
                  .Where(x => x != null)
-                 .Subscribe(x =>
-                 {
-                     //Debug.Log(x.user + " used " + x.usedSkill.name);
-                     foreach(var performance in x.GetPerformances())
-                     {
-                         //Debug.Log(performance.target + " received " + performance.receivedSkill);
-                         //Debug.Log(performance.skillEffect);
-                     }
-                 });
+                 .Subscribe(x => OnCharacterCombat(x));
         return disposables;
     }
 

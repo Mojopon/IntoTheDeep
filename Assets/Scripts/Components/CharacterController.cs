@@ -33,7 +33,7 @@ public class CharacterController : MonoBehaviour
     // Process Move Object in the Game Scene
     IEnumerator SequenceMoveTransform(Vector3 destination)
     {
-        float speed = 1 / GameManager.Instance.characterMoveSpeed;
+        float speed = 1 / GlobalSettings.Instance.CharacterMoveSpeed;
 
         float progress = 0;
         while (Vector3.Distance(transform.position, destination) > Mathf.Epsilon)
