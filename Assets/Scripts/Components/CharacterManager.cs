@@ -70,8 +70,10 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
 
     void OnCharacterMove(CharacterMoveResult moveResult)
     {
+        if (!characters.ContainsKey(moveResult.target)) return;
+
         var controller = characters[moveResult.target];
-        controller.Move(CoordToWorldPositionConverter(moveResult.destination.x, moveResult.destination.y));
+        controller.Move(CoordToWorldPositionConverter(moveResult.destination.x, moveResult.destination.y)).StartAsCoroutine();
     }
 
     void OnCharacterCombat(CharacterCombatResult combatResult)
@@ -83,9 +85,24 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
     {
         AllActionsDone = false;
 
-        yield return new WaitForSeconds(1f);
+        var userPosition = CoordToWorldPositionConverter(combatResult.user.X, combatResult.user.Y);
+
+        foreach (var performance in combatResult.GetPerformances())
+        {
+            var target = performance.target;
+            if (!characters.ContainsKey(target)) continue;
+
+            var targetPosition = CoordToWorldPositionConverter(target.X, target.Y);
+            var direction = (targetPosition - userPosition).normalized / 2;
+
+            var targetTransformController = characters[target];
+            targetTransformController.KnockBack(targetPosition + direction).StartAsCoroutine();
+
+        }
 
         AllActionsDone = true;
+
+        yield break;
     }
 
     public IDisposable Subscribe(IWorldEventPublisher publisher)
