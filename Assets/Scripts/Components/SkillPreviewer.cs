@@ -64,7 +64,7 @@ public class SkillPreviewer : MonoBehaviour, IMapInstanceUtilitiesUser
         previewObjectsHolder = new GameObject("SkillPreviewObjects");
 
         var user = skillInfo.user;
-        foreach(var coord in skill.range)
+        foreach(var coord in skill.effects[0].ranges)
         {
             var destination = new Coord(coord.x + user.X, coord.y + user.Y);
             var obj = Instantiate(marker, CoordToWorldPositionConverter(destination.x, destination.y), Quaternion.identity) as Transform;

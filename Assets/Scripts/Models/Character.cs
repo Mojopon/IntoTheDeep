@@ -133,19 +133,30 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
         skills.Add(new Skill
         {
             name = "パンチ",
-            range = new Coord[]
-    {
-                new Coord(0, 1),
-    }
+            effects = new Effect[]
+            {
+                new DamageEffect()
+                {
+                    ranges = new Coord[] { new Coord(0, 1)},
+                     effectAttribute = EffectAttribute.MeleePower,
+                     minMultiply = 1f,
+                     maxMultiply = 1f,
+                }
+            }
         });
 
         skills.Add(new Skill
         {
             name = "キック",
-            range = new Coord[]
+            effects = new Effect[]
             {
-                new Coord(1, 0),
-                new Coord(-1, 0),
+                new DamageEffect()
+                {
+                    ranges = new Coord[] { new Coord(-1, 0), new Coord(1, 0)},
+                     effectAttribute = EffectAttribute.MeleePower,
+                     minMultiply = 1f,
+                     maxMultiply = 1f,
+                }
             }
         });
     }

@@ -9,7 +9,7 @@ public class CharacterCombatResult
 {
     public Character user;
     public Skill usedSkill;
-    private List<Performance> performances = new List<Performance>();
+    private List<CombatLog> combatlogs = new List<CombatLog>();
 
     public CharacterCombatResult(Character user, Skill usedSkill)
     {
@@ -17,88 +17,59 @@ public class CharacterCombatResult
         this.usedSkill = usedSkill;
     }
 
-    public void AddPerformance(Performance performance)
+    public void AddCombatLog(CombatLog log)
     {
-        performances.Add(performance);
+        combatlogs.Add(log);
     }
 
-    public Performance[] GetPerformances()
+    public void AddCombatLog(List<CombatLog> logs)
     {
-        return performances.ToArray();
+        foreach (var log in logs) AddCombatLog(log);
     }
 
-    public void Apply()
+    public CombatLog[] GetCombatLog()
     {
-        foreach(var performance in performances)
-        {
-            performance.Apply();
-        }
+        return combatlogs.ToArray();
     }
 }
 
-public class Performance
+public class CombatLog
 {
+    public enum CombatType
+    {
+        Damage,
+        Healing,
+    }
+
+    public CombatType combatType;
     public Character target;
-    public Skill receivedSkill;
-    public SkillEffect skillEffect;
+    public int amount;
 
-    public Performance(Character target, Skill receivedSkill, SkillEffect skillEffect)
-    {
-        this.target = target;
-        this.receivedSkill = receivedSkill;
-        this.skillEffect = skillEffect;
-    }
-
-    public void Apply()
-    {
-        skillEffect.Apply();
-    }
+    public CombatLog() { }
 }
 
 public static class Combat
 {
-    public static CharacterCombatResult GetCombatResult(Character user, Skill skill, Func<Coord, Character> characterOnTheLocation, int randomSeed)
+    public static CharacterCombatResult DoCombat(Character user, Skill skill, Func<Coord, Character> characterOnTheLocation, int randomSeed)
     {
         var combatResult = new CharacterCombatResult(user, skill);
 
-        var skillRanges = skill.range.Select(x => x + new Coord(user.X, user.Y));
-        foreach(var range in skillRanges)
+        foreach(var effect in skill.effects)
         {
-            var target = characterOnTheLocation(range);
-            if (target == null)
-            {
-                continue;
-            }
-
-            var performance = PerformSkill(user, target, skill);
-            combatResult.AddPerformance(performance);
+            var combatLogs = effect.Apply(user, characterOnTheLocation);
+            combatResult.AddCombatLog(combatLogs);
         }
 
         return combatResult;
     }
 
 
-    private static Performance PerformSkill(Character user, Character target, Skill skill)
-    {
-        var magnitude = CalculateMagnitude(user, target, skill);
-
-        SkillEffect effect = null;
-        switch(skill.effectType)
-        {
-            case EffectType.Damage:
-                effect = new DamageSkillEffect(target, magnitude);
-                break;
-        }
-
-        return new Performance(target, skill, effect);
-    }
-
-    public static int CalculateMagnitude(ICharacterAttributes user, ICharacterAttributes target, Skill skill)
+    public static int CalculateMagnitude(ICharacterAttributes user, ICharacterAttributes target, EffectAttribute effectAttribute, float minMultiply, float maxMultiply)
     {
         int power = 0;
         float reduction = 0;
 
-        switch(skill.effectAttribute)
+        switch(effectAttribute)
         {
             case EffectAttribute.MeleePower:
                 {
@@ -119,7 +90,7 @@ public static class Combat
                 break;
         }
 
-        var powerRange = UnityEngine.Random.Range(skill.minMultiply, skill.maxMultiply);
+        var powerRange = UnityEngine.Random.Range(minMultiply, maxMultiply);
         float actualPower = power * powerRange;
         float reducedPower = actualPower - (actualPower * reduction);
         int magnitude = Mathf.RoundToInt(reducedPower);

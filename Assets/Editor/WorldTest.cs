@@ -8,6 +8,8 @@ public class WorldTest
 {
     Map map;
     World world;
+
+    Skill skill;
     [SetUp]
     public void Initialize()
     {
@@ -16,6 +18,21 @@ public class WorldTest
         map.Depth = 10;
         map.Initialize();
         world = new World(map);
+
+        skill = new Skill
+        {
+            name = "斬る",
+            effects = new Effect[]
+            {
+                new DamageEffect()
+                {
+                    ranges = new Coord[] { new Coord(-1, 0), new Coord(0, 1)},
+                    effectAttribute = EffectAttribute.MeleePower,
+                    minMultiply = 1f,
+                    maxMultiply = 1f,
+                }
+            }
+        };
     }
 
     [Test]
@@ -404,20 +421,6 @@ public class WorldTest
         var enemyTwo = Character.Create();
         var enemyThree = Character.Create();
 
-        var skill = new Skill()
-        {
-            name = "斬る",
-            skillType = SkillType.Active,
-            effectType = EffectType.Damage,
-            minMultiply = 1f,
-            maxMultiply = 1f,
-            range = new Coord[]
-            {
-                new Coord(-1, 0),
-                new Coord(0, 1),
-            }
-        };
-
         Assert.IsTrue(world.AddCharacter(character, 1, 1));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 1, 2));
@@ -447,20 +450,6 @@ public class WorldTest
         var enemyOne = Character.Create();
         var enemyTwo = Character.Create();
         var enemyThree = Character.Create();
-
-        var skill = new Skill()
-        {
-            name = "斬る",
-            skillType = SkillType.Active,
-            effectType = EffectType.Damage,
-            minMultiply = 1f,
-            maxMultiply = 1f,
-            range = new Coord[]
-            {
-                new Coord(-1, 0),
-                new Coord(0, 1),
-            }
-        };
 
         Assert.IsTrue(world.AddCharacter(character, 1, 1));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
@@ -547,26 +536,18 @@ public class WorldTest
 
         var enemyOne = Character.Create();
 
-        var skill = new Skill()
-        {
-            name = "超強い攻撃",
-            skillType = SkillType.Active,
-            effectType = EffectType.Damage,
-            minMultiply = 999f,
-            maxMultiply = 999f,
-            range = new Coord[]
-            {
-                new Coord(-1, 0),
-                new Coord(0, 1),
-            }
-        };
-
         var world = new World(map);
 
         Assert.IsTrue(world.AddCharacter(character, 1, 1));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyOne, 0, 1));
 
         Assert.IsFalse(enemyOne.IsDead);
+
+        character.SetPhase(Character.Phase.Combat);
+        world.ApplyUseSkill(character, skill);
+
+        character.SetPhase(Character.Phase.Combat);
+        world.ApplyUseSkill(character, skill);
 
         character.SetPhase(Character.Phase.Combat);
         world.ApplyUseSkill(character, skill);

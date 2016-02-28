@@ -10,6 +10,7 @@ public class CombatTest
     Map map;
     Character character;
     Character enemy;
+    Skill skill;
 
     [SetUp]
     public void Initialize()
@@ -19,6 +20,21 @@ public class CombatTest
         map.Depth = 8;
         map.Initialize();
         world = new World(map);
+
+        skill = new Skill
+        {
+            name = "斬る",
+            effects = new Effect[]
+            {
+                new DamageEffect()
+                {
+                    ranges = new Coord[] { new Coord(-1, 0), new Coord(0, 1)},
+                    effectAttribute = EffectAttribute.MeleePower,
+                    minMultiply = 1f,
+                    maxMultiply = 1f,
+                }
+            }
+        };
     }
 
     [Test]
@@ -26,22 +42,8 @@ public class CombatTest
     {
         var character = CreateCharacter();
 
-        var skill = new Skill()
-        {
-            name = "斬る",
-            skillType = SkillType.Active,
-            effectType = EffectType.Damage,
-            minMultiply = 1f,
-            maxMultiply = 1f,
-            range = new Coord[]
-            {
-                new Coord(-1, 0),
-                new Coord(0, 1),
-            }
-        };
-
         Assert.IsTrue(world.AddCharacter(character, 1, 1));
-        var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
+        var combatResult = Combat.DoCombat(character, skill, world.CharacterOnTheLocation, 0);
         Assert.AreEqual(character, combatResult.user);
     }
 
@@ -51,21 +53,6 @@ public class CombatTest
         var character = CreateCharacter();
         character.SetLocation(1, 1);
 
-        var skill = new Skill()
-        {
-            name = "斬る",
-            skillType = SkillType.Active,
-            effectType = EffectType.Damage,
-            minMultiply = 1f,
-            maxMultiply = 1f,
-            range = new Coord[]
-            {
-                new Coord(-1, 0),
-                new Coord(0, 1),
-            }
-        };
-
-
         var enemyOne = CreateCharacter();
         enemyOne.SetLocation(0, 1);
         var enemyTwo = CreateCharacter();
@@ -78,34 +65,19 @@ public class CombatTest
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 1, 2));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree, 0, 0));
 
-        var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
+        var combatResult = Combat.DoCombat(character, skill, world.CharacterOnTheLocation, 0);
 
-        var performances = combatResult.GetPerformances().Select(x => x.target).ToList();
+        var performances = combatResult.GetCombatLog().Select(x => x.target).ToList();
         Assert.IsTrue(performances.Contains(enemyOne));
         Assert.IsTrue(performances.Contains(enemyTwo));
         Assert.IsFalse(performances.Contains(enemyThree));
     }
 
     [Test]
-    public void ShouldPerformUsedSkill()
+    public void ShouldCreateCombatLog()
     {
         var character = CreateCharacter();
         character.SetLocation(1, 1);
-
-        var skill = new Skill()
-        {
-            name = "斬る",
-            skillType = SkillType.Active,
-            effectType = EffectType.Damage,
-            minMultiply = 1f,
-            maxMultiply = 1f,
-            range = new Coord[]
-            {
-                new Coord(-1, 0),
-                new Coord(0, 1),
-            }
-        };
-
 
         var enemyOne = CreateCharacter();
         enemyOne.SetLocation(0, 1);
@@ -119,12 +91,14 @@ public class CombatTest
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyTwo, 1, 2));
         Assert.IsTrue(world.AddCharacterAsEnemy(enemyThree, 0, 0));
 
-        var combatResult = Combat.GetCombatResult(character, skill, world.CharacterOnTheLocation, 0);
+        var combatResult = Combat.DoCombat(character, skill, world.CharacterOnTheLocation, 0);
 
-        var performances = combatResult.GetPerformances();
-        foreach(var performance in performances)
+        var combatLogs = combatResult.GetCombatLog();
+
+        foreach(var combatLog in combatLogs)
         {
-            Assert.AreEqual(skill, performance.receivedSkill);
+            Assert.IsTrue(combatLog.target == enemyOne || combatLog.target == enemyTwo || combatLog.target == enemyThree);
+            Assert.IsTrue(combatLog.combatType == CombatLog.CombatType.Damage);
         }
     }
 

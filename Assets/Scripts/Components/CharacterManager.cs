@@ -87,7 +87,7 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
 
         var userPosition = CoordToWorldPositionConverter(combatResult.user.X, combatResult.user.Y);
 
-        foreach (var performance in combatResult.GetPerformances())
+        foreach (var performance in combatResult.GetCombatLog())
         {
             var target = performance.target;
             if (!characters.ContainsKey(target)) continue;

@@ -93,7 +93,7 @@ public class GameManager : MonoBehaviour
         // wait for input manager to finish awake method
         yield return null;
     }
-
+    
     IEnumerator SequenceSetupWorld()
     {
         if (gameObjectHolder != null)

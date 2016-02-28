@@ -127,9 +127,7 @@ public class World : IWorldEventPublisher, IWorldUtilitiesProvider, IDisposable
                  .Where(x => x != null)
                  .Subscribe(x =>
                  {
-                     var result = Combat.GetCombatResult(character, x, CharacterOnTheLocation, UnityEngine.Random.Range(0, 10000));
-                     result.Apply();
-                     this.CombatResult.Value = result;
+                     this.CombatResult.Value = Combat.DoCombat(character, x, CharacterOnTheLocation, UnityEngine.Random.Range(0, 10000));
                  })
                  .AddTo(Disposables);
 
