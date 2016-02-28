@@ -15,12 +15,15 @@ public class GameManager : MonoBehaviour
     public PathSelector pathSelectorPrefab;
     public SkillSelector skillSelectorPrefab;
 
+    public SingletonSpawner singletonSpawnerPrefab;
+
     public ReactiveProperty<CombatPhase> CurrentPhase = new ReactiveProperty<CombatPhase>();
     public ReactiveProperty<PlayerCommand> PlayerInput = new ReactiveProperty<PlayerCommand>();
 
     // gonna reference world's CurrentActor property later on
     public ReactiveProperty<Character> CurrentActor;
 
+    [HideInInspector]
     public MenuManager menuManager;
 
     private MapEditor mapEditor;
@@ -60,8 +63,9 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SequenceSetupGame()
     {
-        var inputManager = new GameObject("InputManager");
-        inputManager.AddComponent<InputManager>();
+        Instantiate(singletonSpawnerPrefab);
+
+        yield return null;
 
         this.mapEditor = Instantiate(mapEditorPrefab, Vector3.zero, Quaternion.identity) as MapEditor;
         this.maps = mapEditor.GetMaps();

@@ -95,6 +95,7 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
             var targetPosition = CoordToWorldPositionConverter(target.X, target.Y);
             var direction = (targetPosition - userPosition).normalized / 2;
 
+            ParticleSpawner.Instance.Spawn(ParticleType.AttackParticle, new Vector3(targetPosition.x, targetPosition.y, -1f));
             var targetTransformController = characters[target];
             targetTransformController.KnockBack(targetPosition + direction).StartAsCoroutine();
 
