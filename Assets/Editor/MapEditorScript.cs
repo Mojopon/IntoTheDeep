@@ -14,31 +14,13 @@ public class MapEditorScript : Editor
     public DungeonTitle selectedDungeon;
     public int dungeonLevels;
 
-    public Map[] maps;
-
     private int currentMapNumber = -1;
+
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
 
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Dungeon : ", GUILayout.Width(110));
-        selectedDungeon = (DungeonTitle)EditorGUILayout.EnumPopup(selectedDungeon);
-        EditorGUILayout.EndHorizontal();
-
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Levels: ", GUILayout.Width(110));
-        dungeonLevels = EditorGUILayout.IntField(dungeonLevels);
-        EditorGUILayout.EndHorizontal();
-
-        EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button("Start Editing"))
-        {
-
-            maps = MapDataFileManager.ReadMapsFromFile(selectedDungeon.ToString(), dungeonLevels);
-        }
-        EditorGUILayout.EndHorizontal();
-
+        DrawSelectDungeonMenus();
 
         /*
         var mapEditor = target as MapEditor;
@@ -61,6 +43,42 @@ public class MapEditorScript : Editor
         }
 
         */
+    }
+
+    void DrawSelectDungeonMenus()
+    {
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Dungeon : ", GUILayout.Width(110));
+        selectedDungeon = (DungeonTitle)EditorGUILayout.EnumPopup(selectedDungeon);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Levels: ", GUILayout.Width(110));
+        dungeonLevels = EditorGUILayout.IntField(dungeonLevels);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Start Editing"))
+        {
+            var mapInstance = SpawnMapInstance();
+            var editor = (MapEditor)target;
+            MapTileEditorWindow.ShowMapEditorMainWindow(mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
+    MapInstance SpawnMapInstance()
+    {
+        var mapInstanceObject = GameObject.FindGameObjectWithTag("MapInstance");
+
+        if(mapInstanceObject == null)
+        {
+            var editor = (MapEditor)target;
+            return Instantiate(editor.mapInstancePrefab);
+        }else
+        {
+            return mapInstanceObject.GetComponent<MapInstance>();
+        }
     }
 
     void DestroyInstantiatedMap()

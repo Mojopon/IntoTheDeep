@@ -68,7 +68,7 @@ public class GameManager : MonoBehaviour
         yield return null;
 
         this.mapEditor = Instantiate(mapEditorPrefab, Vector3.zero, Quaternion.identity) as MapEditor;
-        this.maps = mapEditor.GetMaps();
+        this.maps = mapEditor.GetMaps(DungeonTitle.Beginning, 5);
 
         var playerOneData = new CharacterDataTable("PlayerOne", new Attributes());
         var playerTwoData = new CharacterDataTable("PlayerTwo", new Attributes());

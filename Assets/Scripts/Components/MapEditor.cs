@@ -4,32 +4,23 @@ using System.IO;
 
 public class MapEditor : MonoBehaviour
 {
-    public int editingMap;
     public MapInstance mapInstancePrefab;
-    [HideInInspector]
-    public Map[] maps;
 
-    public Map[] GetMaps()
+    private Map editingMap;
+
+    public Map[] GetMaps(DungeonTitle dungeon, int levels)
     {
-        foreach(var map in maps)
-        {
-            map.Initialize();
-        }
-
-        return maps;
+        return MapDataFileManager.ReadMapsFromFile(dungeon.ToString(), levels);
     }
 
-    public bool CanInstantiateEditingMap()
+    public Transform StartEditingMap(Map map)
     {
-        if (editingMap < 0 || editingMap >= maps.Length) return false;
-
-        return true;
+        this.editingMap = map;
+        return InstantiateEditingMap(map);
     }
 
-    public Transform InstantiateEditingMap()
+    public Transform InstantiateEditingMap(Map map)
     {
-        var map = maps[editingMap];
-        map.Initialize();
         var instance = Instantiate(mapInstancePrefab) as MapInstance;
         instance.Generate(map);
         return instance.transform;
