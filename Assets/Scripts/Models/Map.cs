@@ -19,14 +19,33 @@ public class Map : IWorldEventSubscriber
 
     public Map() { }
 
-    public void Initialize()
+    public Map(int[,] tilePattern)
     {
+        this.Width = tilePattern.GetLength(0);
+        this.Depth = tilePattern.GetLength(1);
+
         cells = new Cell[Width, Depth];
         for (int y = 0; y < Depth; y++)
         {
             for (int x = 0; x < Width; x++)
             {
                 cells[x, y] = new Cell(x, y);
+                cells[x, y].tileID = tilePattern[x, y];
+            }
+        }
+    }
+
+    public void Initialize()
+    {
+        if (cells == null)
+        {
+            cells = new Cell[Width, Depth];
+            for (int y = 0; y < Depth; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    cells[x, y] = new Cell(x, y);
+                }
             }
         }
 
@@ -106,6 +125,20 @@ public class Map : IWorldEventSubscriber
         }
 
         return cells[location.x, location.y].characterInTheCell;
+    }
+
+    public int[,] GetTilePattern()
+    {
+        var pattern = new int[Width, Depth];
+        for (int y = 0; y < Depth; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                pattern[x, y] = cells[x, y].tileID;
+            }
+        }
+
+        return pattern;
     }
 
     bool IsOutOfRange(int x, int y)

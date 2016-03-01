@@ -3,9 +3,10 @@ using System.Collections;
 
 public class Cell
 {
-    public int X;
-    public int Y;
-    public Coord Location { get { return new Coord(X, Y); } }
+    public int tileID;
+    public int x;
+    public int y;
+    public Coord Location { get { return new Coord(x, y); } }
 
     public bool isExit = false;
     public bool canWalk = true;
@@ -13,8 +14,8 @@ public class Cell
     public bool hasCharacter { get { return characterInTheCell != null; } }
     public Cell(int x, int y)
     {
-        this.X = x;
-        this.Y = y;
+        this.x = x;
+        this.y = y;
     }
 
     public bool CanWalk(Character character)

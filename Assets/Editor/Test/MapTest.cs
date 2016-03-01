@@ -2,6 +2,7 @@
 using System.Collections;
 using NUnit.Framework;
 using UniRx;
+using System.Linq;
 
 [TestFixture]
 public class MapTest
@@ -177,8 +178,8 @@ public class MapTest
         {
             for(int x = 0; x < map.Width; x++)
             {
-                Assert.AreEqual(map.GetCell(x, y).X, x);
-                Assert.AreEqual(map.GetCell(x, y).Y, y);
+                Assert.AreEqual(map.GetCell(x, y).x, x);
+                Assert.AreEqual(map.GetCell(x, y).y, y);
             }
         }
     }
@@ -187,5 +188,23 @@ public class MapTest
     public void ShouldCreateExit()
     {
         Assert.IsTrue(map.GetCell(exitLocation.x, exitLocation.y).isExit);
+    }
+
+    [Test]
+    public void ShouldReturnTilePattern()
+    {
+        map.GetCell(2, 2).tileID = 3;
+        var tilePattern = map.GetTilePattern();
+
+        for(int y = 0; y < map.Depth; y++)
+        {
+            for(int x = 0; x < map.Width; x++)
+            {
+                if (x == 2 && y == 2) continue;
+                Assert.AreEqual(0, tilePattern[x, y]);
+            }
+        }
+
+        Assert.AreEqual(3, tilePattern[2, 2]);
     }
 }

@@ -63,11 +63,12 @@ public class TransitionWorldTest
         }
 
         var characterData = new CharacterDataTable();
+        characterData.name = "Player";
 
         this.transition = new TransitionWorld(maps);
         transition.AddPlayer(characterData);
     }
-    
+
     [Test]
     public void ShouldAddCharacterTotheWorldInThePlayerStartPosition()
     {
@@ -78,6 +79,7 @@ public class TransitionWorldTest
         nextWorld.GoNextCharacterPhase();
         Assert.AreEqual(currentMap.playerStartPositions[0], playerOne.Location.Value);
         Assert.AreEqual(currentMap.GetCharacter(playerOne.Location.Value), playerOne);
+        Assert.AreEqual("Player", playerOne.Name);
     }
 
     [Test]

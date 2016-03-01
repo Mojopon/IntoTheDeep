@@ -87,9 +87,9 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
 
         var userPosition = CoordToWorldPositionConverter(combatResult.user.X, combatResult.user.Y);
 
-        foreach (var performance in combatResult.GetCombatLog())
+        foreach (var log in combatResult.GetCombatLog())
         {
-            var target = performance.target;
+            var target = log.target;
             if (!characters.ContainsKey(target)) continue;
 
             var targetPosition = CoordToWorldPositionConverter(target.X, target.Y);
@@ -98,7 +98,6 @@ public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtil
             ParticleSpawner.Instance.Spawn(ParticleType.AttackParticle, new Vector3(targetPosition.x, targetPosition.y, -1f));
             var targetTransformController = characters[target];
             targetTransformController.KnockBack(targetPosition + direction).StartAsCoroutine();
-
         }
 
         AllActionsDone = true;

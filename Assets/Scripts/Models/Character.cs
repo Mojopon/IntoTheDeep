@@ -91,6 +91,8 @@ public class Character : DisposableCharacter, ICharacter, IWorldUtilitiesUser
 
     protected Character(CharacterDataTable characterData)
     {
+        Name = characterData.name;
+
         SetCharacterAttributes(characterData);
         InitializeAttributes();
 
