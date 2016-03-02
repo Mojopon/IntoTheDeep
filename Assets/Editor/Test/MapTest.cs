@@ -21,6 +21,82 @@ public class MapTest
     }
 
     [Test]
+    public void ShouldIncreaseAndDecreaseSize()
+    {
+        int previousWidth = map.Width;
+        int previousDepth = map.Depth;
+
+        map.SetTileID(2, 2, 3);
+
+        var oldTilePattern = map.GetTilePattern();
+        map.IncreaseMapWidth();
+        Assert.AreEqual(previousWidth + 1, map.Width);
+        Assert.AreEqual(previousDepth, map.Depth);
+
+        for (int y = 0; y < map.Depth; y++)
+        {
+            for (int x = 0; x < map.Width; x++)
+            {
+                var cell = map.GetCell(x, y);
+
+                if (x >= oldTilePattern.GetLength(0) || y >= oldTilePattern.GetLength(1)) continue;
+                Assert.AreEqual(cell.tileID, oldTilePattern[x, y]);
+            }
+        }
+
+        previousWidth = map.Width;
+        oldTilePattern = map.GetTilePattern();
+        map.DecreaseMapWidth();
+        Assert.AreEqual(previousWidth - 1, map.Width);
+        Assert.AreEqual(previousDepth, map.Depth);
+        for (int y = 0; y < map.Depth; y++)
+        {
+            for (int x = 0; x < map.Width; x++)
+            {
+                var cell = map.GetCell(x, y);
+
+                if (x >= oldTilePattern.GetLength(0) || y >= oldTilePattern.GetLength(1)) continue;
+                Assert.AreEqual(cell.tileID, oldTilePattern[x, y]);
+            }
+        }
+
+        previousWidth = map.Width;
+        oldTilePattern = map.GetTilePattern();
+        map.IncreaseMapDepth();
+        Assert.AreEqual(previousWidth, map.Width);
+        Assert.AreEqual(previousDepth + 1, map.Depth);
+
+        for (int y = 0; y < map.Depth; y++)
+        {
+            for (int x = 0; x < map.Width; x++)
+            {
+                var cell = map.GetCell(x, y);
+
+                if (x >= oldTilePattern.GetLength(0) || y >= oldTilePattern.GetLength(1)) continue;
+                Assert.AreEqual(cell.tileID, oldTilePattern[x, y]);
+            }
+        }
+
+        previousDepth = map.Depth;
+        oldTilePattern = map.GetTilePattern();
+        map.DecreaseMapDepth();
+        Assert.AreEqual(previousWidth, map.Width);
+        Assert.AreEqual(previousDepth - 1, map.Depth);
+
+        for (int y = 0; y < map.Depth; y++)
+        {
+            for (int x = 0; x < map.Width; x++)
+            {
+                var cell = map.GetCell(x, y);
+
+                if (x >= oldTilePattern.GetLength(0) || y >= oldTilePattern.GetLength(1)) continue;
+                Assert.AreEqual(cell.tileID, oldTilePattern[x, y]);
+            }
+        }
+    }
+
+
+    [Test]
     public void CheckIfTheCharacterCanMoveToTheCell()
     {
         var character = Character.Create();
@@ -172,6 +248,17 @@ public class MapTest
     }
 
     [Test]
+    public void ShouldNotifyCellChange()
+    {
+        Coord changedCellCoord = new Coord(-1, -1);
+
+        map.CellChangeObservable.Subscribe(x => changedCellCoord = x);
+        map.SetTileID(2, 3, 10);
+
+        Assert.AreEqual(new Coord(2, 3), changedCellCoord);
+    }
+
+    [Test]
     public void ShouldSetLocationForEveryCells()
     {
         for(int y = 0; y < map.Depth; y++)
@@ -193,7 +280,7 @@ public class MapTest
     [Test]
     public void ShouldReturnTilePattern()
     {
-        map.GetCell(2, 2).tileID = 3;
+        map.SetTileID(2, 2, 3);
         var tilePattern = map.GetTilePattern();
 
         for(int y = 0; y < map.Depth; y++)

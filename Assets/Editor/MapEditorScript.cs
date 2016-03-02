@@ -11,38 +11,16 @@ public class MapEditorScript : Editor
     private const string RESOURCE_FOLDER = "Resources/";
     private const string DUNGEON_DATA_FOLDER = "DungeonDatas/";
 
+    private DungeonTitle previousSelectedDungeon;
+    private bool dungeonSelectChanged = false;
     public DungeonTitle selectedDungeon;
-    public int dungeonLevels;
-
-    private int currentMapNumber = -1;
+    public int dungeonLevels = -1;
 
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
 
         DrawSelectDungeonMenus();
-
-        /*
-        var mapEditor = target as MapEditor;
-        if (mapEditor == null || !mapEditor.CanInstantiateEditingMap())
-        {
-            DestroyInstantiatedMap();
-            currentMapNumber = -1;
-            return;
-        }
-
-        if(currentMapNumber != mapEditor.editingMap)
-        {
-            DestroyInstantiatedMap();
-
-            var mapHolder =  new GameObject("MapHolder");
-            mapHolder.tag = "EditingMapHolder";
-
-            var mapInstance = mapEditor.InstantiateEditingMap();
-            mapInstance.SetParent(mapHolder.transform);
-        }
-
-        */
     }
 
     void DrawSelectDungeonMenus()
@@ -51,6 +29,16 @@ public class MapEditorScript : Editor
         GUILayout.Label("Dungeon : ", GUILayout.Width(110));
         selectedDungeon = (DungeonTitle)EditorGUILayout.EnumPopup(selectedDungeon);
         EditorGUILayout.EndHorizontal();
+
+        if (previousSelectedDungeon != selectedDungeon) dungeonSelectChanged = true;
+
+        if(dungeonLevels == -1 || dungeonSelectChanged)
+        {
+            dungeonLevels = MapDataFileManager.GetAllMapPatternFileCount(selectedDungeon);
+            dungeonSelectChanged = false;
+        }
+
+        previousSelectedDungeon = selectedDungeon;
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("Levels: ", GUILayout.Width(110));
@@ -65,6 +53,8 @@ public class MapEditorScript : Editor
             MapTileEditorWindow.ShowMapEditorMainWindow(mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
         }
         EditorGUILayout.EndHorizontal();
+
+        
     }
 
     MapInstance SpawnMapInstance()

@@ -8,7 +8,7 @@ public class MapTileEditorWindow : EditorWindow
     private readonly string TILE_ASSETS_PATH = "Assets/Resources/MapTiles";
 
     private MapInstance mapInstance;
-    private DungeonTitle dungeonTitle;
+    private DungeonTitle selectedDungeon;
     private Map[] maps;
     private Map currentMap;
     private int currentMapNumber = 0;
@@ -21,6 +21,11 @@ public class MapTileEditorWindow : EditorWindow
     private Rect windowRect;
     private Vector2 scrollPos;
 
+    private Vector2 mousePos;
+    private bool mouseDown = false;
+
+    private bool changeTile = false;
+
     public static void ShowMapEditorMainWindow(MapInstance mapInstance, DungeonTitle title, Map[] maps)
     {
         var window = (MapTileEditorWindow)EditorWindow.GetWindow(typeof(MapTileEditorWindow), false);
@@ -30,8 +35,73 @@ public class MapTileEditorWindow : EditorWindow
     void SetMap(MapInstance mapInstance, DungeonTitle dungeonTitle, Map[] maps)
     {
         this.mapInstance = mapInstance;
-        this.dungeonTitle = dungeonTitle;
+        this.selectedDungeon = dungeonTitle;
         this.maps = maps;
+    }
+
+    void OnSceneGUI(SceneView sceneView)
+    {
+        if (selectedImagePath == null) return;
+
+        Event e = Event.current;
+        Ray worldRays = HandleUtility.GUIPointToWorldRay(e.mousePosition);
+        mousePos = worldRays.origin;
+
+        int controlID = GUIUtility.GetControlID(FocusType.Passive);
+        if (e.type == EventType.layout)
+        {
+            HandleUtility.AddDefaultControl(controlID);
+        }
+
+        switch (e.type)
+        {
+            case EventType.mouseDown:
+                {
+                    if(e.button == 0)
+                    {
+                        mouseDown = true;
+                    }
+                }
+                break;
+            case EventType.MouseUp:
+                {
+                    if(e.button == 0)
+                    {
+                        mouseDown = false;
+                    }
+                }
+                break;
+        }
+
+        if(mouseDown)
+        {
+            changeTile = true;
+        }else
+        {
+            changeTile = false;
+        }
+
+        if(changeTile)
+        {
+            var coord = mapInstance.WorldPositionToCoord(mousePos);
+            currentMap.SetTileID(coord.x, coord.y, selectedTileID);
+            Debug.Log("set tile id " + selectedTileID + " for " + coord);
+        }
+    }
+
+    void OnEnable()
+    {
+        SceneView.onSceneGUIDelegate += this.OnSceneGUI;
+    }
+
+    void OnDisable()
+    {
+        SceneView.onSceneGUIDelegate -= this.OnSceneGUI;
+    }
+
+    void OnDestroy()
+    {
+        if (mapInstance != null) DestroyImmediate(mapInstance.gameObject);
     }
 
     void OnGUI()
@@ -41,20 +111,7 @@ public class MapTileEditorWindow : EditorWindow
             return;
         }
 
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Current Map: ", GUILayout.Width(110));
-        if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(15)))
-        {
-            currentMapNumber++;
-        }
-        if(GUILayout.Button("-", GUILayout.Width(30), GUILayout.Height(15)))
-        {
-            currentMapNumber--;
-        }
-        currentMapNumber = EditorGUILayout.IntField(currentMapNumber);
-
-        GUILayout.EndHorizontal();
-        EditorGUILayout.Space();
+        DrawUIForCurrentMapNumber();
 
         if (currentMapNumber < 0)
         {
@@ -72,18 +129,87 @@ public class MapTileEditorWindow : EditorWindow
             currentMap = nextMap;
         }
 
+        DrawUIForMapWidth();
+        DrawUIForMapDepth();
+
         GUILayout.BeginHorizontal();
-        GUILayout.Label("map size : ", GUILayout.Width(110));
-        currentMap.Width = EditorGUILayout.IntField(currentMap.Width);
-        currentMap.Depth = EditorGUILayout.IntField(currentMap.Depth);
+        if (GUILayout.Button("Save"))
+        {
+            MapDataFileManager.WriteMapsToFiles(selectedDungeon, maps);
+            Debug.Log("Map Tile Pattern has been saved");
+        }
+        if (GUILayout.Button("Clear"))
+        {
+            for(int y = 0; y < currentMap.Depth; y++)
+            {
+                for(int x = 0; x < currentMap.Width; x++)
+                {
+                    currentMap.SetTileID(x, y, 0);
+                }
+            }
+        }
         GUILayout.EndHorizontal();
         EditorGUILayout.Space();
 
         DrawSelectedImage();
 
-        windowRect = new Rect(this.position.x, this.position.y + 70, this.position.width, this.position.height - 70);
+        windowRect = new Rect(this.position.x, this.position.y - 70, this.position.width, this.position.height);
 
         DrawImageParts();
+    }
+
+    void DrawUIForCurrentMapNumber()
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Current Map: ", GUILayout.Width(110));
+        if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(15)))
+        {
+            currentMapNumber++;
+        }
+        if (GUILayout.Button("-", GUILayout.Width(30), GUILayout.Height(15)))
+        {
+            currentMapNumber--;
+        }
+        currentMapNumber = EditorGUILayout.IntField(currentMapNumber);
+
+        GUILayout.EndHorizontal();
+        EditorGUILayout.Space();
+    } 
+
+    void DrawUIForMapWidth()
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Width : ", GUILayout.Width(110));
+        if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(15)))
+        {
+            currentMap.IncreaseMapWidth();
+            mapInstance.Generate(currentMap);
+        }
+        if (GUILayout.Button("-", GUILayout.Width(30), GUILayout.Height(15)))
+        {
+            currentMap.DecreaseMapWidth();
+            mapInstance.Generate(currentMap);
+        }
+        EditorGUILayout.IntField(currentMap.Width);
+        GUILayout.EndHorizontal();
+    }
+
+    void DrawUIForMapDepth()
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Depth : ", GUILayout.Width(110));
+        if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(15)))
+        {
+            currentMap.IncreaseMapDepth();
+            mapInstance.Generate(currentMap);
+        }
+        if (GUILayout.Button("-", GUILayout.Width(30), GUILayout.Height(15)))
+        {
+            currentMap.DecreaseMapDepth();
+            mapInstance.Generate(currentMap);
+        }
+        EditorGUILayout.IntField(currentMap.Depth);
+        GUILayout.EndHorizontal();
     }
 
     void DrawSelectedImage()

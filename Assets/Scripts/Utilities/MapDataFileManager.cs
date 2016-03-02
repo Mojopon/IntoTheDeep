@@ -9,12 +9,22 @@ public static class MapDataFileManager
     private static readonly string RESOURCE_FOLDER = "Resources/";
     private static readonly string DUNGEON_DATA_FOLDER = "DungeonDatas/";
 
+    public static Map[] ReadMapsFromFile(DungeonTitle title, int levels)
+    {
+        return ReadMapsFromFile(title.ToString(), levels);
+    }
+
     public static Map[] ReadMapsFromFile(string dungeonName, int levels)
     {
+        if(!Directory.Exists(GetPathFromDungeonName(dungeonName)))
+        {
+            Directory.CreateDirectory(GetPathFromDungeonName(dungeonName));
+        }
+
         List<Map> maps = new List<Map>();
         for (int i = 0; i < levels; i++)
         {
-            var mapPattern = ReadMapPatternFromFile(CreatePathFromDungeonNameAndLevel(dungeonName, i), i);
+            var mapPattern = ReadMapPatternFromFile(GetPathFromDungeonNameAndLevel(dungeonName, i), i);
             maps.Add(new Map(mapPattern));
         }
 
@@ -41,6 +51,11 @@ public static class MapDataFileManager
         return tilePattern;
     }
 
+    public static void WriteMapsToFiles(DungeonTitle title, Map[] maps)
+    {
+        WriteMapsToFiles(title.ToString(), maps);
+    }
+
     public static void WriteMapsToFiles(string dungeonName, Map[] maps)
     {
         int levels = maps.Length;
@@ -61,9 +76,52 @@ public static class MapDataFileManager
             Directory.CreateDirectory(dungeonDataFolderPath);
         }
 
-        WriteMapPatternToFile(CreatePathFromDungeonNameAndLevel(dungeonName, outputLevel), maps[outputLevel].GetTilePattern());
+        WriteMapPatternToFile(GetPathFromDungeonNameAndLevel(dungeonName, outputLevel), maps[outputLevel].GetTilePattern());
     }
 
+    public static int GetAllMapPatternFileCount(DungeonTitle title)
+    {
+        return GetAllMapPatternFileCount(title.ToString());
+    }
+
+    private static int GetAllMapPatternFileCount(string dungeonName)
+    {
+        var mapPatternFileNames = GetAllMapPatternFiles(dungeonName);
+
+        if (mapPatternFileNames == null) return 0;
+
+        return GetAllMapPatternFiles(dungeonName).Length;
+    }
+
+    public static string[] GetAllMapPatternFiles(DungeonTitle title)
+    {
+        return GetAllMapPatternFiles(title.ToString());
+    }
+
+    public static string[] GetAllMapPatternFiles(string dungeonName)
+    {
+        var mapPatternFileNames = new List<string>();
+        int i = 0;
+        string nextMapFile = GetPathFromDungeonNameAndLevel(dungeonName, i);
+        if (!File.Exists(nextMapFile))
+        {
+            return null;
+        }
+
+        while(!string.IsNullOrEmpty(nextMapFile))
+        {
+            mapPatternFileNames.Add(nextMapFile);
+            i++;
+
+            nextMapFile = GetPathFromDungeonNameAndLevel(dungeonName, i);
+            if(!File.Exists(nextMapFile))
+            {
+                nextMapFile = null;
+            }
+        }
+
+        return mapPatternFileNames.ToArray();
+    }
 
     private static void WriteMapPatternToFile(string path, int[,] tilePattern)
     {
@@ -74,7 +132,12 @@ public static class MapDataFileManager
         }
     }
 
-    private static string CreatePathFromDungeonNameAndLevel(string dungeonName, int level)
+    private static string GetPathFromDungeonName(string dungeonName)
+    {
+        return RESOURCE_FOLDER + DUNGEON_DATA_FOLDER + dungeonName + "/";
+    }
+
+    private static string GetPathFromDungeonNameAndLevel(string dungeonName, int level)
     {
         return RESOURCE_FOLDER + DUNGEON_DATA_FOLDER + dungeonName + "/" + level.ToString() + ".MapPattern" + ".txt";
     }

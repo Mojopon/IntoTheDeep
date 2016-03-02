@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System;
 using UniRx;
+using UniRx.Triggers;
 
 [Serializable]
 public class Map : IWorldEventSubscriber
 {
     public int Width;
     public int Depth;
+
+    public IObservable<Coord> CellChangeObservable;
 
     public Coord exitLocation;
     public Coord[] playerStartPositions = new Coord[4];
@@ -16,10 +19,14 @@ public class Map : IWorldEventSubscriber
     public bool PlayerIsInExit = false;
 
     private Cell[,] cells;
+    private Subject<Coord> onCellChangeSubject = new Subject<Coord>();
 
-    public Map() { }
+    public Map()
+    {
+        CellChangeObservable = onCellChangeSubject.AsObservable();
+    }
 
-    public Map(int[,] tilePattern)
+    public Map(int[,] tilePattern) : this()
     {
         this.Width = tilePattern.GetLength(0);
         this.Depth = tilePattern.GetLength(1);
@@ -30,7 +37,67 @@ public class Map : IWorldEventSubscriber
             for (int x = 0; x < Width; x++)
             {
                 cells[x, y] = new Cell(x, y);
-                cells[x, y].tileID = tilePattern[x, y];
+                SetTileID(x, y, tilePattern[x, y]);
+            }
+        }
+    }
+
+    public void IncreaseMapWidth()
+    {
+        var newCells = new Cell[++Width, Depth];
+        InitializeCells(newCells);
+        WriteOldMapPatternToNewCells(newCells, this.cells);
+        this.cells = newCells;
+    }
+
+    public void DecreaseMapWidth()
+    {
+        if (Width < 2) return;
+
+        var newCells = new Cell[--Width, Depth];
+        InitializeCells(newCells);
+        WriteOldMapPatternToNewCells(newCells, this.cells);
+        this.cells = newCells;
+    }
+
+    public void IncreaseMapDepth()
+    {
+        var newCells = new Cell[Width, ++Depth];
+        InitializeCells(newCells);
+        WriteOldMapPatternToNewCells(newCells, this.cells);
+        this.cells = newCells;
+    }
+
+    public void DecreaseMapDepth()
+    {
+        if (Depth < 2) return;
+
+        var newCells = new Cell[Width, --Depth];
+        InitializeCells(newCells);
+        WriteOldMapPatternToNewCells(newCells, this.cells);
+        this.cells = newCells;
+    }
+
+    private void InitializeCells(Cell[,] cells)
+    {
+        for (int y = 0; y < cells.GetLength(1); y++)
+        {
+            for (int x = 0; x < cells.GetLength(0); x++)
+            {
+                cells[x, y] = new Cell(x, y);
+            }
+        }
+    }
+
+    private void WriteOldMapPatternToNewCells(Cell[,] newCells, Cell[,] oldCells)
+    {
+        for(int y = 0; y < newCells.GetLength(1); y++)
+        {
+            for (int x = 0; x < newCells.GetLength(0); x++)
+            {
+                if (x >= oldCells.GetLength(0) || y >= oldCells.GetLength(1)) continue;
+
+                newCells[x, y].SetTileID(oldCells[x, y].tileID);
             }
         }
     }
@@ -79,11 +146,12 @@ public class Map : IWorldEventSubscriber
         return cells[x, y];
     }
 
-    public void SetCell(int x, int y, Cell cell)
+    public void SetTileID(int x, int y, int id)
     {
         if (IsOutOfRange(x, y)) return;
 
-        cells[x, y] = cell;
+        cells[x, y].SetTileID(id);
+        onCellChangeSubject.OnNext(new Coord(x, y));
     }
 
     public List<Cell> GetAvailableCells()

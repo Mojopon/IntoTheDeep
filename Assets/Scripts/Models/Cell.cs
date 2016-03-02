@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Cell
 {
-    public int tileID;
+    public int tileID { get; private set; }
     public int x;
     public int y;
     public Coord Location { get { return new Coord(x, y); } }
@@ -36,6 +36,11 @@ public class Cell
         }
 
         this.characterInTheCell = character;
+    }
+
+    public void SetTileID(int id)
+    {
+        this.tileID = id;
     }
 
     public bool IsAvailable()
