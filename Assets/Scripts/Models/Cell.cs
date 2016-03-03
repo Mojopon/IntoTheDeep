@@ -43,6 +43,13 @@ public class Cell
         this.tileID = id;
     }
 
+    public void ApplyTileData(TileData tileData)
+    {
+        if (tileData.id != this.tileID) return;
+
+        this.canWalk = tileData.canWalk;
+    }
+
     public bool IsAvailable()
     {
         return canWalk && !hasCharacter;
