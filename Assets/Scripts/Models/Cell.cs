@@ -45,7 +45,7 @@ public class Cell
 
     public void ApplyTileData(TileData tileData)
     {
-        if (tileData.id != this.tileID) return;
+        if (tileData == null || tileData.id != this.tileID) return;
 
         this.canWalk = tileData.canWalk;
     }

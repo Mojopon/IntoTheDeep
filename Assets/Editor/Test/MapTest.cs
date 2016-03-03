@@ -51,6 +51,62 @@ public class MapTest
     }
 
     [Test]
+    public void ShouldApplyTileDatas()
+    {
+        TileDatas tileDatas = new TileDatas();
+        var tileOne = new TileData(0);
+        var tileTwo = new TileData(1) { canWalk = false, };
+        tileDatas.Add(tileOne, tileTwo);
+
+        var mapPatternRaw = new int[,]
+        {
+            { 1,1,1,1, },
+            { 0,0,0,1, },
+            { 0,0,0,1, },
+        };
+
+        var mapPattern = new int[4, 3];
+
+        for (int y = 0; y < mapPattern.GetLength(1); y++)
+        {
+            for (int x = 0; x < mapPattern.GetLength(0); x++)
+            {
+                mapPattern[x, y] = mapPatternRaw[y, x];
+            }
+        }
+
+        map = new Map(mapPattern);
+        for (int y = 0; y < mapPattern.GetLength(1); y++)
+        {
+            for (int x = 0; x < mapPattern.GetLength(0); x++)
+            {
+                Assert.IsTrue(map.GetCell(x, y).canWalk);
+            }
+        }
+
+        map.ApplyTileData(tileDatas);
+
+        for (int y = 0; y < mapPattern.GetLength(1); y++)
+        {
+            for (int x = 0; x < mapPattern.GetLength(0); x++)
+            {
+                if(map.GetCell(x, y).tileID == 0)
+                {
+                    Assert.IsTrue(map.GetCell(x, y).canWalk);
+                }
+                else if (map.GetCell(x, y).tileID == 1)
+                {
+                    Assert.IsFalse(map.GetCell(x, y).canWalk);
+                }
+                else
+                {
+                    Assert.Fail();
+                }
+            }
+        }
+    }
+
+    [Test]
     public void ShouldIncreaseAndDecreaseSize()
     {
         int previousWidth = map.Width;

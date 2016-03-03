@@ -35,4 +35,11 @@ public class TileDatasTest
         tile = tileDatas.Get(2);
         Assert.IsNull(tile);
     }
+
+    [Test]
+    public void TileDataInitialParameters()
+    {
+        var tileData = new TileData(0);
+        Assert.IsTrue(tileData.canWalk);
+    }
 }

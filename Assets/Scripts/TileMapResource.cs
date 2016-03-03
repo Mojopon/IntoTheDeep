@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.IO;
+using UnityEditor;
 
 public class TileMapResource : MonoBehaviour
 {

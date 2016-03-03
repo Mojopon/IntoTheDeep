@@ -6,7 +6,6 @@ using System.IO;
 [CustomEditor(typeof(TileMapResource))]
 public class TileMapResourceEditor : Editor
 {
-
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
@@ -14,7 +13,7 @@ public class TileMapResourceEditor : Editor
         if (GUILayout.Button("Load TileSet"))
         {
             var tilemapResource = (TileMapResource)target;
-            tilemapResource.tileSet = Resources.LoadAll<Sprite>("MapTiles");
+            tilemapResource.tileSet = Resources.LoadAll<Sprite>(ResourcePath.MAPTILE_FOLDER_NAME);
         }
     }
 }

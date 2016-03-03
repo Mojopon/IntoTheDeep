@@ -5,8 +5,6 @@ using System.IO;
 
 public class MapTileEditorWindow : EditorWindow
 {
-    private readonly string TILE_ASSETS_PATH = "Assets/Resources/MapTiles";
-
     private MapInstance mapInstance;
     private DungeonTitle selectedDungeon;
     private Map[] maps;
@@ -17,6 +15,7 @@ public class MapTileEditorWindow : EditorWindow
 
     private int selectedTileID;
     private string selectedImagePath;
+    private bool tileSelected { get { return selectedImagePath != null; } }
 
     private Rect windowRect;
     private Vector2 scrollPos;
@@ -26,7 +25,7 @@ public class MapTileEditorWindow : EditorWindow
 
     private bool changeTile = false;
 
-    public static void ShowMapEditorMainWindow(MapInstance mapInstance, DungeonTitle title, Map[] maps)
+    public static void ShowMainWindow(MapInstance mapInstance, DungeonTitle title, Map[] maps)
     {
         var window = (MapTileEditorWindow)EditorWindow.GetWindow(typeof(MapTileEditorWindow), false);
         window.SetMap(mapInstance, title, maps);
@@ -84,7 +83,6 @@ public class MapTileEditorWindow : EditorWindow
         {
             var coord = mapInstance.WorldPositionToCoord(mousePos);
             currentMap.SetTileID(coord.x, coord.y, selectedTileID);
-            Debug.Log("set tile id " + selectedTileID + " for " + coord);
         }
     }
 
@@ -122,7 +120,7 @@ public class MapTileEditorWindow : EditorWindow
         }
 
         var nextMap = maps[currentMapNumber];
-        if(nextMap != currentMap)
+        if (nextMap != currentMap)
         {
             mapInstance.Generate(nextMap);
             currentMap = nextMap;
@@ -139,9 +137,9 @@ public class MapTileEditorWindow : EditorWindow
         }
         if (GUILayout.Button("Clear"))
         {
-            for(int y = 0; y < currentMap.Depth; y++)
+            for (int y = 0; y < currentMap.Depth; y++)
             {
-                for(int x = 0; x < currentMap.Width; x++)
+                for (int x = 0; x < currentMap.Width; x++)
                 {
                     currentMap.SetTileID(x, y, 0);
                 }
@@ -152,7 +150,7 @@ public class MapTileEditorWindow : EditorWindow
 
         DrawSelectedImage();
 
-        windowRect = new Rect(this.position.x, this.position.y - 70, this.position.width, this.position.height);
+        windowRect = new Rect(this.position.x, this.position.y, this.position.width, this.position.height - 50);
 
         DrawImageParts();
     }
@@ -227,10 +225,10 @@ public class MapTileEditorWindow : EditorWindow
 
     void DrawImageParts()
     {
-        var tilesetPath = TILE_ASSETS_PATH;
-        if (!Directory.Exists(tilesetPath))
+        string path = ResourcePath.TILE_ASSETS_PATH;
+        if (!Directory.Exists(path))
         {
-            Debug.Log("Couldnt find TileSet Folder! " + tilesetPath);
+            Debug.Log("Couldnt find TileSet Folder! " + path);
             return;
         }
 
@@ -241,8 +239,6 @@ public class MapTileEditorWindow : EditorWindow
         float w = 50.0f;
         float h = 50.0f;
         float maxW = 300.0f;
-
-        string path = TILE_ASSETS_PATH;
 
         string[] names = Directory.GetFiles(path, "*.png");
         EditorGUILayout.BeginVertical();

@@ -102,6 +102,17 @@ public class Map : IWorldEventSubscriber
         }
     }
 
+    public void ApplyTileData(TileDatas tileDatas)
+    {
+        for (int y = 0; y < Depth; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {   
+                cells[x, y].ApplyTileData(tileDatas.Get(cells[x, y].tileID));
+            }
+        }
+    }
+
     public void Initialize()
     {
         if (cells == null)

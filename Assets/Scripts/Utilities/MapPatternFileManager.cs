@@ -6,9 +6,6 @@ using System.Collections.Generic;
 
 public static class MapPatternFileManager
 {
-    private static readonly string RESOURCE_FOLDER = "Resources/";
-    private static readonly string DUNGEON_DATA_FOLDER = "DungeonDatas/";
-
     public static Map[] ReadFromFiles(DungeonTitle title, int levels)
     {
         return ReadFromFiles(title.ToString(), levels);
@@ -70,7 +67,7 @@ public static class MapPatternFileManager
     {
         if (outputLevel < 0 || outputLevel >= maps.Length) return; 
 
-        var dungeonDataFolderPath = RESOURCE_FOLDER + DUNGEON_DATA_FOLDER + dungeonName;
+        var dungeonDataFolderPath = GetPathFromDungeonName(dungeonName);
         if (!Directory.Exists(dungeonDataFolderPath))
         {
             Directory.CreateDirectory(dungeonDataFolderPath);
@@ -134,22 +131,22 @@ public static class MapPatternFileManager
 
     private static string GetPathFromDungeonName(string dungeonName)
     {
-        return RESOURCE_FOLDER + DUNGEON_DATA_FOLDER + dungeonName + "/";
+        return ResourcePath.RESOURCE_FOLDER + ResourcePath.DUNGEON_DATA_FOLDER + dungeonName + "/";
     }
 
     private static string GetPathFromDungeonNameAndLevel(string dungeonName, int level)
     {
-        return RESOURCE_FOLDER + DUNGEON_DATA_FOLDER + dungeonName + "/" + level.ToString() + ".MapPattern" + ".txt";
+        return ResourcePath.RESOURCE_FOLDER + ResourcePath.DUNGEON_DATA_FOLDER + dungeonName + "/" + level.ToString() + ".MapPattern" + ".txt";
     }
 
     private static void InitializeFolders()
     {
-        if (!Directory.Exists(RESOURCE_FOLDER))
+        if (!Directory.Exists(ResourcePath.RESOURCE_FOLDER))
         {
-            Directory.CreateDirectory(RESOURCE_FOLDER);
+            Directory.CreateDirectory(ResourcePath.RESOURCE_FOLDER);
         }
 
-        var dungeonDataFolderPath = RESOURCE_FOLDER + DUNGEON_DATA_FOLDER;
+        var dungeonDataFolderPath = ResourcePath.RESOURCE_FOLDER + ResourcePath.DUNGEON_DATA_FOLDER;
         if (!Directory.Exists(dungeonDataFolderPath))
         {
             Directory.CreateDirectory(dungeonDataFolderPath);

@@ -26,6 +26,13 @@ public class MapEditorScript : Editor
     void DrawSelectDungeonMenus()
     {
         EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Edit Tile Datas"))
+        {
+            TileDataEditorWindow.ShowMainWindow();
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
         GUILayout.Label("Dungeon : ", GUILayout.Width(110));
         selectedDungeon = (DungeonTitle)EditorGUILayout.EnumPopup(selectedDungeon);
         EditorGUILayout.EndHorizontal();
@@ -50,7 +57,7 @@ public class MapEditorScript : Editor
         {
             var mapInstance = SpawnMapInstance();
             var editor = (MapEditor)target;
-            MapTileEditorWindow.ShowMapEditorMainWindow(mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
+            MapTileEditorWindow.ShowMainWindow(mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
         }
         EditorGUILayout.EndHorizontal();
 
