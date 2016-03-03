@@ -21,6 +21,36 @@ public class MapTest
     }
 
     [Test]
+    public void CanCreateFromMapPattern()
+    {
+        var mapPatternRaw = new int[,]
+        {
+            { 1,1,1,1, },
+            { 0,0,0,1, },
+            { 0,0,0,1, },
+        };
+
+        var mapPattern = new int[4, 3];
+
+        for (int y = 0; y < mapPattern.GetLength(1); y++)
+        {
+            for (int x = 0; x < mapPattern.GetLength(0); x++)
+            {
+                mapPattern[x, y] = mapPatternRaw[y, x];
+            }
+        }
+
+        var map = new Map(mapPattern);
+        for (int y = 0; y < map.Depth; y++)
+        {
+            for (int x = 0; x < map.Width; x++)
+            {
+                Assert.AreEqual(mapPattern[x, y], map.GetCell(x, y).tileID);
+            }
+        }
+    }
+
+    [Test]
     public void ShouldIncreaseAndDecreaseSize()
     {
         int previousWidth = map.Width;

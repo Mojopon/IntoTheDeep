@@ -10,7 +10,7 @@ public class MapEditor : MonoBehaviour
 
     public Map[] GetMaps(DungeonTitle dungeon, int levels)
     {
-        return MapDataFileManager.ReadMapsFromFile(dungeon.ToString(), levels);
+        return MapPatternFileManager.ReadFromFiles(dungeon.ToString(), levels);
     }
 
     public Transform StartEditingMap(Map map)

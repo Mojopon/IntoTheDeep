@@ -4,17 +4,17 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 
-public static class MapDataFileManager
+public static class MapPatternFileManager
 {
     private static readonly string RESOURCE_FOLDER = "Resources/";
     private static readonly string DUNGEON_DATA_FOLDER = "DungeonDatas/";
 
-    public static Map[] ReadMapsFromFile(DungeonTitle title, int levels)
+    public static Map[] ReadFromFiles(DungeonTitle title, int levels)
     {
-        return ReadMapsFromFile(title.ToString(), levels);
+        return ReadFromFiles(title.ToString(), levels);
     }
 
-    public static Map[] ReadMapsFromFile(string dungeonName, int levels)
+    public static Map[] ReadFromFiles(string dungeonName, int levels)
     {
         if(!Directory.Exists(GetPathFromDungeonName(dungeonName)))
         {
@@ -24,14 +24,14 @@ public static class MapDataFileManager
         List<Map> maps = new List<Map>();
         for (int i = 0; i < levels; i++)
         {
-            var mapPattern = ReadMapPatternFromFile(GetPathFromDungeonNameAndLevel(dungeonName, i), i);
+            var mapPattern = ReadFromTheFile(GetPathFromDungeonNameAndLevel(dungeonName, i), i);
             maps.Add(new Map(mapPattern));
         }
 
         return maps.ToArray();
     }
 
-    private static int[,] ReadMapPatternFromFile(string path, int level)
+    private static int[,] ReadFromTheFile(string path, int level)
     {
         int[,] tilePattern;
 
@@ -39,7 +39,7 @@ public static class MapDataFileManager
         {
             // create blank map if the file doesnt exists
             tilePattern = new int[5, 5];
-            WriteMapPatternToFile(path, tilePattern);
+            WriteMapPatternToTheFile(path, tilePattern);
             return tilePattern;
         }
 
@@ -51,22 +51,22 @@ public static class MapDataFileManager
         return tilePattern;
     }
 
-    public static void WriteMapsToFiles(DungeonTitle title, Map[] maps)
+    public static void WriteToFiles(DungeonTitle title, Map[] maps)
     {
-        WriteMapsToFiles(title.ToString(), maps);
+        WriteToFiles(title.ToString(), maps);
     }
 
-    public static void WriteMapsToFiles(string dungeonName, Map[] maps)
+    public static void WriteToFiles(string dungeonName, Map[] maps)
     {
         int levels = maps.Length;
 
         for(int i = 0; i < levels; i++)
         {
-            WriteMapToFile(dungeonName, maps, i);
+            WriteToTheFile(dungeonName, maps, i);
         }
     }
 
-    public static void WriteMapToFile(string dungeonName, Map[] maps, int outputLevel)
+    public static void WriteToTheFile(string dungeonName, Map[] maps, int outputLevel)
     {
         if (outputLevel < 0 || outputLevel >= maps.Length) return; 
 
@@ -76,15 +76,24 @@ public static class MapDataFileManager
             Directory.CreateDirectory(dungeonDataFolderPath);
         }
 
-        WriteMapPatternToFile(GetPathFromDungeonNameAndLevel(dungeonName, outputLevel), maps[outputLevel].GetTilePattern());
+        WriteMapPatternToTheFile(GetPathFromDungeonNameAndLevel(dungeonName, outputLevel), maps[outputLevel].GetTilePattern());
     }
 
-    public static int GetAllMapPatternFileCount(DungeonTitle title)
+    private static void WriteMapPatternToTheFile(string path, int[,] tilePattern)
     {
-        return GetAllMapPatternFileCount(title.ToString());
+        using (StreamWriter sw = new StreamWriter(path, false, Encoding.ASCII))
+        {
+            var text = MapHelper.TilePatternToText(tilePattern);
+            sw.Write(text);
+        }
     }
 
-    private static int GetAllMapPatternFileCount(string dungeonName)
+    public static int GetFileCount(DungeonTitle title)
+    {
+        return GetFileCount(title.ToString());
+    }
+
+    private static int GetFileCount(string dungeonName)
     {
         var mapPatternFileNames = GetAllMapPatternFiles(dungeonName);
 
@@ -121,15 +130,6 @@ public static class MapDataFileManager
         }
 
         return mapPatternFileNames.ToArray();
-    }
-
-    private static void WriteMapPatternToFile(string path, int[,] tilePattern)
-    {
-        using (StreamWriter sw = new StreamWriter(path, false, Encoding.ASCII))
-        {
-            var text = MapHelper.TilePatternToText(tilePattern);
-            sw.Write(text);
-        }
     }
 
     private static string GetPathFromDungeonName(string dungeonName)

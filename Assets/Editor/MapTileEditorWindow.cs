@@ -52,7 +52,6 @@ public class MapTileEditorWindow : EditorWindow
         {
             HandleUtility.AddDefaultControl(controlID);
         }
-
         switch (e.type)
         {
             case EventType.mouseDown:
@@ -135,7 +134,7 @@ public class MapTileEditorWindow : EditorWindow
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Save"))
         {
-            MapDataFileManager.WriteMapsToFiles(selectedDungeon, maps);
+            MapPatternFileManager.WriteToFiles(selectedDungeon, maps);
             Debug.Log("Map Tile Pattern has been saved");
         }
         if (GUILayout.Button("Clear"))

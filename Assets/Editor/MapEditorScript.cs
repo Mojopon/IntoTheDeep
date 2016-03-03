@@ -34,7 +34,7 @@ public class MapEditorScript : Editor
 
         if(dungeonLevels == -1 || dungeonSelectChanged)
         {
-            dungeonLevels = MapDataFileManager.GetAllMapPatternFileCount(selectedDungeon);
+            dungeonLevels = MapPatternFileManager.GetFileCount(selectedDungeon);
             dungeonSelectChanged = false;
         }
 
