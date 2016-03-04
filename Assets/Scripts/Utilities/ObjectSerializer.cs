@@ -5,9 +5,9 @@ using System.Xml.Serialization;
 using System.IO;
 using System;
 
-public class ObjectSerializer
+public static class ObjectSerializer
 {
-    public void SerializeObject<T>(T serializableObject, string fileName)
+    public static void SerializeObject<T>(T serializableObject, string fileName)
     {
         if (serializableObject == null) { return; }
 
@@ -37,7 +37,7 @@ public class ObjectSerializer
     /// <typeparam name="T"></typeparam>
     /// <param name="fileName"></param>
     /// <returns></returns>
-    public T DeSerializeObject<T>(string fileName)
+    public static T DeSerializeObject<T>(string fileName)
     {
         if (string.IsNullOrEmpty(fileName)) { return default(T); }
 

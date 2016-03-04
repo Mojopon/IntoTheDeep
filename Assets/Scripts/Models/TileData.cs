@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Xml.Serialization;
 
 public class TileDatas
 {
@@ -27,13 +28,29 @@ public class TileDatas
 
         return tiles[id];
     }
+
+    public TileData[] GetAllTiles()
+    {
+        var allTiles = new List<TileData>();
+        foreach(var pair in tiles)
+        {
+            allTiles.Add(pair.Value);
+        }
+
+        return allTiles.ToArray();
+    }
 }
 
 [Serializable]
 public class TileData
 {
-    public int id { get; private set; }
+    [XmlIgnore]
+    public int id { get; set; }
+
+    public string fileName;
     public bool canWalk = true;
+
+    public TileData() { }
 
     public TileData(int tileID)
     {

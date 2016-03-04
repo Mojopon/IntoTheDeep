@@ -2,29 +2,53 @@
 using System.Collections.Generic;
 using UnityEditor;
 using System.IO;
+using System.Linq;
+using UniRx;
 
 public class TileDataEditorWindow : EditorWindow
 {
-    private int selectedTileID;
+    private TileData selectedTile = null;
+
+    private bool setCanWalkProperty = true;
 
     private Dictionary<int, bool> toggledTiles;
 
     private Vector2 scrollPos;
+    private int windowRectHeightOffset;
     private Rect windowRect;
+
+    private TileDatas tileDatas;
+    private bool tileDataLoaded { get { return tileDatas != null; } }
 
     public static void ShowMainWindow()
     {
-        EditorWindow.GetWindow(typeof(TileDataEditorWindow));
+        EditorWindow.GetWindow(typeof(TileDataEditorWindow), false);
     }
 
 
     void OnGUI()
     {
-        windowRect = new Rect(this.position.x, this.position.y, this.position.width, this.position.height);
+        windowRectHeightOffset = 0;
+
+        if (!tileDataLoaded)
+        {
+            LoadTileDatas();
+        }
+
+        DrawSelectedTileProperties();
+
+        DrawTilePropertiesControl();
+
+        windowRect = new Rect(this.position.x, this.position.y + windowRectHeightOffset, this.position.width, this.position.height - windowRectHeightOffset);
 
         if (toggledTiles == null) CreateToggleTileList();
 
         DrawTilesSelection();
+    }
+
+    void LoadTileDatas()
+    {
+        tileDatas = TileDataFileManager.ReadFromFiles();
     }
 
     void CreateToggleTileList()
@@ -38,6 +62,50 @@ public class TileDataEditorWindow : EditorWindow
         {
             toggledTiles.Add(i, false);
         }
+    }
+
+    void DrawSelectedTileProperties()
+    {
+        if (selectedTile == null) return;
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label(selectedTile.fileName);
+        GUILayout.Label("Can Walk:");
+        GUILayout.Label(" [" + selectedTile.canWalk.ToString() + "] ");
+
+        EditorGUILayout.EndHorizontal();
+
+        windowRectHeightOffset += 20;
+    }
+
+    void DrawTilePropertiesControl()
+    {
+        if (toggledTiles == null || !toggledTiles.ContainsValue(true)) return;
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Can Walk:");
+        setCanWalkProperty = GUILayout.Toggle(setCanWalkProperty, "", GUILayout.Width(40));
+        if(GUILayout.Button("Apply To Toggled Tiles"))
+        {
+            foreach(var pair in toggledTiles)
+            {
+                // skip when its not toggled
+                if (!pair.Value) continue;
+
+                var targetTile = tileDatas.Get(pair.Key);
+                ApplyTilePropetiesToTile(targetTile);
+            }
+
+            TileDataFileManager.WriteToFiles(tileDatas);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        windowRectHeightOffset += 20;
+    }
+
+    void ApplyTilePropetiesToTile(TileData tile)
+    {
+        tile.canWalk = setCanWalkProperty;
     }
 
     void DrawTilesSelection()
@@ -77,7 +145,7 @@ public class TileDataEditorWindow : EditorWindow
             Texture2D tex = (Texture2D)AssetDatabase.LoadAssetAtPath(d, typeof(Texture2D));
             if (GUILayout.Button(tex, GUILayout.MaxWidth(w), GUILayout.MaxHeight(h), GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false)))
             {
-                selectedTileID = i;
+                selectedTile = tileDatas.Get(i);
             }
 
             toggledTiles[i] = GUILayout.Toggle(toggledTiles[i], "", GUILayout.Width(40));
