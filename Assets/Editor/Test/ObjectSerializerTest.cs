@@ -2,13 +2,15 @@
 using System.Collections;
 using NUnit.Framework;
 using System.IO;
+using System.Collections.Generic;
 
 [TestFixture]
 public class ObjectSerializerTest
 {
-    private static readonly string TILEDATA_FILE_FOR_TEST = "tiledata.txt"; 
+    private static readonly string TILEDATA_FILE_FOR_TEST = "/tiledata.txt"; 
+    private static readonly string STARTPOSITIONS_FILE_FOR_TEST = "/startpositions.txt";
 
-	[Test]
+    [Test]
     public void ShouldSerializeAndDeserializeBackTileData()
     {
         var tileData = new TileData(1);
@@ -17,7 +19,7 @@ public class ObjectSerializerTest
         tileData.isExit = true;
         Assert.AreEqual(1, tileData.id);
 
-        var path = Directory.GetCurrentDirectory() + "/" + TILEDATA_FILE_FOR_TEST;
+        var path = Directory.GetCurrentDirectory() + TILEDATA_FILE_FOR_TEST;
 
         ObjectSerializer.SerializeObject(tileData, path);
 
@@ -32,11 +34,36 @@ public class ObjectSerializerTest
 
     }
 
+    [Test]
+    public void ShouldSerializeAndDeserializeBackStartPositionsMapEvent()
+    {
+
+        var mapEvent = new StartPositionsMapEvent();
+        mapEvent.AddStartPosition(new Coord(1, 1));
+        mapEvent.AddStartPosition(new Coord(2, 1));
+        mapEvent.AddStartPosition(new Coord(3, 1));
+        mapEvent.AddStartPosition(new Coord(4, 1));
+
+        var path = Directory.GetCurrentDirectory() + STARTPOSITIONS_FILE_FOR_TEST;
+
+        ObjectSerializer.SerializeObject(mapEvent, path);
+
+        var loadedMapEvent = ObjectSerializer.DeSerializeObject<StartPositionsMapEvent>(path);
+        Assert.IsNotNull(loadedMapEvent);
+
+        for(int i = 0; i < mapEvent.startPositions.Count; i++)
+        {
+            Assert.AreEqual(mapEvent.startPositions[i], loadedMapEvent.startPositions[i]);
+        }
+    }
+
     [TearDown]
     public void Destroy()
     {
-        var tileDataPath = Directory.GetCurrentDirectory() + "/" + TILEDATA_FILE_FOR_TEST;
+        List<string> filesToDelete = new List<string>();
+        filesToDelete.Add(Directory.GetCurrentDirectory() + TILEDATA_FILE_FOR_TEST);
+        filesToDelete.Add(Directory.GetCurrentDirectory() + STARTPOSITIONS_FILE_FOR_TEST);
 
-        File.Delete(tileDataPath);
+        foreach (var path in filesToDelete) File.Delete(path);
     }
 }

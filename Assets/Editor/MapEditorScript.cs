@@ -53,11 +53,22 @@ public class MapEditorScript : Editor
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Start Editing"))
+        if (GUILayout.Button("Edit Tiles"))
         {
+            if (MapEventEditorWindow.IsOpened) return;
+
             var mapInstance = SpawnMapInstance();
             var editor = (MapEditor)target;
             MapTileEditorWindow.ShowMainWindow(mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
+        }
+
+        if (GUILayout.Button("Edit Map Events"))
+        {
+            if (MapTileEditorWindow.IsOpened) return;
+            
+            var mapInstance = SpawnMapInstance();
+            var editor = (MapEditor)target;
+            MapEventEditorWindow.ShowMainWindow(mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
         }
         EditorGUILayout.EndHorizontal();
 

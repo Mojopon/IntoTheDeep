@@ -25,10 +25,12 @@ public class MapTileEditorWindow : EditorWindow
 
     private bool changeTile = false;
 
+    public static bool IsOpened { get; private set; }
     public static void ShowMainWindow(MapInstance mapInstance, DungeonTitle title, Map[] maps)
     {
         var window = (MapTileEditorWindow)EditorWindow.GetWindow(typeof(MapTileEditorWindow), false);
         window.SetMap(mapInstance, title, maps);
+        IsOpened = true;
     }
 
     void SetMap(MapInstance mapInstance, DungeonTitle dungeonTitle, Map[] maps)
@@ -99,6 +101,7 @@ public class MapTileEditorWindow : EditorWindow
     void OnDestroy()
     {
         if (mapInstance != null) DestroyImmediate(mapInstance.gameObject);
+        IsOpened = false;
     }
 
     void OnGUI()
