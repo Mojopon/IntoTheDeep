@@ -85,7 +85,7 @@ public static class MapPatternFileManager
         }
     }
 
-    public static int GetFileCount(DungeonTitle title)
+    public static int GetDungeonLevel(DungeonTitle title)
     {
         return GetFileCount(title.ToString());
     }

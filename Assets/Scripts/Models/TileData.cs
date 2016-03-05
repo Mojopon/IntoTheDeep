@@ -49,6 +49,7 @@ public class TileData
 
     public string fileName;
     public bool canWalk = true;
+    public bool isExit = false;
 
     public TileData() { }
 

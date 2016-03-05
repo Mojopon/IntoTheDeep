@@ -56,11 +56,12 @@ public class MapTest
         TileDatas tileDatas = new TileDatas();
         var tileOne = new TileData(0);
         var tileTwo = new TileData(1) { canWalk = false, };
-        tileDatas.Add(tileOne, tileTwo);
+        var tileThree = new TileData(2) { isExit = true, };
+        tileDatas.Add(tileOne, tileTwo, tileThree);
 
         var mapPatternRaw = new int[,]
         {
-            { 1,1,1,1, },
+            { 1,1,2,1, },
             { 0,0,0,1, },
             { 0,0,0,1, },
         };
@@ -93,10 +94,18 @@ public class MapTest
                 if(map.GetCell(x, y).tileID == 0)
                 {
                     Assert.IsTrue(map.GetCell(x, y).canWalk);
+                    Assert.IsFalse(map.GetCell(x, y).isExit);
+
                 }
                 else if (map.GetCell(x, y).tileID == 1)
                 {
                     Assert.IsFalse(map.GetCell(x, y).canWalk);
+                    Assert.IsFalse(map.GetCell(x, y).isExit);
+                }
+                else if (map.GetCell(x, y).tileID == 2)
+                {
+                    Assert.IsTrue(map.GetCell(x, y).canWalk);
+                    Assert.IsTrue(map.GetCell(x, y).isExit);
                 }
                 else
                 {

@@ -14,6 +14,7 @@ public class ObjectSerializerTest
         var tileData = new TileData(1);
         tileData.fileName = "tileSprite";
         tileData.canWalk = false;
+        tileData.isExit = true;
         Assert.AreEqual(1, tileData.id);
 
         var path = Directory.GetCurrentDirectory() + "/" + TILEDATA_FILE_FOR_TEST;
@@ -25,6 +26,7 @@ public class ObjectSerializerTest
 
         Assert.AreEqual(tileData.canWalk, loadedTileData.canWalk);
         Assert.AreEqual(tileData.fileName, loadedTileData.fileName);
+        Assert.AreEqual(tileData.isExit, loadedTileData.isExit);
         // id will not be serialized
         Assert.AreEqual(0, loadedTileData.id);
 

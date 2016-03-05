@@ -10,6 +10,7 @@ public class TileDataEditorWindow : EditorWindow
     private TileData selectedTile = null;
 
     private bool setCanWalkProperty = true;
+    private bool setIsExitProperty = false;
 
     private Dictionary<int, bool> toggledTiles;
 
@@ -72,6 +73,8 @@ public class TileDataEditorWindow : EditorWindow
         GUILayout.Label(selectedTile.fileName);
         GUILayout.Label("Can Walk:");
         GUILayout.Label(" [" + selectedTile.canWalk.ToString() + "] ");
+        GUILayout.Label("Is Exit:");
+        GUILayout.Label(" [" + selectedTile.isExit.ToString() + "] ");
 
         EditorGUILayout.EndHorizontal();
 
@@ -85,7 +88,9 @@ public class TileDataEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("Can Walk:");
         setCanWalkProperty = GUILayout.Toggle(setCanWalkProperty, "", GUILayout.Width(40));
-        if(GUILayout.Button("Apply To Toggled Tiles"))
+        GUILayout.Label("Is Exit:");
+        setIsExitProperty = GUILayout.Toggle(setIsExitProperty, "", GUILayout.Width(40));
+        if (GUILayout.Button("Apply To Toggled Tiles"))
         {
             foreach(var pair in toggledTiles)
             {
@@ -106,6 +111,7 @@ public class TileDataEditorWindow : EditorWindow
     void ApplyTilePropetiesToTile(TileData tile)
     {
         tile.canWalk = setCanWalkProperty;
+        tile.isExit = setIsExitProperty;
     }
 
     void DrawTilesSelection()

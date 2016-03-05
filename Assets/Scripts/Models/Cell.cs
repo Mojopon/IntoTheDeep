@@ -48,6 +48,7 @@ public class Cell
         if (tileData == null || tileData.id != this.tileID) return;
 
         this.canWalk = tileData.canWalk;
+        this.isExit = tileData.isExit;
     }
 
     public bool IsAvailable()
