@@ -12,7 +12,6 @@ public class Map : IWorldEventSubscriber
 
     public IObservable<Coord> CellChangeObservable;
 
-    public Coord exitLocation;
     public Coord[] playerStartPositions = new Coord[4];
 
     [HideInInspector]
@@ -111,23 +110,6 @@ public class Map : IWorldEventSubscriber
                 cells[x, y].ApplyTileData(tileDatas.Get(cells[x, y].tileID));
             }
         }
-    }
-
-    public void Initialize()
-    {
-        if (cells == null)
-        {
-            cells = new Cell[Width, Depth];
-            for (int y = 0; y < Depth; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    cells[x, y] = new Cell(x, y);
-                }
-            }
-        }
-
-        cells[exitLocation.x, exitLocation.y].isExit = true;
     }
 
     public void MoveCharacterToFrom(Character character, Coord source, Coord destination)

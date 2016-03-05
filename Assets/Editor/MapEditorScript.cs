@@ -53,7 +53,7 @@ public class MapEditorScript : Editor
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Edit Tiles"))
+        if (GUILayout.Button("Edit Map Tiles"))
         {
             if (MapEventEditorWindow.IsOpened) return;
 

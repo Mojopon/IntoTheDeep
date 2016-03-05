@@ -14,12 +14,13 @@ public class TransitionWorldTest
     [SetUp]
     public void Initialize()
     {
+        var mapPatternOne = new int[3, 3];
+        var mapPatternTwo = new int[4, 4];
+        var mapPatternThree = new int[5, 5];
+
         this.maps = new Map[3];
-        maps[0] = new Map()
+        maps[0] = new Map(mapPatternOne)
         {
-            Width = 3,
-            Depth = 3,
-            exitLocation = new Coord(2, 2),
             playerStartPositions = new Coord[]
                                    {
                                        new Coord (0, 0),
@@ -28,12 +29,10 @@ public class TransitionWorldTest
                                        new Coord (2, 1),
                                    }
         };
+        maps[0].GetCell(2, 2).isExit = true;
 
-        maps[1] = new Map()
+        maps[1] = new Map(mapPatternTwo)
         {
-            Width = 4,
-            Depth = 4,
-            exitLocation = new Coord(3, 3),
             playerStartPositions = new Coord[]
                                    {
                                        new Coord (1, 1),
@@ -42,12 +41,11 @@ public class TransitionWorldTest
                                        new Coord (2, 2),
                                    }
         };
+        maps[1].GetCell(3, 3).isExit = true;
 
-        maps[2] = new Map()
+
+        maps[2] = new Map(mapPatternThree)
         {
-            Width = 5,
-            Depth = 5,
-            exitLocation = new Coord(4, 4),
             playerStartPositions = new Coord[]
                                    {
                                        new Coord (1, 2),
@@ -56,11 +54,8 @@ public class TransitionWorldTest
                                        new Coord (0, 1),
                                    }
         };
+        maps[2].GetCell(4, 4).isExit = true;
 
-        foreach(var map in maps)
-        {
-            map.Initialize();
-        }
 
         var characterData = new CharacterDataTable();
         characterData.name = "Player";

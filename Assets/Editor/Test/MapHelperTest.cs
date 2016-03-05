@@ -10,10 +10,8 @@ public class MapHelperTest
     [SetUp]
     public void Initialize()
     {
-        map = new Map();
-        map.Width = 3;
-        map.Depth = 5;
-        map.Initialize();
+        var mapPattern = new int[3, 5];
+        map = new Map(mapPattern);
     }
 
     [Test]

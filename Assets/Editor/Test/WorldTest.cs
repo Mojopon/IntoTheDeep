@@ -13,10 +13,8 @@ public class WorldTest
     [SetUp]
     public void Initialize()
     {
-        map = new Map();
-        map.Width = 10;
-        map.Depth = 10;
-        map.Initialize();
+        var mapPattern = new int[10, 10];
+        map = new Map(mapPattern);
         world = new World(map);
 
         skill = new Skill
@@ -95,10 +93,8 @@ public class WorldTest
         Assert.AreEqual(0, character.X);
         Assert.AreEqual(0, character.Y);
 
-        map = new Map();
-        map.Width = 5;
-        map.Depth = 5;
-        map.Initialize();
+        var mapPattern = new int[5, 5];
+        map = new Map(mapPattern);
         map.GetCell(1, 0).canWalk = false;
         world = new World(map);
 
@@ -115,10 +111,8 @@ public class WorldTest
         var character = Character.Create();
         Assert.IsTrue(character.CanTransferTo(new Coord(1, 0)));
 
-        map = new Map();
-        map.Width = 5;
-        map.Depth = 5;
-        map.Initialize();
+        var mapPattern = new int[5, 5];
+        map = new Map(mapPattern);
         map.GetCell(1, 0).canWalk = false;
         world = new World(map);
 

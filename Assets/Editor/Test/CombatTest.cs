@@ -15,10 +15,8 @@ public class CombatTest
     [SetUp]
     public void Initialize()
     {
-        map = new Map();
-        map.Width = 10;
-        map.Depth = 8;
-        map.Initialize();
+        var mapPattern = new int[8, 10];
+        map = new Map(mapPattern);
         world = new World(map);
 
         skill = new Skill

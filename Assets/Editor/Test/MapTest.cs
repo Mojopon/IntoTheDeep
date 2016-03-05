@@ -8,16 +8,12 @@ using System.Linq;
 public class MapTest
 {
     Map map;
-    Coord exitLocation = new Coord(2, 4);
 
     [SetUp]
     public void Initialize()
     {
-        map = new Map();
-        map.Width = 3;
-        map.Depth = 5;
-        map.exitLocation = exitLocation;
-        map.Initialize();
+        var mapPattern = new int[3, 5];
+        map = new Map(mapPattern);
     }
 
     [Test]
@@ -216,13 +212,6 @@ public class MapTest
     }
 
     [Test]
-    public void ShouldGetCell()
-    {
-        Assert.IsFalse(map.GetCell(0, 0).isExit);
-        Assert.IsTrue(map.GetCell(2, 4).isExit);
-    }
-
-    [Test]
     public void ShouldAddCharacterToTheCell()
     {
         var character = Character.Create();
@@ -257,6 +246,7 @@ public class MapTest
     [Test]
     public void ShouldBeIsOnExitTrueWhenCharacterIsOnExit()
     {
+        map.GetCell(2, 4).isExit = true;
         var world = new World(map);
         var character = Character.Create();
 
@@ -364,12 +354,6 @@ public class MapTest
                 Assert.AreEqual(map.GetCell(x, y).y, y);
             }
         }
-    }
-
-    [Test]
-    public void ShouldCreateExit()
-    {
-        Assert.IsTrue(map.GetCell(exitLocation.x, exitLocation.y).isExit);
     }
 
     [Test]
