@@ -8,9 +8,9 @@ public class MapEventEditorWindow : EditorWindow
 {
     private MapInstance mapInstance;
     private DungeonTitle selectedDungeon;
-    private Map[] maps;
     private Map currentMap;
-    private int currentMapNumber = 0;
+
+    private MapSwitcher mapSwitcher;
 
     private EditEvent editMode;
 
@@ -30,64 +30,21 @@ public class MapEventEditorWindow : EditorWindow
 
     void SetMap(MapInstance mapInstance, DungeonTitle dungeonTitle, Map[] maps)
     {
-        this.mapInstance = mapInstance;
         this.selectedDungeon = dungeonTitle;
-        this.maps = maps;
+        this.mapSwitcher = ScriptableObject.CreateInstance<MapSwitcher>().Init(mapInstance, maps);
     }
 
     void OnGUI()
     {
-        if (maps == null || maps.Length == 0)
-        {
-            return;
-        }
-
-        // displaying map
-
-        DrawUIForCurrentMapNumber();
-
-        if (currentMapNumber < 0)
-        {
-            currentMapNumber = 0;
-        }
-        else if (currentMapNumber >= maps.Length)
-        {
-            currentMapNumber = maps.Length - 1;
-        }
-
-        var nextMap = maps[currentMapNumber];
-        if (nextMap != currentMap)
-        {
-            mapInstance.Generate(nextMap);
-            currentMap = nextMap;
-        }
-
-        // displaying map end
+        mapSwitcher.DrawMapSwitchButtons();
+        currentMap = mapSwitcher.GetCurrentMap();
 
         DrawEditModeSelection();
     }
 
-    void DrawUIForCurrentMapNumber()
-    {
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Current Map: ", GUILayout.Width(110));
-        if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(15)))
-        {
-            currentMapNumber++;
-        }
-        if (GUILayout.Button("-", GUILayout.Width(30), GUILayout.Height(15)))
-        {
-            currentMapNumber--;
-        }
-        currentMapNumber = EditorGUILayout.IntField(currentMapNumber);
-
-        GUILayout.EndHorizontal();
-        EditorGUILayout.Space();
-    }
-
     void OnDestroy()
     {
-        if (mapInstance != null) DestroyImmediate(mapInstance.gameObject);
+        mapSwitcher.Dispose();
         IsOpened = false;
     }
 

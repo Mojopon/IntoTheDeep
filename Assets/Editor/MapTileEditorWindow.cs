@@ -5,11 +5,12 @@ using System.IO;
 
 public class MapTileEditorWindow : EditorWindow
 {
-    private MapInstance mapInstance;
+    private MapInstance mapInstance; 
+
     private DungeonTitle selectedDungeon;
-    private Map[] maps;
     private Map currentMap;
-    private int currentMapNumber = 0;
+
+    private MapSwitcher mapSwitcher;
 
     private float gridSize = 50.0f;
 
@@ -37,7 +38,7 @@ public class MapTileEditorWindow : EditorWindow
     {
         this.mapInstance = mapInstance;
         this.selectedDungeon = dungeonTitle;
-        this.maps = maps;
+        this.mapSwitcher = ScriptableObject.CreateInstance<MapSwitcher>().Init(mapInstance, maps);
     }
 
     void OnSceneGUI(SceneView sceneView)
@@ -100,34 +101,14 @@ public class MapTileEditorWindow : EditorWindow
 
     void OnDestroy()
     {
-        if (mapInstance != null) DestroyImmediate(mapInstance.gameObject);
+        mapSwitcher.Dispose();
         IsOpened = false;
     }
 
     void OnGUI()
     {
-        if (maps == null || maps.Length == 0)
-        {
-            return;
-        }
-
-        DrawUIForCurrentMapNumber();
-
-        if (currentMapNumber < 0)
-        {
-            currentMapNumber = 0;
-        }
-        else if (currentMapNumber >= maps.Length)
-        {
-            currentMapNumber = maps.Length - 1;
-        }
-
-        var nextMap = maps[currentMapNumber];
-        if (nextMap != currentMap)
-        {
-            mapInstance.Generate(nextMap);
-            currentMap = nextMap;
-        }
+        mapSwitcher.DrawMapSwitchButtons();
+        currentMap = mapSwitcher.GetCurrentMap();
 
         DrawUIForMapWidth();
         DrawUIForMapDepth();
@@ -135,7 +116,7 @@ public class MapTileEditorWindow : EditorWindow
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Save"))
         {
-            MapPatternFileManager.WriteToFiles(selectedDungeon, maps);
+            MapPatternFileManager.WriteToFiles(selectedDungeon, mapSwitcher.GetMaps());
             Debug.Log("Map Tile Pattern has been saved");
         }
         if (GUILayout.Button("Clear"))
@@ -157,24 +138,6 @@ public class MapTileEditorWindow : EditorWindow
 
         DrawImageParts();
     }
-
-    void DrawUIForCurrentMapNumber()
-    {
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Current Map: ", GUILayout.Width(110));
-        if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(15)))
-        {
-            currentMapNumber++;
-        }
-        if (GUILayout.Button("-", GUILayout.Width(30), GUILayout.Height(15)))
-        {
-            currentMapNumber--;
-        }
-        currentMapNumber = EditorGUILayout.IntField(currentMapNumber);
-
-        GUILayout.EndHorizontal();
-        EditorGUILayout.Space();
-    } 
 
     void DrawUIForMapWidth()
     {
