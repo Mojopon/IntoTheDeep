@@ -32,6 +32,11 @@ public class MapSwitcher : EditorWindow
         return maps[currentMapNumber];
     }
 
+    public int GetCurrentMapNumber()
+    {
+        return currentMapNumber;
+    }
+
     public Map[] GetMaps()
     {
         return maps;
@@ -39,6 +44,8 @@ public class MapSwitcher : EditorWindow
 
     public void DrawMapSwitchButtons()
     {
+        if (maps == null) return;
+
         GUILayout.BeginHorizontal();
         GUILayout.Label("Current Map: ", GUILayout.Width(110));
         if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(15)))

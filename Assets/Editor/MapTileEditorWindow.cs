@@ -38,7 +38,10 @@ public class MapTileEditorWindow : EditorWindow
     {
         this.mapInstance = mapInstance;
         this.selectedDungeon = dungeonTitle;
-        this.mapSwitcher = ScriptableObject.CreateInstance<MapSwitcher>().Init(mapInstance, maps);
+        if (maps != null)
+        {
+            this.mapSwitcher = ScriptableObject.CreateInstance<MapSwitcher>().Init(mapInstance, maps);
+        }
     }
 
     void OnSceneGUI(SceneView sceneView)
@@ -107,6 +110,8 @@ public class MapTileEditorWindow : EditorWindow
 
     void OnGUI()
     {
+        if (mapSwitcher == null) return;
+
         mapSwitcher.DrawMapSwitchButtons();
         currentMap = mapSwitcher.GetCurrentMap();
 

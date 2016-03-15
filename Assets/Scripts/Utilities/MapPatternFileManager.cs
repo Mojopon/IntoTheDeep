@@ -13,34 +13,42 @@ public static class MapPatternFileManager
 
     public static Map[] ReadFromFiles(string dungeonName, int levels)
     {
-        if(!Directory.Exists(GetPathFromDungeonName(dungeonName)))
+        if(!Directory.Exists(ResourcePath.GetDungeonFolderFromDungeonName(dungeonName)))
         {
-            Directory.CreateDirectory(GetPathFromDungeonName(dungeonName));
+            Directory.CreateDirectory(ResourcePath.GetDungeonFolderFromDungeonName(dungeonName));
         }
 
         List<Map> maps = new List<Map>();
         for (int i = 0; i < levels; i++)
         {
-            var mapPattern = ReadFromTheFile(GetPathFromDungeonNameAndLevel(dungeonName, i), i);
+            var mapPattern = ReadFromTheFile(dungeonName, i);
             maps.Add(new Map(mapPattern));
         }
 
         return maps.ToArray();
     }
 
-    private static int[,] ReadFromTheFile(string path, int level)
+    private static int[,] ReadFromTheFile(string dungeonName, int targetLevel)
     {
         int[,] tilePattern;
 
-        if(!File.Exists(path))
+        var levelFolderPath = ResourcePath.GetDungeonLevelFolder(dungeonName, targetLevel);
+        if (!Directory.Exists(levelFolderPath))
+        {
+            Directory.CreateDirectory(levelFolderPath);
+        }
+
+        var filePath = GetMapPatternFilePath(dungeonName, targetLevel);
+
+        if (!File.Exists(filePath))
         {
             // create blank map if the file doesnt exists
             tilePattern = new int[5, 5];
-            WriteMapPatternToTheFile(path, tilePattern);
+            WriteMapPatternToTheFile(filePath, tilePattern);
             return tilePattern;
         }
 
-        using (StreamReader sw = new StreamReader(path, Encoding.ASCII))
+        using (StreamReader sw = new StreamReader(filePath, Encoding.ASCII))
         {
             tilePattern = MapHelper.TextToTilePattern(sw.ReadToEnd());
         }
@@ -67,13 +75,13 @@ public static class MapPatternFileManager
     {
         if (outputLevel < 0 || outputLevel >= maps.Length) return; 
 
-        var dungeonDataFolderPath = GetPathFromDungeonName(dungeonName);
+        var dungeonDataFolderPath = ResourcePath.GetDungeonFolderFromDungeonName(dungeonName);
         if (!Directory.Exists(dungeonDataFolderPath))
         {
             Directory.CreateDirectory(dungeonDataFolderPath);
         }
 
-        WriteMapPatternToTheFile(GetPathFromDungeonNameAndLevel(dungeonName, outputLevel), maps[outputLevel].GetTilePattern());
+        WriteMapPatternToTheFile(GetMapPatternFilePath(dungeonName, outputLevel), maps[outputLevel].GetTilePattern());
     }
 
     private static void WriteMapPatternToTheFile(string path, int[,] tilePattern)
@@ -108,7 +116,7 @@ public static class MapPatternFileManager
     {
         var mapPatternFileNames = new List<string>();
         int i = 0;
-        string nextMapFile = GetPathFromDungeonNameAndLevel(dungeonName, i);
+        string nextMapFile = GetMapPatternFilePath(dungeonName, i);
         if (!File.Exists(nextMapFile))
         {
             return null;
@@ -119,7 +127,7 @@ public static class MapPatternFileManager
             mapPatternFileNames.Add(nextMapFile);
             i++;
 
-            nextMapFile = GetPathFromDungeonNameAndLevel(dungeonName, i);
+            nextMapFile = GetMapPatternFilePath(dungeonName, i);
             if(!File.Exists(nextMapFile))
             {
                 nextMapFile = null;
@@ -129,14 +137,9 @@ public static class MapPatternFileManager
         return mapPatternFileNames.ToArray();
     }
 
-    private static string GetPathFromDungeonName(string dungeonName)
+    private static string GetMapPatternFilePath(string dungeonName, int level)
     {
-        return ResourcePath.RESOURCE_FOLDER + ResourcePath.DUNGEON_DATA_FOLDER + dungeonName + "/";
-    }
-
-    private static string GetPathFromDungeonNameAndLevel(string dungeonName, int level)
-    {
-        return ResourcePath.RESOURCE_FOLDER + ResourcePath.DUNGEON_DATA_FOLDER + dungeonName + "/" + level.ToString() + ".MapPattern" + ".txt";
+        return ResourcePath.GetDungeonLevelFolder(dungeonName, level) + "MapPattern" + ".txt";
     }
 
     private static void InitializeFolders()
