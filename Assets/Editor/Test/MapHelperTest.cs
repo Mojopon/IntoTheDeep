@@ -10,8 +10,7 @@ public class MapHelperTest
     [SetUp]
     public void Initialize()
     {
-        var mapPattern = new int[3, 5];
-        map = new Map(mapPattern);
+        map = MapFixtureFactory.Create(3, 5);
     }
 
     [Test]

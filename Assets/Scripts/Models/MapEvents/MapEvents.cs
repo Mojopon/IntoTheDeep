@@ -4,12 +4,12 @@ using System;
 
 public class MapEvents : IMapEvent
 {
-    public StartPositionsMapEvent startPositions;
+    public StartPositions startPositions;
 
     public MapEvents() { }
 
     public void Apply(Map targetMap)
     {
-        
+        startPositions.Apply(targetMap);
     }
 }

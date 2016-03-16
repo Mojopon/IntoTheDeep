@@ -12,13 +12,13 @@ public class MapTest
     [SetUp]
     public void Initialize()
     {
-        var mapPattern = new int[3, 5];
-        map = new Map(mapPattern);
+        map = MapFixtureFactory.Create(3, 5);
     }
 
     [Test]
     public void CanCreateFromMapPattern()
     {
+        
         var mapPatternRaw = new int[,]
         {
             { 1,1,1,1, },
@@ -26,17 +26,9 @@ public class MapTest
             { 0,0,0,1, },
         };
 
-        var mapPattern = new int[4, 3];
+        var mapPattern = MapFixtureFactory.GetRotatedMapPattern(mapPatternRaw);
 
-        for (int y = 0; y < mapPattern.GetLength(1); y++)
-        {
-            for (int x = 0; x < mapPattern.GetLength(0); x++)
-            {
-                mapPattern[x, y] = mapPatternRaw[y, x];
-            }
-        }
-
-        var map = new Map(mapPattern);
+        var map = MapFixtureFactory.CreateFromPattern(mapPattern);
         for (int y = 0; y < map.Depth; y++)
         {
             for (int x = 0; x < map.Width; x++)
@@ -62,17 +54,9 @@ public class MapTest
             { 0,0,0,1, },
         };
 
-        var mapPattern = new int[4, 3];
+        var mapPattern = MapFixtureFactory.GetRotatedMapPattern(mapPatternRaw);
 
-        for (int y = 0; y < mapPattern.GetLength(1); y++)
-        {
-            for (int x = 0; x < mapPattern.GetLength(0); x++)
-            {
-                mapPattern[x, y] = mapPatternRaw[y, x];
-            }
-        }
-
-        map = new Map(mapPattern);
+        map = MapFixtureFactory.CreateFromPattern(mapPattern);
         for (int y = 0; y < mapPattern.GetLength(1); y++)
         {
             for (int x = 0; x < mapPattern.GetLength(0); x++)

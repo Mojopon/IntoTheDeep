@@ -3,34 +3,34 @@ using System.Collections.Generic;
 using System;
 
 [Serializable]
-public class StartPositionsMapEvent : IMapEvent
+public class StartPositions : IMapEvent
 {
-    public List<Coord> startPositions;
+    public List<Coord> positions;
 
-    public StartPositionsMapEvent()
+    public StartPositions()
     {
     }
 
     public void EditStartPosition(int target, Coord newStartPosition)
     {
-        startPositions[target] = newStartPosition;
+        positions[target] = newStartPosition;
     }
 
     public void AddStartPosition(Coord startPosition)
     {
-        if (startPositions == null) startPositions = new List<Coord>();
+        if (positions == null) positions = new List<Coord>();
 
-        startPositions.Add(startPosition);
+        positions.Add(startPosition);
     }
 
     public void Apply(Map targetMap)
     {
-        targetMap.playerStartPositions = startPositions.ToArray();
+        targetMap.playerStartPositions = positions.ToArray();
     }
 
-    public static StartPositionsMapEvent Create()
+    public static StartPositions Create()
     {
-        var startPositionsMapEvent = new StartPositionsMapEvent();
+        var startPositionsMapEvent = new StartPositions();
         startPositionsMapEvent.AddStartPosition(new Coord(1, 1));
         startPositionsMapEvent.AddStartPosition(new Coord(2, 1));
         startPositionsMapEvent.AddStartPosition(new Coord(3, 1));

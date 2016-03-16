@@ -75,16 +75,16 @@ public class MapEventEditorWindow : EditorWindow
 
         scrollPos = GUILayout.BeginScrollView(scrollPos, false, true, GUILayout.Width(windowRect.width), GUILayout.Height(windowRect.height));
 
-        for (int i = 0; i < startPositionsMapEvent.startPositions.Count; i++)
+        for (int i = 0; i < startPositionsMapEvent.positions.Count; i++)
         {
             int x, y;
             GUILayout.BeginHorizontal();
             GUILayout.Label("Player " + i + " Position: ", GUILayout.Width(110));
-            x = EditorGUILayout.IntField(startPositionsMapEvent.startPositions[i].x);
-            y = EditorGUILayout.IntField(startPositionsMapEvent.startPositions[i].y);
+            x = EditorGUILayout.IntField(startPositionsMapEvent.positions[i].x);
+            y = EditorGUILayout.IntField(startPositionsMapEvent.positions[i].y);
             GUILayout.EndHorizontal();
 
-            if(x != startPositionsMapEvent.startPositions[i].x || y != startPositionsMapEvent.startPositions[i].y)
+            if(x != startPositionsMapEvent.positions[i].x || y != startPositionsMapEvent.positions[i].y)
             {
                 startPositionsMapEvent.EditStartPosition(i, new Coord(x, y));
             }

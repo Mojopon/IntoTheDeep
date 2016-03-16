@@ -14,7 +14,7 @@ public static class MapEventFileManager
         }
     }
 
-    private static void WriteStartPositionsToTheFile(StartPositionsMapEvent startPositions, string dungeonName, int targetLevel)
+    private static void WriteStartPositionsToTheFile(StartPositions startPositions, string dungeonName, int targetLevel)
     {
         ObjectSerializer.SerializeObject(startPositions, GetStartPositionMapEventPath(dungeonName, targetLevel));
     }
@@ -45,16 +45,16 @@ public static class MapEventFileManager
         return mapEventsList.ToArray();
     }
 
-    private static StartPositionsMapEvent ReadStartPositionMapEventFromFile(string dungeonName, int targetLevel)
+    private static StartPositions ReadStartPositionMapEventFromFile(string dungeonName, int targetLevel)
     {
-        return ObjectSerializer.DeSerializeObject<StartPositionsMapEvent>(GetStartPositionMapEventPath(dungeonName, targetLevel));
+        return ObjectSerializer.DeSerializeObject<StartPositions>(GetStartPositionMapEventPath(dungeonName, targetLevel));
     }
 
     private static void CheckIfFilesExists(string dungeonName, int targetLevel)
     {
         if (!File.Exists(GetStartPositionMapEventPath(dungeonName, targetLevel)))
         {
-            WriteStartPositionsToTheFile(StartPositionsMapEvent.Create(), dungeonName, targetLevel);
+            WriteStartPositionsToTheFile(StartPositions.Create(), dungeonName, targetLevel);
         }
     }
 

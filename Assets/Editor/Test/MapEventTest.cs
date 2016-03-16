@@ -8,19 +8,13 @@ using System.Collections.Generic;
 [TestFixture]
 public class MapEventTest
 {
-    Map map;
+    private Map map;
+    private List<Coord> positions;
+
     [SetUp]
     public void Initialize()
     {
-        var mapPattern = new int[5, 5];
-        map = new Map(mapPattern);
-    } 
-
-    [Test]
-    public void SetPlayerStartPositions()
-    {
-        var mapEvent = new StartPositionsMapEvent();
-        var positions = new List<Coord>()
+        positions = new List<Coord>()
         {
             new Coord(1, 2),
             new Coord(2, 2),
@@ -28,14 +22,45 @@ public class MapEventTest
             new Coord(4, 2),
         };
 
-        foreach (var position in positions) mapEvent.AddStartPosition(position);
+        map = MapFixtureFactory.Create(5, 5);
+    }
 
-        mapEvent.Apply(map);
+    [Test]
+    public void ShouldApplyAllMapEventsToTheMap()
+    {
+        var mapEvents = new MapEvents();
+        mapEvents.startPositions = CreateStartPositionsFromPositionList(positions);
+
+        mapEvents.Apply(map);
+
+        int i = 0;
+        foreach (var startPosition in map.playerStartPositions)
+        {
+            Assert.AreEqual(mapEvents.startPositions.positions[i], startPosition);
+            i++;
+        }
+    }
+
+    [Test]
+    public void SetPlayerStartPositions()
+    {
+        var startPositions = CreateStartPositionsFromPositionList(positions);
+       
+        startPositions.Apply(map);
         int i = 0;
         foreach(var startPosition in map.playerStartPositions)
         {
-            Assert.AreEqual(mapEvent.startPositions[i], startPosition);
+            Assert.AreEqual(startPositions.positions[i], startPosition);
             i++;
         }
+    }
+
+    private StartPositions CreateStartPositionsFromPositionList(List<Coord> positions)
+    {
+        var startPositions = new StartPositions();
+
+        foreach (var position in positions) startPositions.AddStartPosition(position);
+
+        return startPositions;
     }
 }

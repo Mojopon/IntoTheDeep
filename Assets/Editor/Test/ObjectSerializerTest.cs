@@ -38,7 +38,7 @@ public class ObjectSerializerTest
     public void ShouldSerializeAndDeserializeBackStartPositionsMapEvent()
     {
 
-        var mapEvent = new StartPositionsMapEvent();
+        var mapEvent = new StartPositions();
         mapEvent.AddStartPosition(new Coord(1, 1));
         mapEvent.AddStartPosition(new Coord(2, 1));
         mapEvent.AddStartPosition(new Coord(3, 1));
@@ -48,12 +48,12 @@ public class ObjectSerializerTest
 
         ObjectSerializer.SerializeObject(mapEvent, path);
 
-        var loadedMapEvent = ObjectSerializer.DeSerializeObject<StartPositionsMapEvent>(path);
+        var loadedMapEvent = ObjectSerializer.DeSerializeObject<StartPositions>(path);
         Assert.IsNotNull(loadedMapEvent);
 
-        for(int i = 0; i < mapEvent.startPositions.Count; i++)
+        for(int i = 0; i < mapEvent.positions.Count; i++)
         {
-            Assert.AreEqual(mapEvent.startPositions[i], loadedMapEvent.startPositions[i]);
+            Assert.AreEqual(mapEvent.positions[i], loadedMapEvent.positions[i]);
         }
     }
 
