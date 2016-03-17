@@ -9,8 +9,7 @@ public static class DungeonLoader
         var maps = MapPatternFileManager.ReadFromFiles(title, levels);
 
         ApplyTileDataToMaps(maps);
-
-        maps[0].playerStartPositions = new Coord[] { new Coord(1, 1), new Coord(2, 1), new Coord(3, 1), new Coord(4, 1), };
+        ApplyMapEventsToMaps(title, levels, maps);
         return maps;
     }
 
@@ -21,6 +20,21 @@ public static class DungeonLoader
         foreach(var map in maps)
         {
             map.ApplyTileData(tileDatas);
+        }
+    }
+
+    private static void ApplyMapEventsToMaps(DungeonTitle title, int levels, Map[] maps)
+    {
+        var mapEvents = MapEventFileManager.ReadFromFiles(title, levels);
+
+        if(maps.Length > mapEvents.Length)
+        {
+            throw new System.Exception("couldnt find MapEvents for the maps");
+        }
+
+        for(int i = 0; i < maps.Length; i++)
+        {
+            mapEvents[i].Apply(maps[i]);
         }
     }
 }

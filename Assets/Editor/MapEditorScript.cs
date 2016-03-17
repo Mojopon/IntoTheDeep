@@ -4,6 +4,7 @@ using UnityEditor;
 using System.IO;
 using System;
 using System.Text;
+using System.Collections.Generic;
 
 [CustomEditor(typeof(MapEditor))]
 public class MapEditorScript : Editor
@@ -68,7 +69,7 @@ public class MapEditorScript : Editor
             
             var mapInstance = SpawnMapInstance();
             var editor = (MapEditor)target;
-            MapEventEditorWindow.ShowMainWindow(mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
+            MapEventEditorWindow.ShowMainWindow(editor, mapInstance, selectedDungeon, editor.GetMaps(selectedDungeon, dungeonLevels));
         }
         EditorGUILayout.EndHorizontal();
 

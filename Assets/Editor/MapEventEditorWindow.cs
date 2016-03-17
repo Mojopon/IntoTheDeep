@@ -6,6 +6,8 @@ using System.Linq;
 
 public class MapEventEditorWindow : EditorWindow
 {
+    private MapEditor mapEditor;
+
     private MapInstance mapInstance;
     private DungeonTitle selectedDungeon;
     private Map currentMap;
@@ -27,16 +29,18 @@ public class MapEventEditorWindow : EditorWindow
     }
 
     public static bool IsOpened { get; private set; }
-    public static void ShowMainWindow(MapInstance mapInstance, DungeonTitle title, Map[] maps)
+    public static void ShowMainWindow(MapEditor mapEditor, MapInstance mapInstance, DungeonTitle title, Map[] maps)
     {
         var window = (MapEventEditorWindow)EditorWindow.GetWindow(typeof(MapEventEditorWindow), false);
-        window.SetMap(mapInstance, title, maps);
+        window.SetMap(mapEditor, mapInstance, title, maps);
         IsOpened = true;
     }
 
-    void SetMap(MapInstance mapInstance, DungeonTitle dungeonTitle, Map[] maps)
+    void SetMap(MapEditor mapEditor, MapInstance mapInstance, DungeonTitle dungeonTitle, Map[] maps)
     {
+        this.mapEditor = mapEditor;
         this.selectedDungeon = dungeonTitle;
+        this.mapInstance = mapInstance;
         if (maps != null)
         {
             this.mapSwitcher = ScriptableObject.CreateInstance<MapSwitcher>().Init(mapInstance, maps);
@@ -69,12 +73,14 @@ public class MapEventEditorWindow : EditorWindow
         }
     }
 
+    private Vector2[] startPositionsOnWorld;
     void DrawStartPositionEditor()
     {
         var startPositionsMapEvent = currentMapEvents.startPositions;
 
         scrollPos = GUILayout.BeginScrollView(scrollPos, false, true, GUILayout.Width(windowRect.width), GUILayout.Height(windowRect.height));
 
+        List<Coord> startPositions = new List<Coord>();
         for (int i = 0; i < startPositionsMapEvent.positions.Count; i++)
         {
             int x, y;
@@ -88,6 +94,14 @@ public class MapEventEditorWindow : EditorWindow
             {
                 startPositionsMapEvent.EditStartPosition(i, new Coord(x, y));
             }
+
+            startPositions.Add(new Coord(x, y));
+        }
+        startPositionsOnWorld = startPositions.Select(c => mapInstance.CoordToWorldPosition(c.x, c.y)).ToArray();
+        mapEditor.ClearLabels();
+        for(int i = 0; i < startPositionsOnWorld.Length; i++)
+        {
+            mapEditor.AddLabel(startPositionsOnWorld[i], Vector3.one * mapInstance.tileSize, Vector3.zero, Color.red, i.ToString());
         }
 
         GUILayout.EndScrollView();
@@ -95,7 +109,11 @@ public class MapEventEditorWindow : EditorWindow
 
     void OnDestroy()
     {
+        if (mapSwitcher == null) return;
+
         mapSwitcher.Dispose();
+        mapEditor.ClearLabels();
+
         IsOpened = false;
     }
 

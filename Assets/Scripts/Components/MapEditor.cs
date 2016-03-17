@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System.Collections;
 using System.IO;
+using System.Collections.Generic;
 
 public class MapEditor : MonoBehaviour
 {
@@ -13,16 +15,62 @@ public class MapEditor : MonoBehaviour
         return MapPatternFileManager.ReadFromFiles(dungeon.ToString(), levels);
     }
 
-    public Transform StartEditingMap(Map map)
+    private List<GizmoLabel> gizmoLabels;
+
+    public void AddLabel(Vector3 position, Vector3 size, Vector3 labelOffset, Color color, string text)
     {
-        this.editingMap = map;
-        return InstantiateEditingMap(map);
+        if (gizmoLabels == null) gizmoLabels = new List<GizmoLabel>();
+
+        gizmoLabels.Add(new GizmoLabel(position, size, labelOffset, color, text));
     }
 
-    public Transform InstantiateEditingMap(Map map)
+    public void ClearLabels()
     {
-        var instance = Instantiate(mapInstancePrefab) as MapInstance;
-        instance.Generate(map);
-        return instance.transform;
+        if (gizmoLabels == null) return;
+
+        gizmoLabels.Clear();
+    }
+    
+
+    void OnDrawGizmos()
+    {
+#if UNITY_EDITOR
+        if (gizmoLabels == null) return;
+
+        foreach (var gizmoLabel in gizmoLabels)
+        {
+            if (gizmoLabel.color != null)
+            {
+                Gizmos.color = gizmoLabel.color;
+            }
+            else
+            {
+                Gizmos.color = Color.white;
+            }
+
+            Gizmos.DrawWireCube(gizmoLabel.position, gizmoLabel.size);
+            UnityEditor.Handles.Label(gizmoLabel.position + gizmoLabel.labelOffset, gizmoLabel.text);
+        }
+#endif
+    }
+}
+
+public class GizmoLabel
+{
+    public Vector3 position;
+    public Vector3 size;
+    public Vector3 labelOffset;
+    public Color color;
+    public string text = "";
+
+    public GizmoLabel() { }
+    
+    public GizmoLabel(Vector3 position, Vector3 size, Vector3 labelOffset, Color color, string text)
+    {
+        this.position = position;
+        this.size = size;
+        this.labelOffset = labelOffset;
+        this.color = color;
+        this.text = text;
     }
 }
