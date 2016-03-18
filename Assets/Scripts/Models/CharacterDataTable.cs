@@ -20,12 +20,24 @@ public class Attributes
 public class CharacterDataTable
 {
     public string name { get; set; }
+    public int level { get; set; }
+    public int expToNextLevel { get; set; }
 
     public Attributes attributes { get; set; }
 
     public CharacterDataTable()
     {
         this.name = "Unknown";
+        this.level = 1;
+        this.expToNextLevel = 100;
+        this.attributes = new Attributes();
+    }
+
+    public CharacterDataTable(SerializableCharacterData characterDataRaw)
+    {
+        this.name = characterDataRaw.name;
+        this.level = characterDataRaw.level;
+        this.expToNextLevel = characterDataRaw.expToNextLevel;
         this.attributes = new Attributes();
     }
 
@@ -34,5 +46,17 @@ public class CharacterDataTable
         this.name = name;
 
         this.attributes = attributes;
+    }
+
+    public SerializableCharacterData ToSerializableCharacterData()
+    {
+        var serializableCharacterData = new SerializableCharacterData()
+        {
+            name = this.name,
+            level = this.level,
+            expToNextLevel = this.expToNextLevel,
+        };
+
+        return serializableCharacterData;
     }
 }

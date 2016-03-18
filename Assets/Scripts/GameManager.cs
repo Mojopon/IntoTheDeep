@@ -8,7 +8,6 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public MapEditor mapEditorPrefab;
     public MapInstance mapPrefab;
     public CharacterManager characterManagerPrefab;
 
@@ -26,7 +25,6 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public MenuManager menuManager;
 
-    private MapEditor mapEditor;
     private Map[] maps;
 
     private TransitionWorld transition;
@@ -67,7 +65,6 @@ public class GameManager : MonoBehaviour
 
         yield return null;
 
-        this.mapEditor = Instantiate(mapEditorPrefab, Vector3.zero, Quaternion.identity) as MapEditor;
         this.maps = DungeonLoader.GetMapsForTheDungeon(DungeonTitle.Beginning);
 
         var playerOneData = new CharacterDataTable("PlayerOne", new Attributes());

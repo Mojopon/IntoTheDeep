@@ -9,6 +9,7 @@ public class ObjectSerializerTest
 {
     private static readonly string TILEDATA_FILE_FOR_TEST = "/tiledata.txt"; 
     private static readonly string STARTPOSITIONS_FILE_FOR_TEST = "/startpositions.txt";
+    private static readonly string CHARACTER_DATA_FILE_FOR_TEST = "/characterdatas.txt";
 
     [Test]
     public void ShouldSerializeAndDeserializeBackTileData()
@@ -57,12 +58,33 @@ public class ObjectSerializerTest
         }
     }
 
+    [Test]
+    public void ShouldSerializeAndDeserializeSerializableCharacterData()
+    {
+        var characterData = new SerializableCharacterData();
+        characterData.name = "Player";
+        characterData.level = 5;
+        characterData.expToNextLevel = 250;
+
+        var path = Directory.GetCurrentDirectory() + CHARACTER_DATA_FILE_FOR_TEST;
+        ObjectSerializer.SerializeObject(characterData, path);
+
+        var loadedCharacterData = ObjectSerializer.DeSerializeObject<SerializableCharacterData>(path);
+        Assert.IsNotNull(loadedCharacterData);
+
+        Assert.AreEqual(characterData.name, loadedCharacterData.name);
+        Assert.AreEqual(characterData.level, loadedCharacterData.level);
+        Assert.AreEqual(characterData.expToNextLevel, loadedCharacterData.expToNextLevel);
+    }
+
+
     [TearDown]
     public void Destroy()
     {
         List<string> filesToDelete = new List<string>();
         filesToDelete.Add(Directory.GetCurrentDirectory() + TILEDATA_FILE_FOR_TEST);
         filesToDelete.Add(Directory.GetCurrentDirectory() + STARTPOSITIONS_FILE_FOR_TEST);
+        filesToDelete.Add(Directory.GetCurrentDirectory() + CHARACTER_DATA_FILE_FOR_TEST);
 
         foreach (var path in filesToDelete) File.Delete(path);
     }
