@@ -7,6 +7,7 @@ public class SerializableCharacterData
     public string name;
     public int level;
     public int expToNextLevel;
+    public int jobID;
 
     public SerializableCharacterData() { }
 }

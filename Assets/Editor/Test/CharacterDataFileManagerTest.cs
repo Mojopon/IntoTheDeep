@@ -21,6 +21,7 @@ public class CharacterDataFileManagerTest
             name = "Player",
             level = 3,
             expToNextLevel = 150,
+            jobID = 3,
         };
 
         fileManager.WriteToFile(characterData.ToSerializableCharacterData(), 0);
@@ -34,6 +35,7 @@ public class CharacterDataFileManagerTest
         Assert.AreEqual(characterData.name, loadedCharacterData.name);
         Assert.AreEqual(characterData.level, loadedCharacterData.level);
         Assert.AreEqual(characterData.expToNextLevel, loadedCharacterData.expToNextLevel);
+        Assert.AreEqual(characterData.jobID, loadedCharacterData.jobID);
     }
 
     [TearDown]

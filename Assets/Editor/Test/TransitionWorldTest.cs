@@ -145,6 +145,25 @@ public class TransitionWorldTest
         Assert.IsTrue(playerOne.IsOnExit);
     }
 
+    [Test]
+    public void HasNextReturnsFalseWhenTheresNoNextMap()
+    {
+        var nextWorld = transition.GoNext();
+        Assert.IsTrue(transition.HasNext());
+        Assert.IsNotNull(nextWorld);
+
+        nextWorld = transition.GoNext();
+        Assert.IsTrue(transition.HasNext());
+        Assert.IsNotNull(nextWorld);
+
+        nextWorld = transition.GoNext();
+        Assert.IsFalse(transition.HasNext());
+        Assert.IsNotNull(nextWorld);
+
+        nextWorld = transition.GoNext();
+        Assert.IsNull(nextWorld);
+    }
+
     void CheckIfMoveAppliedToTheMap(Map map, Character character, Direction direction)
     {
         Assert.AreEqual(map.GetCharacter(playerOne.Location.Value), playerOne);

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 // class to spawn character transforms and observe World Events to send
 // message the controller
-public class CharacterManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
+public class CharacterTransformManager : MonoBehaviour, IWorldEventSubscriber, IWorldUtilitiesUser, IMapInstanceUtilitiesUser
 {
     public Transform playerPrefab;
     public Transform enemyPrefab;

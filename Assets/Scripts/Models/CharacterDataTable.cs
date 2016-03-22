@@ -22,6 +22,7 @@ public class CharacterDataTable
     public string name { get; set; }
     public int level { get; set; }
     public int expToNextLevel { get; set; }
+    public int jobID { get; set; }
 
     public Attributes attributes { get; set; }
 
@@ -31,6 +32,7 @@ public class CharacterDataTable
         this.level = 1;
         this.expToNextLevel = 100;
         this.attributes = new Attributes();
+        this.jobID = 0;
     }
 
     public CharacterDataTable(SerializableCharacterData characterDataRaw)
@@ -38,6 +40,7 @@ public class CharacterDataTable
         this.name = characterDataRaw.name;
         this.level = characterDataRaw.level;
         this.expToNextLevel = characterDataRaw.expToNextLevel;
+        this.jobID = characterDataRaw.jobID;
         this.attributes = new Attributes();
     }
 
@@ -55,6 +58,7 @@ public class CharacterDataTable
             name = this.name,
             level = this.level,
             expToNextLevel = this.expToNextLevel,
+            jobID = this.jobID,
         };
 
         return serializableCharacterData;

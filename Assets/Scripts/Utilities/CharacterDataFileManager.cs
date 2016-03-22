@@ -2,7 +2,15 @@
 using System.Collections;
 using System.IO;
 
-public class CharacterDataFileManager
+public interface ICharacterDataFileManager
+{
+    CharacterDataTable ReadFromFile(int slot);
+    bool CharacterDataExists(int slot);
+    void WriteToFile(SerializableCharacterData characterData, int slot);
+    void WriteToFile(CharacterDataTable characterData, int slot);
+}
+
+public class CharacterDataFileManager : ICharacterDataFileManager
 {
 
     private string rootPath;
@@ -34,7 +42,7 @@ public class CharacterDataFileManager
         var filePath = GetCharacterDataFilePath(slot);
         if (!File.Exists(filePath))
         {
-            WriteToFile(null, slot);
+            return null;
         }
 
         var characterDataRaw = ObjectSerializer.DeSerializeObject<SerializableCharacterData>(filePath);
@@ -70,6 +78,11 @@ public class CharacterDataFileManager
         }
 
         ObjectSerializer.SerializeObject(characterData, path);
+    }
+
+    public void WriteToFile(CharacterDataTable characterData, int slot)
+    {
+        WriteToFile(characterData.ToSerializableCharacterData(), slot);
     }
 
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class TransitionWorld
 {
     private Map[] maps;
-    private int currentMap = 0;
+    private int currentMapNumber = 0;
 
     public TransitionWorld(Map[] maps)
     {
@@ -33,8 +33,9 @@ public class TransitionWorld
             previousWorld = null;
         }
 
-        var nextMap = maps[currentMap++];
-        if (currentMap >= maps.Length) currentMap = 0;
+        if (!HasNext()) return null;
+
+        var nextMap = maps[currentMapNumber++];
         var newWorld = new World(nextMap);
 
         for(int i = 0; i < players.Count; i++)
@@ -53,5 +54,12 @@ public class TransitionWorld
 
         previousWorld = newWorld;
         return newWorld;
+    }
+
+    public bool HasNext()
+    {
+        if (currentMapNumber >= maps.Length) return false;
+
+        return true;
     }
 }

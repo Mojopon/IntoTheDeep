@@ -3,13 +3,14 @@ using System.Collections;
 using UniRx;
 using System;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     public MapInstance mapPrefab;
-    public CharacterManager characterManagerPrefab;
+    public CharacterTransformManager characterManagerPrefab;
 
     public PathSelector pathSelectorPrefab;
     public SkillSelector skillSelectorPrefab;
@@ -36,7 +37,7 @@ public class GameManager : MonoBehaviour
     private World world;
 
     // Spawn Character Transforms to the Scene and Manage it(CharacterControllers)
-    private CharacterManager characterManager;
+    private CharacterTransformManager characterManager;
 
     private GameObject gameObjectHolder;
 
@@ -56,7 +57,7 @@ public class GameManager : MonoBehaviour
     IEnumerator StartGame()
     {
         yield return StartCoroutine(SequenceSetupGame());
-        yield return StartCoroutine(SequenceSetupWorld());
+        yield return StartCoroutine(SequenceSetupNextWorld());
     }
 
     IEnumerator SequenceSetupGame()
@@ -91,7 +92,7 @@ public class GameManager : MonoBehaviour
         yield return null;
     }
     
-    IEnumerator SequenceSetupWorld()
+    IEnumerator SequenceSetupNextWorld()
     {
         if (gameObjectHolder != null)
         {
@@ -116,6 +117,12 @@ public class GameManager : MonoBehaviour
                     .AddTo(gameObjectHolder);
 
         StartBattle();
+        yield break;
+    }
+
+    IEnumerator SequenceBackToPreparationScene()
+    {
+        SceneManager.LoadScene("Preparation");
         yield break;
     }
 
@@ -191,7 +198,16 @@ public class GameManager : MonoBehaviour
             if (goNextFloor)
             {
                 goNextFloor = false;
-                StartCoroutine(SequenceSetupWorld());
+
+                // go next map or go back to preparation scene when theres no map(world) left
+                if (transition.HasNext())
+                {
+                    StartCoroutine(SequenceSetupNextWorld());
+                }
+                else
+                {
+                    StartCoroutine(SequenceBackToPreparationScene());
+                }
                 yield break;
             }
         }
