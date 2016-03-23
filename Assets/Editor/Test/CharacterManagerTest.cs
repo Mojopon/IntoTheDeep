@@ -27,4 +27,50 @@ public class CharacterManagerTest
         characterDataFileManager.ReadFromFile(1).Returns(characterDataTwo);
         characterDataFileManager.ReadFromFile(2).Returns(characterDataThree);
     }
+
+    [Test]
+    public void ShouldLoadAndSaveCharacters()
+    {
+        for(int i = 0; i < 10; i ++)
+        {
+            characterDataFileManager.DidNotReceive().ReadFromFile(i);
+        }
+
+        characterManager.Load(characterDataFileManager);
+
+        for (int i = 0; i < 10; i++)
+        {
+            characterDataFileManager.Received().ReadFromFile(i);
+        }
+
+        characterManager.Save(characterDataFileManager);
+
+        characterDataFileManager.Received().WriteToFile(characterDataOne, 0);
+        characterDataFileManager.Received().WriteToFile(characterDataTwo, 1);
+        characterDataFileManager.Received().WriteToFile(characterDataThree, 2);
+        for (int i = 3; i < 10; i++)
+        {
+            characterDataFileManager.DidNotReceive().WriteToFile(Arg.Any<CharacterDataTable>(), i);
+        }
+    }
+
+    [Test]
+    public void ShouldAddCharacter()
+    {
+        characterManager.Load(characterDataFileManager);
+
+        var characterDataFour = new CharacterDataTable();
+        characterManager.Add(characterDataFour, characterManager.Count());
+
+        characterManager.Save(characterDataFileManager);
+
+        characterDataFileManager.Received().WriteToFile(characterDataOne, 0);
+        characterDataFileManager.Received().WriteToFile(characterDataTwo, 1);
+        characterDataFileManager.Received().WriteToFile(characterDataThree, 2);
+        characterDataFileManager.Received().WriteToFile(characterDataFour, 3);
+        for (int i = 4; i < 10; i++)
+        {
+            characterDataFileManager.DidNotReceive().WriteToFile(Arg.Any<CharacterDataTable>(), i);
+        }
+    }
 }

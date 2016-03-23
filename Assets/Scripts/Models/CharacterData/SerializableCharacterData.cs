@@ -2,12 +2,12 @@
 using System.Collections;
 
 [System.Serializable]
-public class SerializableCharacterData
+public class SerializableCharacterData : ICharacterData
 {
-    public string name;
-    public int level;
-    public int expToNextLevel;
-    public int jobID;
+    public string name { get; set; }
+    public int level { get; set; }
+    public int expToNextLevel { get; set; }
+    public int jobID { get; set; }
 
     public SerializableCharacterData() { }
 }

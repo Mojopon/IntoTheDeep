@@ -17,7 +17,15 @@ public class Attributes
     }
 }
 
-public class CharacterDataTable
+public interface ICharacterData
+{
+    string name { get; set; }
+    int level { get; set; }
+    int expToNextLevel { get; set; }
+    int jobID { get; set; }
+}
+
+public class CharacterDataTable : ICharacterData
 {
     public string name { get; set; }
     public int level { get; set; }
