@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UniRx;
 
 public enum PreparationPhase
 {
@@ -21,7 +22,28 @@ public class PreparationManager : MonoBehaviour
 
     private void OnChangePhase(PreparationPhase phase)
     {
+        if(phase == PreparationPhase.CharacterManagement)
+        {
+            PopupCharacterCreator();
+            return;
+        }
+
         ActivateUIObject(phase.ToString());
+    }
+
+    private void PopupCharacterCreator()
+    {
+        StartCoroutine(SequenceCharacterCreator());
+    }
+
+    IEnumerator SequenceCharacterCreator()
+    {
+        CharacterDataTable newCharacter = null;
+
+        yield return CharacterCreatorPopupController.StartPopup()
+                                                    .StartAsCoroutine(x => newCharacter = x);
+
+        Debug.Log(newCharacter.name);
     }
 
     private GameObject currentActiveObject;
