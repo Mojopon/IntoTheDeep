@@ -190,8 +190,23 @@ public class GameManager : MonoBehaviour
         {
             bool goNextFloor = false;
 
-            yield return PopupWindow.PopupYesNoWindow("Go next floor?")
-                                    .StartAsCoroutine(x => goNextFloor = x);
+            var modalPanelDetails = new ModalPanel.ModalPanelDetails()
+            {
+                title = "Confirmation",
+                question = "You found a stairs.\nGo next floor?",
+                button1Details = new ModalPanel.EventButtonDetails()
+                {
+                    buttonTitle = "Yes",
+                    action = () => { goNextFloor = true; },
+                },
+                button2Details = new ModalPanel.EventButtonDetails()
+                {
+                    buttonTitle = "No",
+                    action = () => { goNextFloor = false; },
+                },
+            };
+
+            yield return ModalPanel.Instance.ChoiceAsObservable(modalPanelDetails).StartAsCoroutine();
 
             yield return null;
 
