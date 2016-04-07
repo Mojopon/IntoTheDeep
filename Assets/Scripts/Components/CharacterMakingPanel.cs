@@ -4,28 +4,12 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using UniRx;
 
-public class CharacterMakingPanel : MonoBehaviour
+public class CharacterMakingPanel : ModalPanelBase<CharacterMakingPanel>
 {
     public Button submitButton;
     public Button cancelButton;
 
     public GameObject characterMakingPanelObject;
-
-    private static ModalPanel modalPanel;
-    public static ModalPanel Instance
-    {
-        get
-        {
-            if (!modalPanel)
-            {
-                modalPanel = FindObjectOfType(typeof(ModalPanel)) as ModalPanel;
-                if (!modalPanel)
-                    Debug.LogError("There needs to be one active ModalPanel script on a GameObject in your scene.");
-            }
-
-            return modalPanel;
-        }
-    }
 
     public IObservable<Unit> ChoiceAsObservable()
     {
@@ -35,7 +19,7 @@ public class CharacterMakingPanel : MonoBehaviour
 
     private IEnumerator SequenceWaitForChoice(IObserver<Unit> observer)
     {
-        while (!buttonPressed)
+        while (!panelClosed)
         {
             yield return null;
         }
@@ -43,10 +27,9 @@ public class CharacterMakingPanel : MonoBehaviour
         observer.OnCompleted();
     }
 
-    private bool buttonPressed;
     public void Choice()
     {
-        buttonPressed = false;
+        panelClosed = false;
 
         characterMakingPanelObject.SetActive(true);
 
@@ -65,9 +48,9 @@ public class CharacterMakingPanel : MonoBehaviour
         cancelButton.gameObject.SetActive(true);
     }
 
-    private void ClosePanel()
+    protected override void ClosePanel()
     {
-        buttonPressed = true;
+        base.ClosePanel();
         characterMakingPanelObject.SetActive(false);
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using UniRx;
 
-public class ModalPanel : MonoBehaviour
+public class ModalPanel : ModalPanelBase<ModalPanel>
 {
     public Text question;
     public Button button1;
@@ -32,22 +32,6 @@ public class ModalPanel : MonoBehaviour
         public EventButtonDetails button3Details;
     }
 
-    private static ModalPanel modalPanel;
-    public static ModalPanel Instance
-    {
-        get
-        {
-            if (!modalPanel)
-            {
-                modalPanel = FindObjectOfType(typeof(ModalPanel)) as ModalPanel;
-                if (!modalPanel)
-                    Debug.LogError("There needs to be one active ModalPanel script on a GameObject in your scene.");
-            }
-
-            return modalPanel;
-        }
-    }
-
     public IObservable<Unit> ChoiceAsObservable(ModalPanelDetails details)
     {
         Choice(details);
@@ -56,7 +40,7 @@ public class ModalPanel : MonoBehaviour
 
     private IEnumerator SequenceWaitForChoice(IObserver<Unit> observer)
     {
-        while(!isChosen)
+        while(!panelClosed)
         {
             yield return null;
         }
@@ -64,10 +48,9 @@ public class ModalPanel : MonoBehaviour
         observer.OnCompleted();
     }
 
-    private bool isChosen;
     public void Choice(ModalPanelDetails details)
     {
-        isChosen = false;
+        panelClosed = false;
 
         modalPanelObject.SetActive(true);
 
@@ -102,9 +85,9 @@ public class ModalPanel : MonoBehaviour
         }
     }
 
-    private void ClosePanel()
+    protected override void ClosePanel() 
     {
-        isChosen = true;
+        base.ClosePanel();
         modalPanelObject.SetActive(false);
     }
 }

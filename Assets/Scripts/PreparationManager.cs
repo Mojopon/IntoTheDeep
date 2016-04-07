@@ -24,26 +24,21 @@ public class PreparationManager : MonoBehaviour
     {
         if(phase == PreparationPhase.CharacterManagement)
         {
-            PopupCharacterCreator();
+            PopupCharacterMakingPanel();
             return;
         }
 
         ActivateUIObject(phase.ToString());
     }
 
-    private void PopupCharacterCreator()
+    private void PopupCharacterMakingPanel()
     {
-        StartCoroutine(SequenceCharacterCreator());
+        StartCoroutine(SequenceCharacterMaking());
     }
 
-    IEnumerator SequenceCharacterCreator()
+    IEnumerator SequenceCharacterMaking()
     {
-        CharacterDataTable newCharacter = null;
-
-        yield return CharacterCreatorPopupController.StartPopup()
-                                                    .StartAsCoroutine(x => newCharacter = x);
-
-        Debug.Log(newCharacter.name);
+        yield return CharacterMakingPanel.Instance.ChoiceAsObservable().StartAsCoroutine();
     }
 
     private GameObject currentActiveObject;
