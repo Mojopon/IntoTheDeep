@@ -3,31 +3,53 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UniRx;
+using System.Collections.Generic;
 
 public class CharacterMakingPanel : ModalPanelBase<CharacterMakingPanel>
 {
     public Button submitButton;
     public Button cancelButton;
 
+    public InputField nameInputField;
+    public Dropdown jobSelectDropdown;
+
     public GameObject characterMakingPanelObject;
 
-    public IObservable<Unit> ChoiceAsObservable()
+    public class Result
     {
-        Choice();
-        return Observable.FromCoroutine<Unit>(SequenceWaitForChoice);
+        public string name;
+        public int selectedJob;
     }
 
-    private IEnumerator SequenceWaitForChoice(IObserver<Unit> observer)
+    public class Details
+    {
+        public List<string> jobs;
+    }
+
+    public IObservable<Result> CharacterMakingAsObservable(Details details)
+    {
+        OpenPanel(details);
+        return Observable.FromCoroutine<Result>(SequenceWaitForCharacterMaking);
+    }
+
+    private IEnumerator SequenceWaitForCharacterMaking(IObserver<Result> observer)
     {
         while (!panelClosed)
         {
             yield return null;
         }
 
+        var result = new Result()
+        {
+            name = nameInputField.text,
+            selectedJob = jobSelectDropdown.value,
+        };
+
+        observer.OnNext(result);
         observer.OnCompleted();
     }
 
-    public void Choice()
+    public void OpenPanel(Details details)
     {
         panelClosed = false;
 
@@ -46,6 +68,8 @@ public class CharacterMakingPanel : ModalPanelBase<CharacterMakingPanel>
         //cancelButton.onClick.AddListener(details.button2Details.action);
         cancelButton.onClick.AddListener(ClosePanel);
         cancelButton.gameObject.SetActive(true);
+
+        jobSelectDropdown.options = details.jobs.ToOptionDatas();
     }
 
     protected override void ClosePanel()

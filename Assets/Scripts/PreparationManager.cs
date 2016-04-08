@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UniRx;
 
 public enum PreparationPhase
@@ -38,7 +39,21 @@ public class PreparationManager : MonoBehaviour
 
     IEnumerator SequenceCharacterMaking()
     {
-        yield return CharacterMakingPanel.Instance.ChoiceAsObservable().StartAsCoroutine();
+        CharacterMakingPanel.Result result = null;
+
+        var characterMakingPanelDetails = new CharacterMakingPanel.Details()
+        {
+            jobs = new List<string>()
+            {
+                "剣士",
+                "魔術師",
+                "クレリック",
+            }
+        };
+        yield return CharacterMakingPanel.Instance.CharacterMakingAsObservable(characterMakingPanelDetails).StartAsCoroutine(x => result = x);
+
+        Debug.Log(result.selectedJob);
+        Debug.Log(result.name);
     }
 
     private GameObject currentActiveObject;
